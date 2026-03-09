@@ -1,6 +1,19 @@
 import { ShoppingCart, User, Mail, ShieldCheck, LogOut } from 'lucide-react';
 import bgImage from '../assets/Typical_sari-sari_store.jpg';
 
+// Reusable sub-component for Profile Info Rows
+const InfoRow = ({ icon: Icon, label, value, colorClass }) => (
+  <div className="flex items-center gap-4">
+    <div className={`p-3 ${colorClass} rounded-2xl`}>
+      <Icon size={24} />
+    </div>
+    <div>
+      <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">{label}</p>
+      <p className="text-lg font-bold text-slate-700 leading-tight">{value}</p>
+    </div>
+  </div>
+);
+
 const Dashboard = ({ user }) => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat relative" 
@@ -24,39 +37,30 @@ const Dashboard = ({ user }) => {
           <p className="text-slate-500 text-sm">Managing your store's inventory starts here.</p>
         </div>
 
-        {/* User Profile Section */}
+        {/* User Profile Section using Reusable InfoRows */}
         <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Vendor Profile</h3>
           
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600">
-              <User size={24} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400 font-medium uppercase">Full Name</p>
-              <p className="text-lg font-bold text-slate-700">{user.name}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-2xl text-blue-600">
-              <Mail size={24} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400 font-medium uppercase">Email Address</p>
-              <p className="font-semibold text-slate-700">{user.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400 font-medium uppercase">Account Role</p>
-              <p className="font-semibold text-slate-700">Vendor (Admin)</p>
-            </div>
-          </div>
+          <InfoRow 
+            icon={User} 
+            label="Full Name" 
+            value={user?.name || "Guest User"} 
+            colorClass="bg-emerald-100 text-emerald-600" 
+          />
+          
+          <InfoRow 
+            icon={Mail} 
+            label="Email Address" 
+            value={user?.email || "No email provided"} 
+            colorClass="bg-blue-100 text-blue-600" 
+          />
+          
+          <InfoRow 
+            icon={ShieldCheck} 
+            label="Account Role" 
+            value="Vendor (Admin)" 
+            colorClass="bg-amber-100 text-amber-600" 
+          />
         </div>
 
         {/* Action Buttons */}
