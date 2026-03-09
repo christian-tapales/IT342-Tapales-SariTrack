@@ -1,0 +1,34 @@
+# IDE Specific
+.idea/
+.vscode/
+*.swp
+*.log
+
+# Environment / Secrets (Global)
+.env
+.env.*
+!.env.example
+
+# Backend (Maven/Spring Boot)
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.jar
+backend/*.war
+backend/src/main/resources/application-local.properties
+
+# Web (React)
+web/node_modules/
+web/build/
+web/npm-debug.log*
+node_modules/
+
+# Mobile (Android/Gradle)
+mobile/.gradle/
+mobile/build/
+mobile/local.properties
+mobile/*.apk
+mobile/*.bundle
+
+# OS Specific
+.DS_Store
+Thumbs.db
