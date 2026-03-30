@@ -1,8 +1,10 @@
 package edu.cit.tapales.saritrack
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,15 +14,16 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class RegisterActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Ensure this matches your XML filename exactly
-        setContentView(R.layout.activity_register)
+        // Ensure this matches your XML filename (e.g., activity_login or activity_main)
+        setContentView(R.layout.activity_login)
 
-        // Apply window insets to the root layout (make sure root has android:id="@+id/main")
+        // Apply edge-to-edge padding (Assumes your XML root ID is "main")
         val rootView = findViewById<android.view.View>(R.id.main)
         if (rootView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
@@ -30,41 +33,45 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // --- PHASE 2 LOGIC ---
-        val btnRegister = findViewById<Button>(R.id.btnRegister)
-        val etName = findViewById<EditText>(R.id.etName)
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
+        val btnLogin = findViewById<Button>(R.id.btnLogin)
+        val tvToRegister = findViewById<TextView>(R.id.tvToRegister)
 
-        val tvToLogin = findViewById<android.widget.TextView>(R.id.tvToLogin)
-        tvToLogin.setOnClickListener {
-            finish() // This simply closes the registration screen and returns to the login screen
-        }
-
-        btnRegister.setOnClickListener {
-            val name = etName.text.toString().trim()
+        // 1. Handle Login Logic
+        btnLogin.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
-                val request = RegisterRequest(name, email, password)
+            if (email.isNotEmpty() && password.isNotEmpty()) {
+                val loginRequest = LoginRequest(email, password)
 
                 // Use okhttp3.ResponseBody here
-                RetrofitClient.instance.registerUser(request).enqueue(object : retrofit2.Callback<okhttp3.ResponseBody> {
+                RetrofitClient.instance.loginUser(loginRequest).enqueue(object : retrofit2.Callback<okhttp3.ResponseBody> {
                     override fun onResponse(call: retrofit2.Call<okhttp3.ResponseBody>, response: retrofit2.Response<okhttp3.ResponseBody>) {
                         if (response.isSuccessful) {
-                            val message = response.body()?.string() ?: "Success"
-                            Toast.makeText(this@RegisterActivity, message, Toast.LENGTH_LONG).show()
+                            val message = response.body()?.string() ?: "Login Successful"
+                            android.widget.Toast.makeText(this@LoginActivity, message, android.widget.Toast.LENGTH_SHORT).show()
+
+                            val intent = android.content.Intent(this@LoginActivity, DashboardActivity::class.java)
+                            startActivity(intent)
+                            finish()
                         } else {
-                            Toast.makeText(this@RegisterActivity, "Registration Failed", Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(this@LoginActivity, "Invalid Credentials", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
 
                     override fun onFailure(call: retrofit2.Call<okhttp3.ResponseBody>, t: Throwable) {
-                        Toast.makeText(this@RegisterActivity, "Network Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(this@LoginActivity, "Error: ${t.message}", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 })
             }
+        }
+
+        // 2. Navigate to Registration Screen
+        tvToRegister.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
         }
     }
 }

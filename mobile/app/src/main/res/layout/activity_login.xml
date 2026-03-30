@@ -5,22 +5,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="#F9FAFB">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SariTrack Registration"
-        android:textSize="26sp"
+        android:text="SariTrack Login"
+        android:textSize="30sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp"
-        android:textColor="#059669"/> <EditText
-        android:id="@+id/etName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Full Name"
-        android:inputType="textPersonName"
-        android:layout_marginBottom="16dp"/>
+        android:textColor="#059669"
+        android:layout_marginBottom="40dp"/>
 
     <EditText
         android:id="@+id/etEmail"
@@ -28,7 +23,8 @@
         android:layout_height="wrap_content"
         android:hint="Email Address"
         android:inputType="textEmailAddress"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"/>
 
     <EditText
         android:id="@+id/etPassword"
@@ -36,22 +32,24 @@
         android:layout_height="wrap_content"
         android:hint="Password"
         android:inputType="textPassword"
-        android:layout_marginBottom="24dp"/>
-
-    <Button
-        android:id="@+id/btnRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create Account"
-        android:backgroundTint="#059669"
+        android:layout_marginBottom="24dp"
         android:padding="12dp"/>
 
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:backgroundTint="#059669"
+        android:padding="12dp"
+        android:textSize="18sp"/>
+
     <TextView
-        android:id="@+id/tvToLogin"
+        android:id="@+id/tvToRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Already have an account? Login here"
-        android:layout_marginTop="16dp"
+        android:text="Don't have an account? Register"
+        android:layout_marginTop="20dp"
         android:textColor="#059669"
         android:textStyle="bold"/>
 
