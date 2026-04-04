@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,7 +36,7 @@ class LoginActivity : AppCompatActivity() {
 
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
-        val btnLogin = findViewById<Button>(R.id.btnLogin)
+        val btnLogin = findViewById<Button>(R.id.btnLogIn)
         val tvToRegister = findViewById<TextView>(R.id.tvToRegister)
 
         // 1. Handle Login Logic
@@ -48,16 +49,23 @@ class LoginActivity : AppCompatActivity() {
 
                 // Use okhttp3.ResponseBody here
                 RetrofitClient.instance.loginUser(loginRequest).enqueue(object : retrofit2.Callback<okhttp3.ResponseBody> {
-                    override fun onResponse(call: retrofit2.Call<okhttp3.ResponseBody>, response: retrofit2.Response<okhttp3.ResponseBody>) {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                        android.util.Log.d("LOGIN_DEBUG", "Status Code: ${response.code()}")
                         if (response.isSuccessful) {
-                            val message = response.body()?.string() ?: "Login Successful"
-                            android.widget.Toast.makeText(this@LoginActivity, message, android.widget.Toast.LENGTH_SHORT).show()
+                            val message = response.body()?.string() ?: ""
 
-                            val intent = android.content.Intent(this@LoginActivity, DashboardActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            // Check if the body actually contains a success message
+                            if (message.contains("Successful", ignoreCase = true)) {
+                                Toast.makeText(this@LoginActivity, "Welcome!", Toast.LENGTH_SHORT).show()
+                                val intent = Intent(this@LoginActivity, DashboardActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                // Treat 200 OK with "Invalid" text as a failure
+                                Toast.makeText(this@LoginActivity, message, Toast.LENGTH_SHORT).show()
+                            }
                         } else {
-                            android.widget.Toast.makeText(this@LoginActivity, "Invalid Credentials", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@LoginActivity, "Invalid Credentials (401)", Toast.LENGTH_SHORT).show()
                         }
                     }
 
