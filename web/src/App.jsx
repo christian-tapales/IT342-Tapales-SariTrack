@@ -1,43 +1,39 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
-import Register from './components/Register';
+import AuthLayout from './layouts/AuthLayout';
+import DashboardLayout from './layouts/DashboardLayout';
 import Login from './components/Login';
+import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-
-// Import your asset here
-import bgImage from './assets/Typical_sari-sari_store.jpg';
+import Inventory from './pages/Inventory';
+import PointOfSale from './pages/PointOfSale'; // Add this import
 
 function App() {
   const [user, setUser] = useState(null);
 
+  const handleLogout = () => {
+    setUser(null); // This effectively logs the user out
+  };
+
   return (
     <Router>
-      {/* GLOBAL LAYOUT WRAPPER */}
-      <div 
-        className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-hidden"
-        style={{ backgroundImage: `url(${bgImage})` }}
-      >
-        
-        {/* GLOBAL DARK OVERLAY (Ensures readability across all pages) */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
+      <Routes>
+        {/* Auth Group: Centered with sari-sari store background */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login onLoginSuccess={setUser} />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
-        {/* PAGE CONTENT CONTAINER */}
-        <div className="relative z-10 w-full max-w-md mx-4">
-          <Routes>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login onLoginSuccess={(data) => setUser(data)} />} />
-            
-            {/* Protected Route */}
-            <Route 
-              path="/dashboard" 
-              element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} 
-            />
-            
-            {/* Default path */}
-            <Route path="/" element={<Navigate to="/register" />} />
-          </Routes>
-        </div>
-      </div>
+        {/* Pass onLogout to the layout */}
+        <Route element={user ? <DashboardLayout user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}>
+          <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/sales" element={<PointOfSale />} />
+        </Route>
+
+        {/* Default redirect to login */}
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
     </Router>
   );
 }
