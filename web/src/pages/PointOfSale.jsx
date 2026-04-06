@@ -1,18 +1,58 @@
-import { useState } from 'react';
-// Added 'Package' to the import list below
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Search, ShoppingCart, Plus, Minus, Trash2, CheckCircle, Package } from 'lucide-react';
 
-const PointOfSale = () => {
-  const [products] = useState([
-    { id: 1, name: 'Coke 1.5L', price: 75.00, stock: 12, category: 'Beverages' },
-    { id: 2, name: 'Lucky Me! Canton', price: 15.00, stock: 45, category: 'Noodles' },
-    { id: 3, name: 'Red Horse 500ml', price: 120.00, stock: 24, category: 'Beverages' },
-    { id: 4, name: 'Egg (Medium)', price: 8.00, stock: 30, category: 'Fresh' },
-    { id: 5, name: 'Magic Sarap 8g', price: 5.00, stock: 100, category: 'Seasoning' },
-  ]);
-
+const PointOfSale = ({ user }) => {
+  const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 1. Fetch real products from the backend
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/products');
+      setProducts(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // 2. Logic to send the order to OrderController.java
+  const handleCompleteSale = async () => {
+    if (cart.length === 0) return;
+
+    // Structure the data to match your Order and OrderItem entities
+    const orderData = {
+      vendorId: user?.id || 1, // Linking the sale to the current vendor
+      totalAmount: total,
+      items: cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        priceAtSale: item.price
+      }))
+    };
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/orders', orderData);
+      
+      if (response.data.includes("Sale completed")) {
+        alert("Transaction Successful!");
+        setCart([]); // Clear the cart
+        fetchProducts(); // Refresh stock quantities in the UI
+      } else {
+        alert(response.data); // Shows "Insufficient stock" errors from backend
+      }
+    } catch (error) {
+      alert("Error completing sale. Please check backend.");
+    }
+  };
 
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -64,19 +104,20 @@ const PointOfSale = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 pr-2 custom-scrollbar">
-          {filteredProducts.map((product) => (
+          {loading ? (
+             <div className="col-span-full text-center py-10 text-slate-400 font-bold">Loading Inventory...</div>
+          ) : filteredProducts.map((product) => (
             <button 
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="bg-white p-5 rounded-[2rem] ... h-40"
+                className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm hover:border-[#16A394] transition-all h-40 flex flex-col justify-between text-left group"
             >
-                <div>
-                {/* CATEGORY SPAN REMOVED */}
                 <p className="font-bold text-slate-800 mt-2 line-clamp-2">{product.name}</p>
-                </div>
                 <div className="flex justify-between items-end">
-                <p className="text-xl font-black text-slate-800">₱{product.price.toFixed(2)}</p>
-                <p className="text-[10px] text-slate-400 font-medium">Stock: {product.stockQuantity}</p>
+                  <p className="text-xl font-black text-slate-800">₱{product.price.toFixed(2)}</p>
+                  <p className={`text-[10px] font-bold ${product.stockQuantity < 5 ? 'text-rose-500' : 'text-slate-400'}`}>
+                    Stock: {product.stockQuantity}
+                  </p>
                 </div>
             </button>
           ))}
@@ -129,6 +170,7 @@ const PointOfSale = () => {
           </div>
           
           <button 
+            onClick={handleCompleteSale}
             disabled={cart.length === 0}
             className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
