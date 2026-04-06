@@ -7,6 +7,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Inventory from './pages/Inventory';
 import PointOfSale from './pages/PointOfSale'; // Add this import
+import Listahan from './pages/Listahan';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<PointOfSale />} />
+          <Route path="/listahan" element={<Listahan />} />
         </Route>
 
         {/* Default redirect to login */}
