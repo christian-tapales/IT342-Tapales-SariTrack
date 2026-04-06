@@ -11,9 +11,9 @@ public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
-    private Double totalDebt;
+    private Long vendorId;
+    private String fullName;
+    private Double currentDebt;
     private String status; // "Unpaid" or "Partial"
     private LocalDateTime lastUpdate;
 }
