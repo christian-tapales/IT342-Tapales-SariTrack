@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 public class OrderService {
 
     @Autowired
+    private DiscountStrategy discountStrategy;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
@@ -18,8 +21,14 @@ public class OrderService {
 
     @Transactional
     public String completeSale(Order transaction) {
+        // 1. Apply Strategy Pattern for pricing
+        double finalTotal = discountStrategy.apply(transaction.getTotalAmount());
+        transaction.setTotalAmount(finalTotal);
+        
+        // 2. Set the transaction time
         transaction.setTimestamp(LocalDateTime.now());
-
+        
+        // 3. Process items and deduct stock
         for (OrderItem item : transaction.getItems()) {
             Product product = productRepository.findById(item.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -28,11 +37,11 @@ public class OrderService {
                 return "Error: Insufficient stock for " + product.getName();
             }
 
-            // Deduct stock!
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
 
+        // 4. Save the finalized order
         orderRepository.save(transaction);
         return "Sale completed and stock updated!";
     }
