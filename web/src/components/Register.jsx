@@ -5,15 +5,30 @@ import { Mail, User, Lock, Eye, EyeOff, ShoppingCart } from 'lucide-react';
 import Input from './Input'; 
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({
+     name: '', 
+     email: '', 
+     password: '',
+     confirmPassword: ''
+    });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
+
+
+    if(formData.password !== formData.confirmPassword){
+      alert("Passwords do not match!");
+      return;
+    }
+
     try {
-      // Adjusted to match your backend port 8080
-      const response = await axios.post('http://localhost:8080/api/auth/register', formData);
+      // Destructure to avoid sending confirmPassword to the backend
+      const { confirmPassword, ...registerData } = formData;
+      const response = await axios.post('http://localhost:8080/api/auth/register', registerData);
+      
       if (response.data === "User registered successfully!") {
         alert("Registration Successful!");
         navigate('/login');
@@ -67,6 +82,17 @@ const Register = () => {
           placeholder="Password"
           value={formData.password}
           onChange={(e) => setFormData({...formData, password: e.target.value})}
+          showPasswordButton={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          onTogglePassword={() => setShowPassword(!showPassword)}
+        />
+
+        {/* New Confirm Password Field */}
+        <Input 
+          icon={Lock}
+          type={showPassword ? "text" : "password"}
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
           showPasswordButton={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           onTogglePassword={() => setShowPassword(!showPassword)}
         />
