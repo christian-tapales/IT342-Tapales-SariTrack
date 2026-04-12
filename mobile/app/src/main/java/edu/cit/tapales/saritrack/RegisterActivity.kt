@@ -2,9 +2,12 @@ package edu.cit.tapales.saritrack
 
 import android.os.Bundle
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -30,19 +33,35 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
+
         // --- VIEWS ---
         val btnRegister = findViewById<Button>(R.id.btnRegister)
+        btnRegister.isEnabled = false
         val etName = findViewById<EditText>(R.id.etName)
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val etConfirmPassword = findViewById<EditText>(R.id.etConfirmPassword) // Added this
         val tvToLogin = findViewById<TextView>(R.id.tvToLogin)
+        val cbTerms = findViewById<CheckBox>(R.id.cbTerms)
+
+        val tvTermsLink = findViewById<TextView>(R.id.tvTermsLink)
+
+        tvTermsLink.setOnClickListener {
+            val intent = Intent(this, TermsActivity::class.java)
+            startActivity(intent)
+        }
+        // The Checkbox Listener: This is where you put the cbTerms logic
+        cbTerms.setOnCheckedChangeListener { _, isChecked ->
+            // Enable the button only if the checkbox is ticked
+            btnRegister.isEnabled = isChecked
+        }
 
         tvToLogin.setOnClickListener {
             finish()
         }
 
         btnRegister.setOnClickListener {
+
             val name = etName.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
@@ -66,21 +85,36 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener // Stops the code from proceeding to the API call
             }
 
-            // 3. Proceed with Registration if validation passes
+            //3. Check if the checkbox for the terms and conditions are checked
+            if (!cbTerms.isChecked) {
+                Toast.makeText(this, "Please agree to the Terms & Conditions", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // 4. Proceed with Registration if validation passes
             val request = RegisterRequest(name, email, password)
 
-            RetrofitClient.instance.registerUser(request).enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+            RetrofitClient.instance.registerUser(request).enqueue(object : Callback<String> {
+                override fun onResponse(call: Call<String>, response: Response<String>) {
+                    android.util.Log.d("REG_DEBUG", "Status Code: ${response.code()}")
+
                     if (response.isSuccessful) {
-                        val message = response.body()?.string() ?: "Account Created!"
+                        // response.body() is now the actual String: "User registered successfully!"
+                        val message = response.body() ?: "Account Created!"
                         Toast.makeText(this@RegisterActivity, message, Toast.LENGTH_LONG).show()
-                        finish() // Return to login after successful registration
+
+                        // Success! Go back to Login
+                        finish()
                     } else {
-                        Toast.makeText(this@RegisterActivity, "Registration Failed", Toast.LENGTH_SHORT).show()
+                        // This handles the "Error: Email already exists!" string from backend
+                        val errorMsg = response.errorBody()?.string() ?: "Registration Failed"
+                        android.util.Log.e("REG_DEBUG", "Error Body: $errorMsg")
+                        Toast.makeText(this@RegisterActivity, errorMsg, Toast.LENGTH_SHORT).show()
                     }
                 }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                override fun onFailure(call: Call<String>, t: Throwable) {
+                    // This is for actual network crashes (e.g. Laptop is off)
                     Toast.makeText(this@RegisterActivity, "Network Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })

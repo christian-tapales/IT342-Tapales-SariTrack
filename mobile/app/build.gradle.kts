@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
     // Retrofit for network requests
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     // Gson Converter to automatically convert JSON to Kotlin Data Classes
