@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173") // Connects to your React app
+@CrossOrigin(origins = "*") // Connects to your React app
 public class ProductController {
 
     @Autowired
