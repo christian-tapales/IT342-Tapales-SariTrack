@@ -12,6 +12,9 @@ import Listahan from './pages/Listahan';
 function App() {
   const [user, setUser] = useState(null);
 
+  const params = new URLSearchParams(window.location.search);
+  const isRedirectingFromGoogle = params.get('loginSuccess') === 'true';
+
   const handleLogout = () => {
     setUser(null); // This effectively logs the user out
   };
@@ -25,9 +28,16 @@ function App() {
           <Route path="/register" element={<Register />} />
         </Route>
 
-        {/* Pass onLogout to the layout */}
-        <Route element={user ? <DashboardLayout user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}>
-          <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
+        {/* Allow the route if user exists OR if it's a Google redirect */}
+        <Route 
+          element={(user || isRedirectingFromGoogle) ? 
+            <DashboardLayout user={user} onLogout={handleLogout} /> : 
+            <Navigate to="/login" />
+          }
+        >
+
+        {/*Pass onLoginSuccess={setUser} here */}
+          <Route path="/dashboard" element={<Dashboard user={user} onLoginSuccess={setUser} />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<PointOfSale />} />
           <Route path="/listahan" element={<Listahan />} />

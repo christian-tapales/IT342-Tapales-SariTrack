@@ -1,4 +1,6 @@
 import { Search, Wallet, Package, BookOpen, ChevronRight, TrendingUp } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ActionCard = ({ icon: Icon, label, value, subtext, colorClass, btnLabel }) => (
   <div className={`${colorClass} p-6 rounded-[2rem] text-white shadow-lg flex flex-col justify-between h-48 transition-transform hover:scale-[1.02]`}>
@@ -18,7 +20,45 @@ const ActionCard = ({ icon: Icon, label, value, subtext, colorClass, btnLabel })
   </div>
 );
 
-const Dashboard = ({ user }) => {
+const Dashboard = ({ user , onLoginSuccess }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  
+  if (params.get('loginSuccess') === 'true' && !user) {
+    // Read the real name and email from the URL
+    const realName = params.get('name');
+    const realEmail = params.get('email');
+
+    onLoginSuccess({ 
+      name: realName|| "Google User", 
+      email: realEmail || ""
+    });
+    
+    // Clean the URL
+    navigate('/dashboard', { replace: true });
+  }
+}, [location, user, onLoginSuccess, navigate]);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    
+    // If we see the 'auth=google' flag in the URL
+    if (params.get('auth') === 'google') {
+      // In a real app, you'd fetch the user profile from the backend here.
+      // For your assignment, we can simulate the session:
+      const mockUser = { name: "Google User", email: "check-supabase@google.com" };
+      
+      // Update the App.jsx state
+      if (onLoginSuccess) {
+        onLoginSuccess(mockUser);
+      }
+      
+      // Clean up the URL (remove the ?auth=google)
+      navigate('/dashboard', { replace: true });
+    }
+  }, [location, onLoginSuccess, navigate]);
+  
   const transactions = [
     { id: 1, name: 'Red Horse (500ml)', time: '10:30 AM', price: '₱120.00', category: 'Beverages' },
     { id: 2, name: 'Lucky Me! Beef', time: '10:25 AM', price: '₱15.00', category: 'Noodles' },
