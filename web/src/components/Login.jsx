@@ -1,37 +1,50 @@
-import { useState } from 'react';
-import axios from 'axios'; // 1. Added axios import
-import { useNavigate, Link } from 'react-router-dom'; // 2. Added useNavigate import
+import axios from 'axios';
 import { Mail, Lock, ShoppingCart, Eye, EyeOff } from 'lucide-react';
 import Input from './Input';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const Login = ({ onLoginSuccess }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate(); // 3. Initialized navigate hook
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // 4. Added the logic to connect to your Spring Boot backend
+  // --- CATCH GOOGLE REDIRECT HERE ---
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('loginSuccess') === 'true') {
+      // Simulate user data since backend session is handled by cookies
+      const mockUser = { 
+        name: "Google User", 
+        email: "Synchronized with Supabase" 
+      };
+      
+      onLoginSuccess(mockUser);
+      navigate('/dashboard');
+    }
+  }, [location, onLoginSuccess, navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Send credentials to AuthController.java
       const response = await axios.post('http://localhost:8080/api/auth/login', credentials);
-      
-      // Based on your backend, a successful login returns a string containing "successful"
       if (response.data.includes("successful")) {
-        // Extract the name from "Login successful! Welcome [Name]"
         const userName = response.data.split("Welcome ")[1];
-        
-        // CRITICAL: This updates the state in App.jsx to unlock the dashboard
         onLoginSuccess({ email: credentials.email, name: userName });
-        
-        // Redirect to the dashboard
         navigate('/dashboard');
       } else {
         alert(response.data);
       }
     } catch (error) {
-      alert("Login failed. Make sure your Spring Boot backend is running on port 8080.");
+      alert("Login failed. Make sure your Spring Boot backend is running.");
     }
+  };
+
+  // --- ADDED GOOGLE OAUTH LOGIC ---
+  const handleGoogleLogin = () => {
+    // This directs the browser to the Spring Boot OAuth entry point we configured
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
   return (
@@ -46,7 +59,6 @@ const Login = ({ onLoginSuccess }) => {
         <p className="text-slate-500 text-sm">Sign in to manage your store</p>
       </div>
 
-      {/* 5. Added onSubmit={handleLogin} to the form */}
       <form onSubmit={handleLogin} className="space-y-5">
         <Input 
           icon={Mail}
@@ -68,6 +80,21 @@ const Login = ({ onLoginSuccess }) => {
           Login
         </button>
       </form>
+
+      {/* --- ADDED GOOGLE DIVIDER AND BUTTON --- */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-300"></span></div>
+        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-500">Or continue with</span></div>
+      </div>
+
+      <button 
+        onClick={handleGoogleLogin}
+        type="button"
+        className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 rounded-2xl shadow-sm transition-all active:scale-95"
+      >
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+        Google Account
+      </button>
 
       <p className="text-center text-sm text-slate-600 mt-8">
         Need an account? <Link to="/register" className="text-[#16A394] font-bold hover:underline">Register</Link>
