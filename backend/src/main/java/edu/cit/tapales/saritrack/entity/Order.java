@@ -14,6 +14,10 @@ public class Order {
     private Long id;
 
     private Double totalAmount;
+    
+    @Column(name = "vendor_id")
+    private Long vendorId;
+    
     private LocalDateTime timestamp;
 
     // A transaction has many items (e.g., 2 Cokes, 1 Bread)

@@ -8,10 +8,11 @@ const PointOfSale = ({ user }) => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch real products from the backend
+  // 1. Fetch real products from the backend (filtered by vendor)
   const fetchProducts = async () => {
+    if (!user?.id) return;
     try {
-      const response = await axios.get('http://localhost:8080/api/products');
+      const response = await axios.get(`http://localhost:8080/api/products?vendorId=${user.id}`);
       setProducts(response.data);
       setLoading(false);
     } catch (error) {
@@ -21,8 +22,10 @@ const PointOfSale = ({ user }) => {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (user?.id) {
+      fetchProducts();
+    }
+  }, [user]);
 
   // 2. Logic to send the order to OrderController.java
   const handleCompleteSale = async () => {
@@ -30,7 +33,7 @@ const PointOfSale = ({ user }) => {
 
     // Structure the data to match your Order and OrderItem entities
     const orderData = {
-      vendorId: user?.id || 1, // Linking the sale to the current vendor
+      vendorId: user?.id, // Securely linking the sale to the current vendor
       totalAmount: total,
       items: cart.map(item => ({
         productId: item.id,
@@ -50,18 +53,27 @@ const PointOfSale = ({ user }) => {
         alert(response.data); // Shows "Insufficient stock" errors from backend
       }
     } catch (error) {
-      alert("Error completing sale. Please check backend.");
+      const errorMsg = error.response?.data || "Error completing sale. Please check backend.";
+      alert(errorMsg);
     }
   };
 
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
+      if (existingItem.quantity < product.stockQuantity) {
+        setCart(cart.map(item => 
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        ));
+      } else {
+        alert(`Sorry, only ${product.stockQuantity} units of ${product.name} available.`);
+      }
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      if (product.stockQuantity > 0) {
+        setCart([...cart, { ...product, quantity: 1 }]);
+      } else {
+        alert("This item is out of stock!");
+      }
     }
   };
 
@@ -69,7 +81,11 @@ const PointOfSale = ({ user }) => {
     setCart(cart.map(item => {
       if (item.id === id) {
         const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : item;
+        // Check both min (1) and max (stockQuantity)
+        if (newQty > 0 && newQty <= item.stockQuantity) {
+          return { ...item, quantity: newQty };
+        }
+        return item;
       }
       return item;
     }));
@@ -103,23 +119,32 @@ const PointOfSale = ({ user }) => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 pr-2 custom-scrollbar content-start">
           {loading ? (
              <div className="col-span-full text-center py-10 text-slate-400 font-bold">Loading Inventory...</div>
+          ) : filteredProducts.length === 0 ? (
+             <div className="col-span-full text-center py-10 text-slate-400 font-bold italic">No products found.</div>
           ) : filteredProducts.map((product) => (
-            <button 
-                key={product.id}
-                onClick={() => addToCart(product)}
-                className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm hover:border-[#16A394] transition-all h-40 flex flex-col justify-between text-left group"
+            <div 
+              key={product.id} 
+              onClick={() => addToCart(product)}
+              className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-teal-500/30 transition-all cursor-pointer group active:scale-95 overflow-hidden h-fit"
             >
-                <p className="font-bold text-slate-800 mt-2 line-clamp-2">{product.name}</p>
-                <div className="flex justify-between items-end">
-                  <p className="text-xl font-black text-slate-800">₱{product.price.toFixed(2)}</p>
-                  <p className={`text-[10px] font-bold ${product.stockQuantity < 5 ? 'text-rose-500' : 'text-slate-400'}`}>
-                    Stock: {product.stockQuantity}
-                  </p>
-                </div>
-            </button>
+              <div className="h-24 w-full bg-slate-50 rounded-2xl mb-3 flex items-center justify-center text-teal-600 overflow-hidden">
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                ) : (
+                  <Package size={32} className="opacity-20" />
+                )}
+              </div>
+              <h3 className="font-bold text-slate-800 text-sm truncate">{product.name}</h3>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-teal-600 font-black text-sm">₱{(product.price || 0).toFixed(2)}</p>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stockQuantity < 5 ? 'bg-rose-50 text-rose-500' : 'bg-slate-50 text-slate-400'}`}>
+                  qty: {product.stockQuantity}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -152,7 +177,13 @@ const PointOfSale = ({ user }) => {
                 <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl">
                   <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394]"><Minus size={14}/></button>
                   <span className="text-sm font-black text-slate-700 w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, 1)} className="text-slate-400 hover:text-[#16A394]"><Plus size={14}/></button>
+                  <button 
+                    onClick={() => updateQuantity(item.id, 1)} 
+                    disabled={item.quantity >= item.stockQuantity}
+                    className={`transition-colors ${item.quantity >= item.stockQuantity ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-[#16A394]'}`}
+                  >
+                    <Plus size={14}/>
+                  </button>
                 </div>
 
                 <button onClick={() => removeFromCart(item.id)} className="ml-3 p-2 text-slate-300 hover:text-rose-500 transition-colors">
