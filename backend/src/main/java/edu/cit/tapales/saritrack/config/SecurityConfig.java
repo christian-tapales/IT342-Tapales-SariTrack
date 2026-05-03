@@ -17,6 +17,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private edu.cit.tapales.saritrack.repository.UserRepository userRepository;
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -61,6 +64,13 @@ public class SecurityConfig {
         if (name == null) name = "Google User";
         if (email == null) email = "unknown@google.com";
 
+        // Fetch user from DB to get their role (for Google Login)
+        String role = "VENDOR"; // Default
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            role = userOpt.get().getRole();
+        }
+
         // Determine port based on request origin (defaulting to 5173)
         String origin = request.getHeader("Origin");
         String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174" : "http://localhost:5173";
@@ -68,7 +78,8 @@ public class SecurityConfig {
         // Construct redirect URL with real parameters
         String redirectUrl = baseUrl + "/dashboard?loginSuccess=true"
                 + "&name=" + java.net.URLEncoder.encode(name, "UTF-8")
-                + "&email=" + java.net.URLEncoder.encode(email, "UTF-8");
+                + "&email=" + java.net.URLEncoder.encode(email, "UTF-8")
+                + "&role=" + role;
 
         response.sendRedirect(redirectUrl);
     })

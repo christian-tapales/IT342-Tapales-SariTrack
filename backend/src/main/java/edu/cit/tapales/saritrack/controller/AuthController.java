@@ -27,10 +27,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User loginRequest) {
+    public Object login(@RequestBody User loginRequest) {
         return userRepository.findByEmail(loginRequest.getEmail())
-            .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
-            .map(user -> "Login successful! Welcome " + user.getName())
-            .orElse("Error: Invalid credentials.");
+                .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+                .map(user -> {
+                    user.setPassword(null); // Safety: Don't send the hashed password back to frontend!
+                    return (Object) user;
+                })
+                .orElse("Error: Invalid credentials.");
+    }
+
+    @GetMapping("/vendors")
+    public java.util.List<User> getAllVendors() {
+        return userRepository.findAll().stream()
+                .filter(user -> "VENDOR".equals(user.getRole()))
+                .peek(user -> user.setPassword(null)) // Safety first
+                .collect(java.util.stream.Collectors.toList());
     }
 }

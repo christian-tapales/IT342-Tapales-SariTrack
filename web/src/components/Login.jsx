@@ -14,13 +14,13 @@ const Login = ({ onLoginSuccess }) => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('loginSuccess') === 'true') {
-      // Simulate user data since backend session is handled by cookies
-      const mockUser = { 
-        name: "Google User", 
-        email: "Synchronized with Supabase" 
+      const userData = { 
+        name: params.get('name') || "Google User", 
+        email: params.get('email') || "Synchronized",
+        role: params.get('role') || "VENDOR"
       };
       
-      onLoginSuccess(mockUser);
+      onLoginSuccess(userData);
       navigate('/dashboard');
     }
   }, [location, onLoginSuccess, navigate]);
@@ -29,12 +29,13 @@ const Login = ({ onLoginSuccess }) => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8080/api/auth/login', credentials);
-      if (response.data.includes("successful")) {
-        const userName = response.data.split("Welcome ")[1];
-        onLoginSuccess({ email: credentials.email, name: userName });
+      
+      // Now handling JSON object instead of String
+      if (response.data && typeof response.data === 'object') {
+        onLoginSuccess(response.data);
         navigate('/dashboard');
       } else {
-        alert(response.data);
+        alert(response.data || "Invalid response from server");
       }
     } catch (error) {
       alert("Login failed. Make sure your Spring Boot backend is running.");

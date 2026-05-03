@@ -6,8 +6,11 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Inventory from './pages/Inventory';
-import PointOfSale from './pages/PointOfSale'; // Add this import
+import PointOfSale from './pages/PointOfSale';
 import Listahan from './pages/Listahan';
+import Vendors from './pages/admin/Vendors';
+import GlobalProducts from './pages/admin/GlobalProducts';
+import Settings from './pages/admin/Settings';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -29,18 +32,23 @@ function App() {
         </Route>
 
         {/* Allow the route if user exists OR if it's a Google redirect */}
-        <Route 
-          element={(user || isRedirectingFromGoogle) ? 
-            <DashboardLayout user={user} onLogout={handleLogout} /> : 
+        <Route
+          element={(user || isRedirectingFromGoogle) ?
+            <DashboardLayout user={user} onLogout={handleLogout} /> :
             <Navigate to="/login" />
           }
         >
 
-        {/*Pass onLoginSuccess={setUser} here */}
+          {/*Pass onLoginSuccess={setUser} here */}
           <Route path="/dashboard" element={<Dashboard user={user} onLoginSuccess={setUser} />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<PointOfSale />} />
           <Route path="/listahan" element={<Listahan />} />
+
+          {/* Admin Specific Routes */}
+          <Route path="/admin/vendors" element={<Vendors />} />
+          <Route path="/admin/products" element={<GlobalProducts />} />
+          <Route path="/admin/settings" element={<Settings />} />
         </Route>
 
         {/* Default redirect to login */}
