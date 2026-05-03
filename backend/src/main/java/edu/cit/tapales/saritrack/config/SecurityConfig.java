@@ -32,7 +32,7 @@ public class SecurityConfig {
         // 2. Configure CORS
         .cors(cors -> cors.configurationSource(request -> {
             var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-            corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
+            corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174"));
             corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             corsConfiguration.setAllowedHeaders(List.of("*"));
             corsConfiguration.setAllowCredentials(true); // Needed for OAuth sessions
@@ -61,8 +61,12 @@ public class SecurityConfig {
         if (name == null) name = "Google User";
         if (email == null) email = "unknown@google.com";
 
+        // Determine port based on request origin (defaulting to 5173)
+        String origin = request.getHeader("Origin");
+        String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174" : "http://localhost:5173";
+
         // Construct redirect URL with real parameters
-        String redirectUrl = "http://localhost:5173/dashboard?loginSuccess=true"
+        String redirectUrl = baseUrl + "/dashboard?loginSuccess=true"
                 + "&name=" + java.net.URLEncoder.encode(name, "UTF-8")
                 + "&email=" + java.net.URLEncoder.encode(email, "UTF-8");
 
