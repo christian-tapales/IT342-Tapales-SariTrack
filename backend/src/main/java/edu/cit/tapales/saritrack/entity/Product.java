@@ -1,25 +1,31 @@
 package edu.cit.tapales.saritrack.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor; // Add this
-import lombok.Builder;        // Add this
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;  // Add this
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "products")
 @Data
-@Builder           // Enables the Pattern
-@AllArgsConstructor // Required for Builder
-@NoArgsConstructor  // Required for JPA
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "vendor_id")
     private Long vendorId;
+    
     private String name;
     private String barcode;
     private Double price;
     private Integer stockQuantity; 
+    private String category;
+    
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 }
