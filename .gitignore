@@ -8,10 +8,11 @@
 .env
 .env.*
 !.env.example
+application-secrets.properties
+backend/src/main/resources/application-secrets.properties
 
 # Backend (Maven/Spring Boot)
 backend/target/
-backend/.env
 backend/.mvn/wrapper/maven-wrapper.jar
 backend/*.jar
 backend/*.war
