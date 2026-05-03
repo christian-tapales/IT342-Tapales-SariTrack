@@ -31,10 +31,16 @@ public class OrderService {
         // 3. Process items and deduct stock
         for (OrderItem item : transaction.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProductId()));
 
+            // SaaS Hardening: Verify product ownership
+            if (!product.getVendorId().equals(transaction.getVendorId())) {
+                throw new RuntimeException("Security Error: Product " + product.getName() + " does not belong to this vendor!");
+            }
+
+            // Atomic Hardening: Use Exception to trigger @Transactional rollback
             if (product.getStockQuantity() < item.getQuantity()) {
-                return "Error: Insufficient stock for " + product.getName();
+                throw new RuntimeException("Insufficient stock for " + product.getName());
             }
 
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());

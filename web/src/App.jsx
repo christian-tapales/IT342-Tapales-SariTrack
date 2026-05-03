@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './components/Login';
@@ -13,14 +13,44 @@ import GlobalProducts from './pages/admin/GlobalProducts';
 import Settings from './pages/admin/Settings';
 
 function App() {
-  const [user, setUser] = useState(null);
+  // Load user from localStorage on startup
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('sariTrack_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // Save user to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('sariTrack_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('sariTrack_user');
+    }
+  }, [user]);
 
   const params = new URLSearchParams(window.location.search);
   const isRedirectingFromGoogle = params.get('loginSuccess') === 'true';
 
   const handleLogout = () => {
-    setUser(null); // This effectively logs the user out
+    setUser(null);
+    localStorage.removeItem('sariTrack_user');
   };
+
+  // Google Login Handshake (Global)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('loginSuccess') === 'true' && !user) {
+      const googleUser = {
+        id: params.get('id'), // Crucial: Extract the ID
+        name: params.get('name') || "Google User",
+        email: params.get('email') || "",
+        role: params.get('role') || "VENDOR"
+      };
+      setUser(googleUser);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [user]);
 
   return (
     <Router>
@@ -41,9 +71,9 @@ function App() {
 
           {/*Pass onLoginSuccess={setUser} here */}
           <Route path="/dashboard" element={<Dashboard user={user} onLoginSuccess={setUser} />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/sales" element={<PointOfSale />} />
-          <Route path="/listahan" element={<Listahan />} />
+          <Route path="/inventory" element={<Inventory user={user} />} />
+          <Route path="/sales" element={<PointOfSale user={user} />} />
+          <Route path="/listahan" element={<Listahan user={user} />} />
 
           {/* Admin Specific Routes */}
           <Route path="/admin/vendors" element={<Vendors />} />
