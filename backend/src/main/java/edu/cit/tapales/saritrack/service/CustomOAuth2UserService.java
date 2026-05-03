@@ -25,6 +25,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = googleUser.getAttribute("email");
         String name = googleUser.getAttribute("name");
 
+        if (name == null) name = "Google User";
+
         // 2. Sync with Supabase: Save user if they don't exist
         Optional<User> existingUser = userRepository.findByEmail(email);
         

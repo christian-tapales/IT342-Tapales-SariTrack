@@ -54,9 +54,12 @@ public class SecurityConfig {
     .successHandler((request, response, authentication) -> {
         var oAuth2User = (org.springframework.security.oauth2.core.user.OAuth2User) authentication.getPrincipal();
         
-        // Extract real data from Google
+        // Extract real data from Google (with null safety)
         String name = oAuth2User.getAttribute("name");
         String email = oAuth2User.getAttribute("email");
+
+        if (name == null) name = "Google User";
+        if (email == null) email = "unknown@google.com";
 
         // Construct redirect URL with real parameters
         String redirectUrl = "http://localhost:5173/dashboard?loginSuccess=true"
