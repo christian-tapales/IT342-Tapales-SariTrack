@@ -11,6 +11,8 @@ import Listahan from './pages/Listahan';
 import Vendors from './pages/admin/Vendors';
 import GlobalProducts from './pages/admin/GlobalProducts';
 import Settings from './pages/admin/Settings';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
 
 function App() {
   // Load user from localStorage on startup
@@ -79,6 +81,8 @@ function App() {
           <Route path="/admin/vendors" element={<Vendors />} />
           <Route path="/admin/products" element={<GlobalProducts />} />
           <Route path="/admin/settings" element={<Settings />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-cancel" element={<PaymentCancel />} />
         </Route>
 
         {/* Default redirect to login */}
