@@ -19,6 +19,8 @@ public class Order {
     private Long vendorId;
     
     private LocalDateTime timestamp;
+    
+    private String status = "PENDING"; // PENDING, PAID, CANCELLED
 
     // A transaction has many items (e.g., 2 Cokes, 1 Bread)
     @OneToMany(cascade = CascadeType.ALL)
