@@ -27,14 +27,14 @@ const PointOfSale = ({ user }) => {
     }
   }, [user]);
 
-  // 2. Logic to send the order to OrderController.java
+  // 2. Logic to send the order to OrderController.java (CASH)
   const handleCompleteSale = async () => {
     if (cart.length === 0) return;
 
-    // Structure the data to match your Order and OrderItem entities
     const orderData = {
-      vendorId: user?.id, // Securely linking the sale to the current vendor
+      vendorId: user?.id,
       totalAmount: total,
+      status: 'PAID', // Cash is paid immediately
       items: cart.map(item => ({
         productId: item.id,
         quantity: item.quantity,
@@ -45,15 +45,56 @@ const PointOfSale = ({ user }) => {
     try {
       const response = await axios.post('http://localhost:8080/api/orders', orderData);
       
-      if (response.data.includes("Sale completed")) {
+      if (response.data.id) {
         alert("Transaction Successful!");
-        setCart([]); // Clear the cart
-        fetchProducts(); // Refresh stock quantities in the UI
+        setCart([]);
+        fetchProducts();
       } else {
-        alert(response.data); // Shows "Insufficient stock" errors from backend
+        alert(response.data);
       }
     } catch (error) {
-      const errorMsg = error.response?.data || "Error completing sale. Please check backend.";
+      const errorMsg = error.response?.data || "Error completing sale.";
+      alert(errorMsg);
+    }
+  };
+
+  // 3. Logic for PayMongo Digital Payment (PENDING)
+  const handleDigitalPayment = async () => {
+    if (cart.length === 0) return;
+
+    const orderData = {
+      vendorId: user?.id,
+      totalAmount: total,
+      status: 'PENDING', // Wait for webhook to deduct stock
+      items: cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        priceAtSale: item.price
+      }))
+    };
+
+    try {
+      const orderResponse = await axios.post('http://localhost:8080/api/orders', orderData);
+      const savedOrder = orderResponse.data;
+
+      if (!savedOrder.id) {
+        alert("Failed to create order.");
+        return;
+      }
+
+      const paymentResponse = await axios.post('http://localhost:8080/api/payments/create-session', {
+        amount: total,
+        orderId: savedOrder.id,
+        description: `Order #${savedOrder.id} from SariTrack`
+      });
+
+      if (paymentResponse.data.checkout_url) {
+        window.location.href = paymentResponse.data.checkout_url;
+      } else {
+        alert("Failed to initiate digital payment.");
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data || "Error initiating payment.";
       alert(errorMsg);
     }
   };
@@ -81,7 +122,6 @@ const PointOfSale = ({ user }) => {
     setCart(cart.map(item => {
       if (item.id === id) {
         const newQty = item.quantity + delta;
-        // Check both min (1) and max (stockQuantity)
         if (newQty > 0 && newQty <= item.stockQuantity) {
           return { ...item, quantity: newQty };
         }
@@ -103,8 +143,6 @@ const PointOfSale = ({ user }) => {
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col lg:flex-row gap-6 pb-6 animate-in fade-in duration-500">
-      
-      {/* Left Side: Product Selection */}
       <div className="lg:w-2/3 flex flex-col gap-6">
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100">
           <div className="relative group">
@@ -149,7 +187,6 @@ const PointOfSale = ({ user }) => {
         </div>
       </div>
 
-      {/* Right Side: Cart Summary */}
       <div className="lg:w-1/3 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
         <div className="p-8 border-b border-slate-50">
           <div className="flex items-center gap-3">
@@ -199,15 +236,25 @@ const PointOfSale = ({ user }) => {
             <span className="text-xl font-black text-slate-800">Total Bill</span>
             <span className="text-3xl font-black text-[#16A394]">₱{total.toFixed(2)}</span>
           </div>
-          
-          <button 
-            onClick={handleCompleteSale}
-            disabled={cart.length === 0}
-            className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-          >
-            <CheckCircle size={20} />
-            Complete Sale
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleCompleteSale}
+              disabled={cart.length === 0}
+              className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <CheckCircle size={20} />
+              Complete Sale (Cash)
+            </button>
+
+            <button 
+              onClick={handleDigitalPayment}
+              disabled={cart.length === 0}
+              className="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <ShoppingCart size={20} />
+              Pay via Digital Wallet
+            </button>
+          </div>
         </div>
       </div>
     </div>

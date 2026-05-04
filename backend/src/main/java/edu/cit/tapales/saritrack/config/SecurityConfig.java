@@ -44,11 +44,8 @@ public class SecurityConfig {
 
                 // 3. Define URLs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/auth/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**")
-                        .permitAll()
-                        .requestMatchers("/api/products/**", "/api/orders/**", "/api/customers/**",
-                                "/api/vendor/dashboard/**")
-                        .permitAll()
+                        .requestMatchers("/", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/api/products/**", "/api/orders/**", "/api/customers/**", "/api/vendor/dashboard/**").permitAll()
                         .anyRequest().authenticated())
 
                 // 4. PREVENT REDIRECTS FOR API CALLS (Return 401 instead of 302)

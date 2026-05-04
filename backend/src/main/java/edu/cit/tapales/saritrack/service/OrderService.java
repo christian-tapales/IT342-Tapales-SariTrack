@@ -20,7 +20,7 @@ public class OrderService {
     private ProductRepository productRepository;
 
     @Transactional
-    public String completeSale(Order transaction) {
+    public Order completeSale(Order transaction) {
         // 1. Apply Strategy Pattern for pricing
         double finalTotal = discountStrategy.apply(transaction.getTotalAmount());
         transaction.setTotalAmount(finalTotal);
@@ -28,17 +28,38 @@ public class OrderService {
         // 2. Set the transaction time
         transaction.setTimestamp(LocalDateTime.now());
         
-        // 3. Process items and deduct stock
+        // 3. For Cash sales, deduct stock immediately and set status to PAID
+        if ("PAID".equals(transaction.getStatus())) {
+            deductStock(transaction);
+        }
+        
+        // 4. Save the finalized order
+        return orderRepository.save(transaction);
+    }
+
+    @Transactional
+    public void finalizeDigitalOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        if ("PAID".equals(order.getStatus())) {
+            return; // Already processed
+        }
+
+        deductStock(order);
+        order.setStatus("PAID");
+        orderRepository.save(order);
+    }
+
+    private void deductStock(Order transaction) {
         for (OrderItem item : transaction.getItems()) {
             Product product = productRepository.findById(item.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProductId()));
 
-            // SaaS Hardening: Verify product ownership
             if (!product.getVendorId().equals(transaction.getVendorId())) {
                 throw new RuntimeException("Security Error: Product " + product.getName() + " does not belong to this vendor!");
             }
 
-            // Atomic Hardening: Use Exception to trigger @Transactional rollback
             if (product.getStockQuantity() < item.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for " + product.getName());
             }
@@ -46,9 +67,5 @@ public class OrderService {
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
-
-        // 4. Save the finalized order
-        orderRepository.save(transaction);
-        return "Sale completed and stock updated!";
     }
 }

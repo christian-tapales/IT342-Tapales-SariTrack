@@ -15,10 +15,10 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<String> placeOrder(@RequestBody Order order) {
+    public ResponseEntity<?> placeOrder(@RequestBody Order order) {
         try {
-            String result = orderService.completeSale(order);
-            return ResponseEntity.ok(result);
+            Order savedOrder = orderService.completeSale(order);
+            return ResponseEntity.ok(savedOrder);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
