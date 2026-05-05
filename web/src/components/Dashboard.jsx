@@ -35,6 +35,16 @@ const Dashboard = ({ user }) => {
     topSelling: [],
     weeklySales: []
   });
+  const [platformStats, setPlatformStats] = useState({
+    totalPlatformSales: 0,
+    totalVendors: 0,
+    totalSKUs: 0,
+    totalStock: 0,
+    systemHealth: 99.9,
+    weeklySales: [],
+    topVendors: [],
+    recentTransactions: []
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
@@ -49,7 +59,19 @@ const Dashboard = ({ user }) => {
     }
   };
 
+  const fetchPlatformStats = async () => {
+    try {
+      const response = await api.get('/admin/stats');
+      setPlatformStats(response.data);
+    } catch (error) {
+      console.error("Failed to fetch platform stats", error);
+    }
+  };
+
   useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      fetchPlatformStats();
+    }
     fetchStats();
   }, [user]);
 
@@ -101,94 +123,104 @@ const Dashboard = ({ user }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <ActionCard
           icon={Wallet}
-          label={isAdmin ? "Total Platform Sales" : "Today's Sales"}
-          value={isAdmin ? "₱154,200.00" : `₱${(stats.todaySales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-          subtext={isAdmin ? "Aggregated store revenue" : "Confirmed payments only"}
+          label={isAdmin ? "Lifetime Platform Sales" : "Today's Sales"}
+          value={isAdmin ? `₱${(platformStats.totalPlatformSales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : `₱${(stats.todaySales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          subtext={isAdmin ? "Total platform revenue (All-Time)" : "Confirmed payments only"}
           colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-[#16A394]"}
           btnLabel={isAdmin ? "Audit" : "POS"}
-          onClick={() => navigate('/sales')}
+          onClick={() => navigate(isAdmin ? '/admin/vendors' : '/sales')}
         />
         <ActionCard
           icon={Package}
           label={isAdmin ? "Active Vendors" : "Low Stock Alert"}
-          value={isAdmin ? "1,245 Stores" : `${stats.lowStockCount} Items`}
+          value={isAdmin ? `${platformStats.totalVendors} Stores` : `${stats.lowStockCount} Items`}
           subtext={isAdmin ? "Current onboarded sellers" : "Requires attention"}
           colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-rose-500"}
           btnLabel={isAdmin ? "Manage" : "Check"}
-          onClick={() => navigate('/inventory')}
+          onClick={() => navigate(isAdmin ? '/admin/vendors' : '/inventory')}
         />
         <ActionCard
           icon={BookOpen}
           label={isAdmin ? "System Health" : "Listahan Overview"}
-          value={isAdmin ? "99.9%" : `₱${(stats.totalDebt || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          value={isAdmin ? `${platformStats.systemHealth}%` : `₱${(stats.totalDebt || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
           subtext={isAdmin ? "API & Database Uptime" : "Total active credits"}
           colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-amber-400"}
-          btnLabel={isAdmin ? "Open" : "Open"}
-          onClick={() => navigate('/listahan')}
+          btnLabel={isAdmin ? "View" : "Open"}
+          onClick={() => navigate(isAdmin ? '/admin/settings' : '/listahan')}
         />
       </div>
 
       {/* Sales Analytics Chart */}
-      {!isAdmin && (
-        <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl space-y-6">
-          <div className="flex justify-between items-end">
-            <div>
-              <h3 className="text-xl font-bold text-slate-800">Weekly Revenue</h3>
-              <p className="text-sm text-slate-500 font-medium">Sales performance trend</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">Estimated Week Total</p>
-              <p className="text-2xl font-black text-[#16A394]">
-                ₱{(stats.weeklySales || []).reduce((acc, curr) => acc + (curr.sales || 0), 0).toLocaleString()}
-              </p>
-            </div>
+      <div className={`${isAdmin ? 'bg-slate-900 border border-white/5' : 'bg-white border border-slate-100'} p-8 rounded-[3rem] shadow-xl space-y-6`}>
+        <div className="flex justify-between items-end">
+          <div>
+            <h3 className={`text-xl font-bold ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
+              {isAdmin ? "Global Platform Revenue" : "Weekly Revenue"}
+            </h3>
+            <p className="text-sm text-slate-500 font-medium">
+              {isAdmin ? "Aggregated sales trend across all nodes" : "Sales performance trend"}
+            </p>
           </div>
-          
-          <div className="w-full mt-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={stats.weeklySales || []}>
-                <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16A394" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#16A394" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="day" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 600}}
-                  dy={10}
-                />
-                <YAxis hide={true} />
-                <Tooltip 
-                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
-                  formatter={(value) => [`₱${value.toLocaleString()}`, 'Sales']}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="sales" 
-                  stroke="#16A394" 
-                  strokeWidth={4}
-                  fillOpacity={1} 
-                  fill="url(#colorSales)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="text-right">
+            <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">
+              {isAdmin ? "7-Day Platform Total" : "Estimated Week Total"}
+            </p>
+            <p className={`text-2xl font-black ${isAdmin ? 'text-teal-400' : 'text-[#16A394]'}`}>
+              ₱{((isAdmin ? platformStats.weeklySales : stats.weeklySales) || []).reduce((acc, curr) => acc + (curr.sales || 0), 0).toLocaleString()}
+            </p>
           </div>
         </div>
-      )}
+        
+        <div className="w-full mt-4">
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={(isAdmin ? platformStats.weeklySales : stats.weeklySales) || []}>
+              <defs>
+                <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={isAdmin ? "#2DD4BF" : "#16A394"} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={isAdmin ? "#2DD4BF" : "#16A394"} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isAdmin ? "#1e293b" : "#f1f5f9"} />
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 600}}
+                dy={10}
+              />
+              <YAxis hide={true} />
+              <Tooltip 
+                contentStyle={{
+                  borderRadius: '16px', 
+                  border: 'none', 
+                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                  backgroundColor: isAdmin ? '#0f172a' : '#ffffff',
+                  color: isAdmin ? '#f8fafc' : '#1e293b'
+                }}
+                formatter={(value) => [`₱${value.toLocaleString()}`, 'Sales']}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="sales" 
+                stroke={isAdmin ? "#2DD4BF" : "#16A394"} 
+                strokeWidth={4}
+                fillOpacity={1} 
+                fill="url(#colorSales)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Activity Section */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center px-2">
             <h3 className={`text-xl font-bold ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
-              {isAdmin ? "System Activity" : "Recent Transactions"}
+              {isAdmin ? "Global Platform Activity" : "Recent Transactions"}
             </h3>
             <button 
-              onClick={() => navigate('/transactions')}
+              onClick={() => navigate(isAdmin ? '/admin/vendors' : '/transactions')}
               className="text-[#16A394] text-sm font-bold hover:underline"
             >
               See all
@@ -197,18 +229,21 @@ const Dashboard = ({ user }) => {
 
           <div className={`${isAdmin ? 'bg-slate-900/50 border border-white/5' : 'bg-white border border-slate-100'} rounded-[3rem] shadow-xl overflow-hidden`}>
             <div className={`divide-y ${isAdmin ? 'divide-white/5' : 'divide-slate-50'}`}>
-              {(stats.recentTransactions || []).length === 0 ? (
-                <div className="p-10 text-center text-slate-400 font-medium italic">No recent transactions.</div>
-              ) : stats.recentTransactions.map((txn) => (
+              {((isAdmin ? platformStats.recentTransactions : stats.recentTransactions) || []).length === 0 ? (
+                <div className="p-10 text-center text-slate-400 font-medium italic">No recent activity.</div>
+              ) : ((isAdmin ? platformStats.recentTransactions : stats.recentTransactions) || []).map((txn) => (
                 <div key={txn.id} className={`p-6 flex items-center justify-between transition-colors cursor-pointer group ${isAdmin ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                   <div className="flex items-center gap-4">
                     <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-bold transition-colors ${isAdmin ? 'bg-slate-800 text-teal-400' : 'bg-slate-50 text-[#16A394]'}`}>
                       #{txn.id}
                     </div>
                     <div>
-                      <p className={`font-bold ${isAdmin ? 'text-slate-200' : 'text-slate-800'}`}>Transaction #{txn.id}</p>
+                      <p className={`font-bold ${isAdmin ? 'text-slate-200' : 'text-slate-800'}`}>
+                        {isAdmin ? `Order #${txn.id}` : `Transaction #${txn.id}`}
+                      </p>
                       <p className="text-xs text-slate-500 font-medium">
                         {new Date(txn.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {isAdmin && ` • Vendor ID: ${txn.vendorId}`}
                       </p>
                     </div>
                   </div>
@@ -222,36 +257,44 @@ const Dashboard = ({ user }) => {
           </div>
         </div>
 
-        {/* Top Selling Section */}
+        {/* Top Selling Section / Vendor Performance */}
         <div className="space-y-4">
           <h3 className={`text-xl font-bold px-2 ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
-            {isAdmin ? "Node Performance" : "Top Selling Items"}
+            {isAdmin ? "Top Vendors" : "Top Selling Items"}
           </h3>
           <div className={`${isAdmin ? 'bg-slate-900/50 border border-white/5' : 'bg-white border border-slate-100'} p-8 rounded-[3rem] shadow-xl space-y-6`}>
             {isAdmin ? (
-              [
-                { name: 'API Server', sold: 94, color: 'bg-teal-400' },
-                { name: 'Database', sold: 88, color: 'bg-blue-400' },
-                { name: 'Auth Node', sold: 99, color: 'bg-emerald-400' },
-              ].map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className={`font-bold ${isAdmin ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
-                    <span className="font-black text-slate-500">{item.sold}%</span>
-                  </div>
-                  <div className={`h-2 w-full rounded-full overflow-hidden ${isAdmin ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                    <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: `${item.sold}%` }}></div>
-                  </div>
-                </div>
-              ))
+              (platformStats.topVendors || []).length === 0 ? (
+                <div className="text-center text-slate-400 py-10 italic">No vendor data yet.</div>
+              ) : (
+                platformStats.topVendors.map((item, index) => {
+                  const colors = ['bg-teal-400', 'bg-blue-400', 'bg-emerald-400', 'bg-amber-400', 'bg-rose-400'];
+                  const maxSales = platformStats.topVendors[0].sales || 1;
+                  const percentage = ((item.sales || 0) / maxSales) * 100;
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold text-slate-300">{item.name}</span>
+                        <span className="font-black text-teal-400">₱{item.sales?.toLocaleString()}</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full overflow-hidden bg-slate-800">
+                        <div
+                          className={`h-full ${colors[index % colors.length]} rounded-full transition-all duration-1000`}
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })
+              )
             ) : (
               (stats.topSelling || []).length === 0 ? (
                 <div className="text-center text-slate-400 py-10 italic">No sales data yet.</div>
               ) : (
                 stats.topSelling.map((item, index) => {
                   const colors = ['bg-[#16A394]', 'bg-amber-400', 'bg-rose-500'];
-                  const maxSold = stats.topSelling[0].sold;
-                  const percentage = (item.sold / maxSold) * 100;
+                  const maxSold = stats.topSelling[0].sold || 1;
+                  const percentage = ((item.sold || 0) / maxSold) * 100;
                   return (
                     <div key={index} className="space-y-2">
                       <div className="flex justify-between text-sm">
@@ -270,10 +313,10 @@ const Dashboard = ({ user }) => {
               )
             )}
             <button
-              onClick={() => navigate('/inventory')}
+              onClick={() => navigate(isAdmin ? '/admin/vendors' : '/inventory')}
               className={`w-full py-4 mt-4 border-2 border-dashed rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isAdmin ? 'border-white/10 text-slate-500 hover:border-teal-400 hover:text-teal-400' : 'border-slate-200 text-slate-400 hover:border-[#16A394] hover:text-[#16A394]'
                 }`}>
-              {isAdmin ? "System Health Report" : "Full Inventory Report"} <ChevronRight size={16} />
+              {isAdmin ? "Full Platform Audit" : "Full Inventory Report"} <ChevronRight size={16} />
             </button>
           </div>
         </div>

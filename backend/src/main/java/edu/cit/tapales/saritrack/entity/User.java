@@ -20,4 +20,11 @@ public class User {
     private String password;
 
     private String role = "VENDOR"; // Default role
+
+    private java.time.LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   PackageSearch, 
   Search, 
@@ -9,18 +9,86 @@ import {
   Store,
   Box
 } from 'lucide-react';
+import api from '../../api';
 
 const GlobalProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [products, setProducts] = useState([]);
+  const [vendors, setVendors] = useState({});
+  const [stats, setStats] = useState({
+    totalSKUs: 0,
+    totalStock: 0,
+    lowStock: 0,
+    outOfStock: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for global products
-  const products = [
-    { id: 1, name: "Red Horse (500ml)", vendor: "Maria's Sari-Sari", stock: 12, price: "₱120.00", category: "Beverages", status: "Low Stock" },
-    { id: 2, name: "Lucky Me! Beef", vendor: "Junior's Store", stock: 154, price: "₱15.00", category: "Noodles", status: "Healthy" },
-    { id: 3, name: "Coke 1.5L", vendor: "Aling Nena's Hub", stock: 5, price: "₱75.00", category: "Beverages", status: "Critical" },
-    { id: 4, name: "Safeguard White", vendor: "Maria's Sari-Sari", stock: 45, price: "₱42.00", category: "Personal Care", status: "Healthy" },
-    { id: 5, name: "Bear Brand 320g", vendor: "Junior's Store", stock: 22, price: "₱165.00", category: "Milk", status: "Healthy" },
-  ];
+  const fetchData = async () => {
+    try {
+      const [statsRes, productsRes, vendorsRes] = await Promise.all([
+        api.get('/admin/stats'),
+        api.get('/products'),
+        api.get('/admin/vendors/analytics')
+      ]);
+
+      const vendorMap = {};
+      vendorsRes.data.forEach(v => vendorMap[v.id] = v.name);
+      setVendors(vendorMap);
+
+      const allProducts = productsRes.data;
+      setProducts(allProducts);
+
+      const lowStockCount = allProducts.filter(p => p.stockQuantity > 0 && p.stockQuantity < 10).length;
+      const outOfStockCount = allProducts.filter(p => p.stockQuantity === 0).length;
+
+      setStats({
+        totalSKUs: statsRes.data.totalSKUs,
+        totalStock: statsRes.data.totalStock,
+        lowStock: lowStockCount,
+        outOfStock: outOfStockCount
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch global products data", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (vendors[p.vendorId] || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const exportToCSV = () => {
+    const headers = ["ID", "Product Name", "Category", "Vendor", "Stock", "Price", "Status"];
+    const rows = filteredProducts.map(p => {
+      const status = p.stockQuantity === 0 ? 'Out of Stock' : (p.stockQuantity < 10 ? 'Low Stock' : 'Healthy');
+      return [
+        p.id,
+        p.name,
+        p.category,
+        vendors[p.vendorId] || 'Unknown',
+        p.stockQuantity,
+        p.price,
+        status
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `SariTrack_Global_Inventory_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 text-slate-200">
@@ -31,7 +99,9 @@ const GlobalProducts = () => {
           <p className="text-slate-400 mt-1">Auditing all products and stock levels across the entire platform.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 bg-slate-900 border border-white/5 text-slate-300 rounded-xl font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
+          <button 
+            onClick={exportToCSV}
+            className="px-4 py-2.5 bg-slate-900 border border-white/5 text-slate-300 rounded-xl font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
             <Filter size={18} />
             Export CSV
           </button>
@@ -41,10 +111,10 @@ const GlobalProducts = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Total SKUs', value: '1,420', icon: Box, color: 'text-blue-400' },
-          { label: 'Total Stock', value: '45,200', icon: Tag, color: 'text-teal-400' },
-          { label: 'Low Stock', value: '24', icon: AlertTriangle, color: 'text-amber-400' },
-          { label: 'Out of Stock', value: '8', icon: Box, color: 'text-rose-400' },
+          { label: 'Total SKUs', value: stats.totalSKUs.toLocaleString(), icon: Box, color: 'text-blue-400' },
+          { label: 'Total Stock', value: stats.totalStock.toLocaleString(), icon: Tag, color: 'text-teal-400' },
+          { label: 'Low Stock', value: stats.lowStock.toLocaleString(), icon: AlertTriangle, color: 'text-amber-400' },
+          { label: 'Out of Stock', value: stats.outOfStock.toLocaleString(), icon: Box, color: 'text-rose-400' },
         ].map((stat) => (
           <div key={stat.label} className="bg-slate-900/50 backdrop-blur-md p-6 rounded-3xl border border-white/5 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
@@ -85,50 +155,55 @@ const GlobalProducts = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {products.map((item) => (
-                <tr key={item.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-teal-400 font-bold border border-white/5">
-                        {item.name.charAt(0)}
+              {loading ? (
+                <tr><td colSpan="5" className="text-center py-10 text-slate-500">Loading global inventory...</td></tr>
+              ) : filteredProducts.map((item) => {
+                const status = item.stockQuantity === 0 ? 'Out of Stock' : (item.stockQuantity < 10 ? 'Low Stock' : 'Healthy');
+                return (
+                  <tr key={item.id} className="hover:bg-white/5 transition-colors group">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-teal-400 font-bold border border-white/5">
+                          {item.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-200 group-hover:text-teal-400 transition-colors">{item.name}</p>
+                          <p className="text-xs text-slate-500">{item.category}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-200 group-hover:text-teal-400 transition-colors">{item.name}</p>
-                        <p className="text-xs text-slate-500">{item.category}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <Store size={14} className="text-slate-600" />
+                        <span className="text-sm font-medium">{vendors[item.vendorId] || 'Unknown Vendor'}</span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-slate-400">
-                      <Store size={14} className="text-slate-600" />
-                      <span className="text-sm font-medium">{item.vendor}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="space-y-1">
-                      <p className="text-sm font-black text-slate-300">{item.stock} Units</p>
-                      <div className="h-1 w-24 bg-slate-800 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${item.stock < 10 ? 'bg-rose-500' : 'bg-teal-500'} rounded-full`}
-                          style={{ width: `${Math.min(item.stock, 100)}%` }}
-                        ></div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="space-y-1">
+                        <p className="text-sm font-black text-slate-300">{item.stockQuantity} Units</p>
+                        <div className="h-1 w-24 bg-slate-800 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full ${item.stockQuantity < 10 ? 'bg-rose-500' : 'bg-teal-500'} rounded-full`}
+                            style={{ width: `${Math.min(item.stockQuantity, 100)}%` }}
+                          ></div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 font-black text-white">{item.price}</td>
-                  <td className="px-6 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      item.status === 'Healthy' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : item.status === 'Low Stock'
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-5 font-black text-white">₱{item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="px-6 py-5">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        status === 'Healthy' 
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                          : status === 'Low Stock'
+                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}>
+                        {status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

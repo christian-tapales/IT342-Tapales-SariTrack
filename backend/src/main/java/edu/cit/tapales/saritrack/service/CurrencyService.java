@@ -16,6 +16,7 @@ public class CurrencyService {
     private Map<String, Double> cachedRates = null;
     private LocalDateTime lastFetched = null;
 
+    @SuppressWarnings("unchecked")
     public Map<String, Double> getLatestRates() {
         if (cachedRates != null && lastFetched != null && lastFetched.isAfter(LocalDateTime.now().minusHours(1))) {
             return cachedRates;
