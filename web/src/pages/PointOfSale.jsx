@@ -9,6 +9,7 @@ const PointOfSale = ({ user }) => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showUtangModal, setShowUtangModal] = useState(false);
+  const [showCashModal, setShowCashModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
 
@@ -38,6 +39,7 @@ const PointOfSale = ({ user }) => {
     if (cart.length === 0) return;
     const orderData = {
       vendorId: user?.id,
+      customerId: selectedCustomerId || null, // Optional for cash
       totalAmount: total,
       status: 'PAID',
       items: cart.map(item => ({
@@ -49,7 +51,8 @@ const PointOfSale = ({ user }) => {
     try {
       const response = await api.post('/orders', orderData);
       if (response.data.id) {
-        alert("Transaction Successful!");
+        alert(selectedCustomerId ? "Sale Complete & Receipt Sent!" : "Sale Completed Successfully!");
+        setShowCashModal(false);
         resetSale();
       }
     } catch (error) {
@@ -119,6 +122,8 @@ const PointOfSale = ({ user }) => {
     setCart([]);
     setSelectedCustomerId('');
     setCustomerSearch('');
+    setShowUtangModal(false);
+    setShowCashModal(false);
     fetchData();
   };
 
@@ -247,7 +252,7 @@ const PointOfSale = ({ user }) => {
             <span className="text-3xl font-black text-[#16A394]">₱{total.toFixed(2)}</span>
           </div>
           
-          <button onClick={handleCompleteSale} disabled={cart.length === 0} className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/10 transition-all active:scale-95 flex items-center justify-center gap-2">
+          <button onClick={() => setShowCashModal(true)} disabled={cart.length === 0} className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/10 transition-all active:scale-95 flex items-center justify-center gap-2">
             <CheckCircle size={20} /> Complete Sale (Cash)
           </button>
 
@@ -261,6 +266,58 @@ const PointOfSale = ({ user }) => {
         </div>
       </div>
 
+      {/* Cash Checkout Modal (Optional Receipt) */}
+      {showCashModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-8 bg-[#16A394] text-white flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-black italic">Checkout</h2>
+                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Total Amount: ₱{total.toFixed(2)}</p>
+              </div>
+              <button onClick={() => { setShowCashModal(false); setSelectedCustomerId(''); }} className="p-2 bg-white/20 rounded-xl hover:bg-white/30"><X size={20} /></button>
+            </div>
+            
+            <div className="p-8 space-y-4">
+              <p className="text-sm text-slate-500 font-medium">Select a customer to send a digital receipt (Optional):</p>
+              
+              <div className="relative">
+                <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                <input 
+                  type="text" placeholder="Search customer name..." 
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-teal-500"
+                  value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                {filteredCustomers.length === 0 ? (
+                  <div className="text-center py-4 text-slate-400 italic text-sm">No customers found.</div>
+                ) : filteredCustomers.map(customer => (
+                  <button 
+                    key={customer.id} 
+                    onClick={() => setSelectedCustomerId(customer.id === selectedCustomerId ? '' : customer.id)}
+                    className={`w-full p-4 rounded-2xl flex items-center justify-between transition-all border-2 ${selectedCustomerId === customer.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`}
+                  >
+                    <span className="font-bold text-slate-700">{customer.fullName}</span>
+                    {selectedCustomerId === customer.id ? <CheckCircle size={18} className="text-teal-500" /> : <span className="text-[10px] font-black text-slate-400 uppercase">Select</span>}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 pt-4">
+                <button onClick={handleCompleteSale} className={`py-4 rounded-2xl font-black transition-all active:scale-95 shadow-xl ${selectedCustomerId ? 'bg-teal-600 text-white' : 'bg-slate-800 text-white'}`}>
+                  {selectedCustomerId ? "Complete & Send Receipt" : "Complete Anonymous Sale"}
+                </button>
+                <button onClick={() => { setShowCashModal(false); setSelectedCustomerId(''); }} className="py-3 text-slate-400 font-bold text-sm">
+                  Go Back
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Utang Modal */}
       {showUtangModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
@@ -270,7 +327,7 @@ const PointOfSale = ({ user }) => {
                 <h2 className="text-2xl font-black italic">Listahan Selection</h2>
                 <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Select borrower for ₱{total.toFixed(2)}</p>
               </div>
-              <button onClick={() => setShowUtangModal(false)} className="p-2 bg-white/20 rounded-xl hover:bg-white/30"><X size={20} /></button>
+              <button onClick={() => { setShowUtangModal(false); setSelectedCustomerId(''); }} className="p-2 bg-white/20 rounded-xl hover:bg-white/30"><X size={20} /></button>
             </div>
             
             <div className="p-8 space-y-4">
@@ -283,7 +340,7 @@ const PointOfSale = ({ user }) => {
                 />
               </div>
 
-              <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+              <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                 {filteredCustomers.length === 0 ? (
                   <div className="text-center py-6 text-slate-400 italic text-sm">No customers found.</div>
                 ) : filteredCustomers.map(customer => (
