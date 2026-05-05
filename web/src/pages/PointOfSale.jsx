@@ -12,17 +12,24 @@ const PointOfSale = ({ user }) => {
   const [showCashModal, setShowCashModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+  
+  // Currency State
+  const [rates, setRates] = useState({ PHP: 1.0, USD: 0.018, EUR: 0.016, JPY: 2.65 });
+  const [selectedCurrency, setSelectedCurrency] = useState('PHP');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   // 1. Fetch real products and customers from the backend
   const fetchData = async () => {
     if (!user?.id) return;
     try {
-      const [prodRes, custRes] = await Promise.all([
+      const [prodRes, custRes, rateRes] = await Promise.all([
         api.get(`/products?vendorId=${user.id}`),
-        api.get(`/customers?vendorId=${user.id}`)
+        api.get(`/customers?vendorId=${user.id}`),
+        api.get(`/currency/rates`)
       ]);
       setProducts(prodRes.data);
       setCustomers(custRes.data);
+      if (rateRes.data) setRates(rateRes.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -173,6 +180,9 @@ const PointOfSale = ({ user }) => {
   };
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const convertedTotal = total * (rates[selectedCurrency] || 1);
+  const currencySymbols = { PHP: '₱', USD: '$', EUR: '€', JPY: '¥' };
+  
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredCustomers = customers.filter(c => c.fullName.toLowerCase().includes(customerSearch.toLowerCase()));
 
@@ -217,6 +227,31 @@ const PointOfSale = ({ user }) => {
             <div className="p-2 bg-[#E8F6F5] rounded-xl text-[#16A394]"><ShoppingCart size={24} /></div>
             <h2 className="text-xl font-black text-slate-800">New Transaction</h2>
           </div>
+
+          {/* Currency Switcher */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black text-slate-600 hover:border-teal-500 transition-all"
+            >
+              <Package size={14} className="text-teal-600" />
+              {selectedCurrency}
+            </button>
+            
+            {showCurrencyDropdown && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-2xl shadow-2xl border border-slate-50 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                {Object.keys(rates).map(curr => (
+                  <button 
+                    key={curr}
+                    onClick={() => { setSelectedCurrency(curr); setShowCurrencyDropdown(false); }}
+                    className={`w-full px-4 py-2 text-left text-xs font-bold hover:bg-teal-50 transition-colors ${selectedCurrency === curr ? 'text-teal-600 bg-teal-50/50' : 'text-slate-600'}`}
+                  >
+                    {curr} ({currencySymbols[curr]})
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -247,9 +282,17 @@ const PointOfSale = ({ user }) => {
         </div>
 
         <div className="p-8 bg-slate-50/50 border-t border-slate-100 space-y-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-lg font-black text-slate-800">Total Bill</span>
-            <span className="text-3xl font-black text-[#16A394]">₱{total.toFixed(2)}</span>
+          <div className="flex flex-col mb-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-slate-400">Total Bill</span>
+              <span className="text-3xl font-black text-[#16A394]">₱{total.toFixed(2)}</span>
+            </div>
+            {selectedCurrency !== 'PHP' && (
+              <div className="flex justify-between items-center mt-1 animate-in slide-in-from-top-2">
+                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Converted ({selectedCurrency})</span>
+                <span className="text-lg font-black text-amber-500">{currencySymbols[selectedCurrency]}{convertedTotal.toFixed(2)}</span>
+              </div>
+            )}
           </div>
           
           <button onClick={() => setShowCashModal(true)} disabled={cart.length === 0} className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:bg-slate-200 text-white py-4 rounded-2xl font-black shadow-lg shadow-[#16A394]/10 transition-all active:scale-95 flex items-center justify-center gap-2">
