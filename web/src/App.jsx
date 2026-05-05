@@ -13,6 +13,7 @@ import GlobalProducts from './pages/admin/GlobalProducts';
 import Settings from './pages/admin/Settings';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
+import Transactions from './pages/Transactions';
 
 function App() {
   // Load user from localStorage on startup
@@ -83,6 +84,7 @@ function App() {
           <Route path="/admin/settings" element={<Settings />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
+          <Route path="/transactions" element={<Transactions user={user} />} />
         </Route>
 
         {/* Default redirect to login */}

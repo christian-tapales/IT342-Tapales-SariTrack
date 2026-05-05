@@ -9,4 +9,6 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByVendorId(Long vendorId);
     List<Order> findByVendorIdAndTimestampAfter(Long vendorId, LocalDateTime timestamp);
+    List<Order> findByVendorIdAndStatus(Long vendorId, String status);
+    List<Order> findByVendorIdAndStatusAndTimestampAfter(Long vendorId, String status, LocalDateTime timestamp);
 }
