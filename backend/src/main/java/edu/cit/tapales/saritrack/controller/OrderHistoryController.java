@@ -16,9 +16,21 @@ public class OrderHistoryController {
     private OrderRepository orderRepository;
 
     @GetMapping("/history")
-    public List<Order> getOrderHistory(@RequestParam Long vendorId) {
-        System.out.println("--- FETCHING FULL ORDER HISTORY FOR VENDOR: " + vendorId + " ---");
-        return orderRepository.findByVendorId(vendorId).stream()
+    public List<Order> getOrderHistory(
+            @RequestParam Long vendorId, 
+            @RequestParam(required = false) Long customerId) {
+        
+        List<Order> orders;
+        if (customerId != null) {
+            System.out.println("--- FETCHING DEBT HISTORY FOR CUSTOMER: " + customerId + " ---");
+            orders = orderRepository.findAll().stream()
+                    .filter(o -> customerId.equals(o.getCustomerId()))
+                    .collect(Collectors.toList());
+        } else {
+            orders = orderRepository.findByVendorId(vendorId);
+        }
+
+        return orders.stream()
                 .sorted(Comparator.comparing(Order::getTimestamp).reversed())
                 .collect(Collectors.toList());
     }
