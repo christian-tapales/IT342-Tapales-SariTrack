@@ -1,7 +1,7 @@
 import { Search, Wallet, Package, BookOpen, ChevronRight, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ActionCard = ({ icon: Icon, label, value, subtext, colorClass, btnLabel, onClick }) => (
@@ -40,7 +40,7 @@ const Dashboard = ({ user }) => {
   const fetchStats = async () => {
     if (!user?.id) return;
     try {
-      const response = await axios.get(`http://localhost:8080/api/vendor/dashboard/stats?vendorId=${user.id}`);
+      const response = await api.get(`/vendor/dashboard/stats?vendorId=${user.id}`);
       setStats(response.data);
       setLoading(false);
     } catch (error) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Search, ShoppingCart, Plus, Minus, Trash2, CheckCircle, Package, BookOpen, X, UserPlus } from 'lucide-react';
 
 const PointOfSale = ({ user }) => {
@@ -17,8 +17,8 @@ const PointOfSale = ({ user }) => {
     if (!user?.id) return;
     try {
       const [prodRes, custRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/products?vendorId=${user.id}`),
-        axios.get(`http://localhost:8080/api/customers?vendorId=${user.id}`)
+        api.get(`/products?vendorId=${user.id}`),
+        api.get(`/customers?vendorId=${user.id}`)
       ]);
       setProducts(prodRes.data);
       setCustomers(custRes.data);
@@ -47,7 +47,7 @@ const PointOfSale = ({ user }) => {
       }))
     };
     try {
-      const response = await axios.post('http://localhost:8080/api/orders', orderData);
+      const response = await api.post('/orders', orderData);
       if (response.data.id) {
         alert("Transaction Successful!");
         resetSale();
@@ -75,7 +75,7 @@ const PointOfSale = ({ user }) => {
       }))
     };
     try {
-      const response = await axios.post('http://localhost:8080/api/orders', orderData);
+      const response = await api.post('/orders', orderData);
       if (response.data.id) {
         alert("Utang Recorded Successfully!");
         setShowUtangModal(false);
@@ -100,9 +100,9 @@ const PointOfSale = ({ user }) => {
       }))
     };
     try {
-      const orderResponse = await axios.post('http://localhost:8080/api/orders', orderData);
+      const orderResponse = await api.post('/orders', orderData);
       const savedOrder = orderResponse.data;
-      const paymentResponse = await axios.post('http://localhost:8080/api/payments/create-session', {
+      const paymentResponse = await api.post('/payments/create-session', {
         amount: total,
         orderId: savedOrder.id,
         description: `Order #${savedOrder.id} from SariTrack`

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, UserPlus, CreditCard, Clock, CheckCircle2, ChevronRight, X, Package, Trash2, History, Banknote } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 const Listahan = ({ user }) => {
   const [customers, setCustomers] = useState([]);
@@ -13,12 +13,12 @@ const Listahan = ({ user }) => {
   const [history, setHistory] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [activeTab, setActiveTab] = useState('DEBT'); // 'DEBT' or 'PAYMENT'
-  const [newCustomer, setNewCustomer] = useState({ fullName: '' });
+  const [newCustomer, setNewCustomer] = useState({ fullName: '', email: '' });
   const [payAmount, setPayAmount] = useState('');
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/customers?vendorId=${user.id}`);
+      const response = await api.get(`/customers?vendorId=${user.id}`);
       setCustomers(response.data);
       setLoading(false);
     } catch (error) {
@@ -34,8 +34,8 @@ const Listahan = ({ user }) => {
   const fetchHistory = async (customerId) => {
     try {
       const [orderRes, payRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/orders/history?vendorId=${user.id}&customerId=${customerId}`),
-        axios.get(`http://localhost:8080/api/customers/${customerId}/payments`)
+        api.get(`/orders/history?vendorId=${user.id}&customerId=${customerId}`),
+        api.get(`/customers/${customerId}/payments`)
       ]);
       setHistory(orderRes.data);
       setPaymentHistory(payRes.data);
@@ -48,14 +48,14 @@ const Listahan = ({ user }) => {
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/customers', {
+      await api.post('/customers', {
         ...newCustomer,
         vendorId: user.id,
         currentDebt: 0,
         status: 'Paid'
       });
       setShowAddModal(false);
-      setNewCustomer({ fullName: '' });
+      setNewCustomer({ fullName: '', email: '' });
       fetchData();
     } catch (error) {
       alert("Error adding customer");
@@ -65,7 +65,7 @@ const Listahan = ({ user }) => {
   const handlePayment = async () => {
     if (!payAmount || isNaN(payAmount)) return;
     try {
-      await axios.post(`http://localhost:8080/api/customers/${selectedCustomer.id}/pay`, {
+      await api.post(`/customers/${selectedCustomer.id}/pay`, {
         amount: parseFloat(payAmount)
       });
       setShowPayModal(false);
@@ -202,6 +202,14 @@ const Listahan = ({ user }) => {
                   type="text" placeholder="e.g. Mang Jose" 
                   className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-400 font-bold text-slate-800"
                   value={newCustomer.fullName} onChange={(e) => setNewCustomer({...newCustomer, fullName: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                <input 
+                  type="email" placeholder="e.g. mangjose@gmail.com" 
+                  className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-400 font-bold text-slate-800"
+                  value={newCustomer.email} onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
                 />
               </div>
               <button type="submit" className="w-full py-4 bg-amber-400 text-white rounded-2xl font-black shadow-xl hover:bg-amber-500 transition-all">Add to Listahan</button>
