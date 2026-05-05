@@ -67,6 +67,8 @@ public class PayMongoService {
 
     public boolean isSignatureValid(String signatureHeader, String rawBody) {
         try {
+            System.out.println("Using Webhook Secret: " + webhookSecret);
+            
             String[] parts = signatureHeader.split(",");
             String timestamp = "";
             String providedSignature = "";
@@ -81,9 +83,8 @@ public class PayMongoService {
 
             String payload = timestamp + "." + rawBody;
             
-            // CRITICAL FIX: Use webhookSecret (whsk_...) instead of secretKey (sk_test...)
             javax.crypto.spec.SecretKeySpec secretKeySpec = new javax.crypto.spec.SecretKeySpec(
-                    webhookSecret.getBytes(), "HmacSHA256");
+                    webhookSecret.trim().getBytes(), "HmacSHA256");
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
             mac.init(secretKeySpec);
             
@@ -93,6 +94,9 @@ public class PayMongoService {
                 sb.append(String.format("%02x", b));
             }
             String computedSignature = sb.toString();
+
+            System.out.println("Provided Signature: " + providedSignature);
+            System.out.println("Computed Signature: " + computedSignature);
 
             return computedSignature.equals(providedSignature);
         } catch (Exception e) {
