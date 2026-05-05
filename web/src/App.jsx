@@ -44,9 +44,9 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('loginSuccess') === 'true' && !user) {
       const googleUser = {
-        id: params.get('id'), // Crucial: Extract the ID
+        id: params.get('id'),
         name: params.get('name') || "Google User",
-        email: params.get('email') || "",
+        token: params.get('token') || "",
         role: params.get('role') || "VENDOR"
       };
       setUser(googleUser);

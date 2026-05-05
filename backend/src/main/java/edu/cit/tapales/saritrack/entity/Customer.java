@@ -13,6 +13,7 @@ public class Customer {
     private Long id;
     private Long vendorId;
     private String fullName;
+    private String email;
     private Double currentDebt;
     private String status; // "Unpaid" or "Partial"
     private LocalDateTime lastUpdate;

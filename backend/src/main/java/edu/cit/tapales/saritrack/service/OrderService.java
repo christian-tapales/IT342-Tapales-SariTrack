@@ -25,6 +25,9 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public Order completeSale(Order transaction) {
         double finalTotal = discountStrategy.apply(transaction.getTotalAmount());
@@ -45,7 +48,9 @@ public class OrderService {
             }
         }
         
-        return orderRepository.save(transaction);
+        Order savedOrder = orderRepository.save(transaction);
+        sendReceipt(savedOrder);
+        return savedOrder;
     }
 
     @Transactional
@@ -61,12 +66,63 @@ public class OrderService {
         order.setStatus("PAID");
         orderRepository.save(order);
 
+        sendReceipt(order);
+
         notificationService.createNotification(
             order.getVendorId(), 
             "Digital Payment Success", 
             "Order #" + order.getId() + " has been paid successfully via Digital Wallet.", 
             "SUCCESS"
         );
+    }
+
+    private void sendReceipt(Order order) {
+        if (order.getCustomerId() == null) return;
+        
+        customerRepository.findById(order.getCustomerId()).ifPresent(customer -> {
+            if (customer.getEmail() != null && !customer.getEmail().isEmpty()) {
+                String subject = "Receipt for Order #" + order.getId() + " - SariTrack";
+                
+                // Format Date
+                String formattedDate = order.getTimestamp().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - hh:mm a"));
+
+                // Build HTML Body
+                StringBuilder html = new StringBuilder();
+                html.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>");
+                
+                // Header
+                html.append("<div style='background-color: #16A394; color: white; padding: 30px; text-align: center;'>");
+                html.append("<h1 style='margin: 0; font-size: 28px;'>Sari<span style='color: #000; opacity: 0.3;'>Track</span></h1>");
+                html.append("<p style='margin: 5px 0 0; opacity: 0.8;'>Digital Receipt</p>");
+                html.append("</div>");
+                
+                // Body
+                html.append("<div style='padding: 40px;'>");
+                html.append("<h2 style='color: #333; margin-top: 0;'>Kumusta, ").append(customer.getFullName()).append("!</h2>");
+                html.append("<p style='color: #666;'>Thank you for shopping at our store. Here is the summary of your transaction.</p>");
+                
+                // Order Info Table
+                html.append("<div style='margin-top: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 15px;'>");
+                html.append("<table style='width: 100%; border-collapse: collapse;'>");
+                html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase;'>Order ID</td><td style='text-align: right; font-weight: bold;'>#").append(order.getId()).append("</td></tr>");
+                html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase; padding-top: 10px;'>Date</td><td style='text-align: right; font-weight: bold; padding-top: 10px;'>").append(formattedDate).append("</td></tr>");
+                html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase; padding-top: 10px;'>Status</td><td style='text-align: right; font-weight: bold; color: ").append("DEBT".equals(order.getStatus()) ? "#f59e0b" : "#10b981").append("; padding-top: 10px;'>").append(order.getStatus()).append("</td></tr>");
+                html.append("</table>");
+                html.append("</div>");
+
+                // Total
+                html.append("<div style='margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px; text-align: right;'>");
+                html.append("<span style='color: #666; font-weight: bold;'>TOTAL AMOUNT</span>");
+                html.append("<h1 style='color: #16A394; margin: 5px 0;'>₱").append(String.format("%.2f", order.getTotalAmount())).append("</h1>");
+                html.append("</div>");
+                
+                html.append("<p style='margin-top: 40px; color: #999; font-size: 12px; text-align: center;'>See you again soon at SariTrack!</p>");
+                html.append("</div>");
+                html.append("</div>");
+
+                emailService.sendEmail(customer.getEmail(), subject, html.toString());
+            }
+        });
     }
 
     private void deductStock(Order transaction) {

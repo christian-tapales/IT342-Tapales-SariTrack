@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 const Transactions = ({ user }) => {
   const [orders, setOrders] = useState([]);
@@ -12,7 +12,7 @@ const Transactions = ({ user }) => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/orders/history?vendorId=${user.id}`);
+        const response = await api.get(`/orders/history?vendorId=${user.id}`);
         setOrders(response.data);
         setLoading(false);
       } catch (error) {

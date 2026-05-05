@@ -21,6 +21,12 @@ public class SecurityConfig {
     @Autowired
     private edu.cit.tapales.saritrack.repository.UserRepository userRepository;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private JwtFilter jwtFilter;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,6 +37,9 @@ public class SecurityConfig {
         http
                 // 1. Disable CSRF for React
                 .csrf(csrf -> csrf.disable())
+
+                // 1.5 Set Session Policy
+                .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
 
                 // 2. Configure CORS
                 .cors(cors -> cors.configurationSource(request -> {
@@ -45,10 +54,12 @@ public class SecurityConfig {
                 // 3. Define URLs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
-                        .requestMatchers("/api/products/**", "/api/orders/**", "/api/customers/**", "/api/vendor/dashboard/**", "/api/notifications/**").permitAll()
                         .anyRequest().authenticated())
 
-                // 4. PREVENT REDIRECTS FOR API CALLS (Return 401 instead of 302)
+                // 4. ADD JWT FILTER
+                .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+
+                // 5. PREVENT REDIRECTS FOR API CALLS (Return 401 instead of 302)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
                             String path = request.getRequestURI();
@@ -61,7 +72,7 @@ public class SecurityConfig {
                             }
                         }))
 
-                // 5. ENABLE GOOGLE LOGIN
+                // 6. ENABLE GOOGLE LOGIN
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
@@ -69,34 +80,31 @@ public class SecurityConfig {
                             var oAuth2User = (org.springframework.security.oauth2.core.user.OAuth2User) authentication
                                     .getPrincipal();
 
-                            // Extract real data from Google (with null safety)
                             String name = oAuth2User.getAttribute("name");
                             String email = oAuth2User.getAttribute("email");
 
-                            if (name == null)
-                                name = "Google User";
-                            if (email == null)
-                                email = "unknown@google.com";
+                            if (name == null) name = "Google User";
+                            if (email == null) email = "unknown@google.com";
 
-                            // Fetch user from DB to get their role and ID (for Google Login)
-                            String role = "VENDOR"; // Default
-                            Long userId = null;
+                            // Sync User & Generate JWT
                             var userOpt = userRepository.findByEmail(email);
+                            Long userId = null;
+                            String role = "VENDOR";
                             if (userOpt.isPresent()) {
-                                role = userOpt.get().getRole();
                                 userId = userOpt.get().getId();
+                                role = userOpt.get().getRole();
                             }
 
-                            // Determine port based on request origin (defaulting to 5173)
-                            String origin = request.getHeader("Origin");
-                            String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174"
-                                    : "http://localhost:5173";
+                            // ISSUE JWT PASSPORT
+                            String token = jwtUtils.generateToken(email);
 
-                            // Construct redirect URL with real parameters including ID
+                            String origin = request.getHeader("Origin");
+                            String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174" : "http://localhost:5173";
+
                             String redirectUrl = baseUrl + "/dashboard?loginSuccess=true"
                                     + "&id=" + userId
                                     + "&name=" + java.net.URLEncoder.encode(name, "UTF-8")
-                                    + "&email=" + java.net.URLEncoder.encode(email, "UTF-8")
+                                    + "&token=" + token
                                     + "&role=" + role;
 
                             response.sendRedirect(redirectUrl);

@@ -17,6 +17,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // 1. Fetch the user info from Google
@@ -38,6 +41,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // requires it. Set a random one or modify the entity.
             newUser.setPassword("OAUTH_USER"); 
             userRepository.save(newUser);
+
+            // 3. Send Welcome Email
+            emailService.sendEmail(
+                email, 
+                "Welcome to SariTrack! 🛒", 
+                "Hi " + name + ",\n\nWelcome to SariTrack! Your store management system is ready. Log in to start tracking your sales and inventory.\n\nBest,\nThe SariTrack Team"
+            );
         }
 
         return googleUser;

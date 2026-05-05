@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload } from 'lucide-react';
+import api from '../api';
+import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload, Wand2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const Inventory = ({ user }) => {
@@ -41,11 +41,28 @@ const Inventory = ({ user }) => {
     }
   };
 
+  const handleLookup = async () => {
+    if (!formData.barcode) return;
+    try {
+      setUploading(true);
+      const response = await api.get(`/products/lookup/${formData.barcode}`);
+      if (response.data.productName && response.data.productName !== "Unknown Product") {
+        setFormData({ ...formData, name: response.data.productName });
+      } else {
+        alert("Product not found in international database.");
+      }
+    } catch (error) {
+      console.error("Lookup failed:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Fetch only this vendor's products
   const fetchProducts = async () => {
     if (!user?.id) return;
     try {
-      const response = await axios.get(`http://localhost:8080/api/products?vendorId=${user.id}`);
+      const response = await api.get(`/products?vendorId=${user.id}`);
       setProducts(response.data);
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -84,10 +101,10 @@ const Inventory = ({ user }) => {
       
       if (editingId) {
         // UPDATE existing product
-        await axios.put(`http://localhost:8080/api/products/${editingId}?vendorId=${user.id}`, finalData);
+        await api.put(`/products/${editingId}?vendorId=${user.id}`, finalData);
       } else {
         // CREATE new product
-        await axios.post('http://localhost:8080/api/products', finalData);
+        await api.post('/products', finalData);
       }
 
       setIsModalOpen(false);
@@ -102,7 +119,7 @@ const Inventory = ({ user }) => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/products/${id}?vendorId=${user?.id}`);
+        await api.delete(`/products/${id}?vendorId=${user?.id}`);
         fetchProducts();
       } catch (error) {
         alert("Delete failed: Unauthorized or product not found");
@@ -239,11 +256,21 @@ const Inventory = ({ user }) => {
                 className="w-full p-4 bg-slate-50 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
                 value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
               />
-              <input 
-                type="text" placeholder="Barcode"
-                className="w-full p-4 bg-slate-50 text-slate-900  rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
-                value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})}
-              />
+              <div className="relative flex gap-2">
+                <input 
+                  type="text" placeholder="Barcode"
+                  className="flex-1 p-4 bg-slate-50 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
+                  value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})}
+                />
+                <button 
+                  type="button"
+                  onClick={handleLookup}
+                  className="bg-amber-400 text-white p-4 rounded-2xl hover:bg-amber-500 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-400/20"
+                  title="Lookup Name via Barcode"
+                >
+                  <Wand2 size={20} />
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <input 
                   type="number" placeholder="Price (₱)" required

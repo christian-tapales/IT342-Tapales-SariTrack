@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import {
   LayoutDashboard,
   Package,
@@ -27,7 +27,7 @@ const Navbar = ({ user, onLogout }) => {
   const fetchNotifications = async () => {
     if (!user?.id) return;
     try {
-      const response = await axios.get(`http://localhost:8080/api/notifications?vendorId=${user.id}`);
+      const response = await api.get(`/notifications?vendorId=${user.id}`);
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications", error);
@@ -38,7 +38,7 @@ const Navbar = ({ user, onLogout }) => {
     const syncAndFetch = async () => {
       if (!user?.id) return;
       try {
-        await axios.post(`http://localhost:8080/api/notifications/sync?vendorId=${user.id}`);
+        await api.post(`/notifications/sync?vendorId=${user.id}`);
         fetchNotifications();
       } catch (error) {
         console.error("Error syncing notifications", error);
@@ -52,7 +52,7 @@ const Navbar = ({ user, onLogout }) => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.post(`http://localhost:8080/api/notifications/${id}/read`);
+      await api.post(`/notifications/${id}/read`);
       fetchNotifications();
     } catch (error) {
       console.error("Error marking as read", error);
@@ -61,7 +61,7 @@ const Navbar = ({ user, onLogout }) => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/notifications/read-all?vendorId=${user.id}`);
+      await api.post(`/notifications/read-all?vendorId=${user.id}`);
       fetchNotifications();
     } catch (error) {
       console.error("Error marking all as read", error);
