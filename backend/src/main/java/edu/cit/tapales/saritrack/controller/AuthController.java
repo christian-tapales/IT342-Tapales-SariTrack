@@ -1,10 +1,13 @@
 package edu.cit.tapales.saritrack.controller;
 
+import edu.cit.tapales.saritrack.config.JwtUtils;
 import edu.cit.tapales.saritrack.entity.User;
 import edu.cit.tapales.saritrack.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,6 +18,9 @@ public class AuthController {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public String register(@RequestBody User user) {
@@ -31,8 +37,14 @@ public class AuthController {
         return userRepository.findByEmail(loginRequest.getEmail())
                 .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
                 .map(user -> {
-                    user.setPassword(null); // Safety: Don't send the hashed password back to frontend!
-                    return (Object) user;
+                    String token = jwtUtils.generateToken(user.getEmail());
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("id", user.getId());
+                    response.put("name", user.getName());
+                    response.put("email", user.getEmail());
+                    response.put("role", user.getRole());
+                    response.put("token", token);
+                    return (Object) response;
                 })
                 .orElse("Error: Invalid credentials.");
     }
