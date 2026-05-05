@@ -22,26 +22,29 @@ public class OrderService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Transactional
     public Order completeSale(Order transaction) {
-        // 1. Apply Strategy Pattern for pricing
         double finalTotal = discountStrategy.apply(transaction.getTotalAmount());
         transaction.setTotalAmount(finalTotal);
-        
-        // 2. Set the transaction time
         transaction.setTimestamp(LocalDateTime.now());
         
-        // 3. Handle Cash or Debt sales
         if ("PAID".equals(transaction.getStatus()) || "DEBT".equals(transaction.getStatus())) {
             deductStock(transaction);
             
-            // If it's a debt, update the customer's balance
             if ("DEBT".equals(transaction.getStatus()) && transaction.getCustomerId() != null) {
                 updateCustomerDebt(transaction.getCustomerId(), transaction.getTotalAmount());
+                notificationService.createNotification(
+                    transaction.getVendorId(), 
+                    "New Utang Recorded", 
+                    "A debt of ₱" + transaction.getTotalAmount() + " was added to a customer account.", 
+                    "INFO"
+                );
             }
         }
         
-        // 4. Save the finalized order
         return orderRepository.save(transaction);
     }
 
@@ -51,12 +54,19 @@ public class OrderService {
             .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
         
         if ("PAID".equals(order.getStatus())) {
-            return; // Already processed
+            return;
         }
 
         deductStock(order);
         order.setStatus("PAID");
         orderRepository.save(order);
+
+        notificationService.createNotification(
+            order.getVendorId(), 
+            "Digital Payment Success", 
+            "Order #" + order.getId() + " has been paid successfully via Digital Wallet.", 
+            "SUCCESS"
+        );
     }
 
     private void deductStock(Order transaction) {
@@ -64,16 +74,18 @@ public class OrderService {
             Product product = productRepository.findById(item.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProductId()));
 
-            if (!product.getVendorId().equals(transaction.getVendorId())) {
-                throw new RuntimeException("Security Error: Product " + product.getName() + " does not belong to this vendor!");
-            }
-
-            if (product.getStockQuantity() < item.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for " + product.getName());
-            }
-
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
+
+            // Trigger Low Stock Notification
+            if (product.getStockQuantity() < 5) {
+                notificationService.createNotification(
+                    transaction.getVendorId(), 
+                    "Low Stock Alert!", 
+                    "Product '" + product.getName() + "' is running low (" + product.getStockQuantity() + " left).", 
+                    "WARNING"
+                );
+            }
         }
     }
 
@@ -86,6 +98,15 @@ public class OrderService {
         customer.setLastUpdate(LocalDateTime.now());
         customer.setStatus("Unpaid");
         customerRepository.save(customer);
-        System.out.println("--- DEBT UPDATED FOR " + customer.getFullName() + ": +P" + amount + " ---");
+
+        // Trigger High Debt Warning
+        if (customer.getCurrentDebt() > 1000) {
+            notificationService.createNotification(
+                customer.getVendorId(), 
+                "High Debt Warning", 
+                customer.getFullName() + "'s debt has exceeded ₱1,000!", 
+                "WARNING"
+            );
+        }
     }
 }
