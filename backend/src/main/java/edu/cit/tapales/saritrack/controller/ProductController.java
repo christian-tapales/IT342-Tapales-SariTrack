@@ -15,6 +15,15 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private edu.cit.tapales.saritrack.service.ProductLookupService productLookupService;
+
+    @GetMapping("/lookup/{barcode}")
+    public ResponseEntity<?> lookupByBarcode(@PathVariable String barcode) {
+        String productName = productLookupService.lookupProductName(barcode);
+        return ResponseEntity.ok(java.util.Map.of("productName", productName));
+    }
+
     @GetMapping
     public List<Product> getAll(@RequestParam(required = false) Long vendorId) {
         if (vendorId != null) {
