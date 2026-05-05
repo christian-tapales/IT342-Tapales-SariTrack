@@ -22,6 +22,9 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private edu.cit.tapales.saritrack.service.EmailService emailService;
+
     @PostMapping("/register")
     public String register(@RequestBody User user) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
@@ -29,6 +32,10 @@ public class AuthController {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Hash it!
         userRepository.save(user);
+        
+        // Trigger Welcome Email (Premium HTML version)
+        emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+        
         return "User registered successfully!";
     }
 

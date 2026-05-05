@@ -23,10 +23,10 @@ public class OrderService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private NotificationService notificationService;
+    private edu.cit.tapales.saritrack.service.EmailService emailService;
 
     @Autowired
-    private EmailService emailService;
+    private NotificationService notificationService;
 
     @Transactional
     public Order completeSale(Order transaction) {
@@ -92,8 +92,8 @@ public class OrderService {
                 
                 // Header
                 html.append("<div style='background-color: #16A394; color: white; padding: 30px; text-align: center;'>");
-                html.append("<h1 style='margin: 0; font-size: 28px;'>Sari<span style='color: #000; opacity: 0.3;'>Track</span></h1>");
-                html.append("<p style='margin: 5px 0 0; opacity: 0.8;'>Digital Receipt</p>");
+                html.append("<h1 style='margin: 0; font-size: 28px; font-weight: 900;'>Sari<span style='color: #0f172a; opacity: 0.8;'>Track</span></h1>");
+                html.append("<p style='margin: 5px 0 0; opacity: 0.9; font-size: 14px;'>Digital Receipt</p>");
                 html.append("</div>");
                 
                 // Body
@@ -107,6 +107,32 @@ public class OrderService {
                 html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase;'>Order ID</td><td style='text-align: right; font-weight: bold;'>#").append(order.getId()).append("</td></tr>");
                 html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase; padding-top: 10px;'>Date</td><td style='text-align: right; font-weight: bold; padding-top: 10px;'>").append(formattedDate).append("</td></tr>");
                 html.append("<tr><td style='color: #999; font-size: 12px; text-transform: uppercase; padding-top: 10px;'>Status</td><td style='text-align: right; font-weight: bold; color: ").append("DEBT".equals(order.getStatus()) ? "#f59e0b" : "#10b981").append("; padding-top: 10px;'>").append(order.getStatus()).append("</td></tr>");
+                html.append("</table>");
+                html.append("</div>");
+
+                // Items Table
+                html.append("<div style='margin-top: 30px;'>");
+                html.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px;'>");
+                html.append("<tr style='border-bottom: 2px solid #f9f9f9;'><th style='text-align: left; padding: 10px 0; color: #999;'>Item</th><th style='text-align: center; padding: 10px 0; color: #999;'>Qty</th><th style='text-align: right; padding: 10px 0; color: #999;'>Price</th></tr>");
+                
+                if (order.getItems() != null) {
+                    for (edu.cit.tapales.saritrack.entity.OrderItem item : order.getItems()) {
+                        String pName = "Unknown Product";
+                        if (item.getProduct() != null) {
+                            pName = item.getProduct().getName();
+                        } else if (item.getProductId() != null) {
+                            pName = productRepository.findById(item.getProductId())
+                                    .map(p -> p.getName())
+                                    .orElse("Deleted Product");
+                        }
+                        
+                        html.append("<tr style='border-bottom: 1px solid #f9f9f9;'>");
+                        html.append("<td style='padding: 12px 0;'>").append(pName).append("</td>");
+                        html.append("<td style='padding: 12px 0; text-align: center;'>").append(item.getQuantity()).append("</td>");
+                        html.append("<td style='padding: 12px 0; text-align: right; font-weight: bold;'>₱").append(String.format("%.2f", item.getPriceAtSale() * item.getQuantity())).append("</td>");
+                        html.append("</tr>");
+                    }
+                }
                 html.append("</table>");
                 html.append("</div>");
 
