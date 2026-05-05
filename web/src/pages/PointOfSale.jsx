@@ -147,6 +147,26 @@ const PointOfSale = ({ user }) => {
     }));
   };
 
+  const handleQuantityInput = (id, value) => {
+    if (value === "") {
+      setCart(cart.map(item => item.id === id ? { ...item, quantity: "" } : item));
+      return;
+    }
+    const val = parseInt(value);
+    if (isNaN(val) || val < 0) return;
+    
+    setCart(cart.map(item => {
+      if (item.id === id) {
+        if (val > item.stockQuantity) {
+          alert(`Only ${item.stockQuantity} units available.`);
+          return { ...item, quantity: item.stockQuantity };
+        }
+        return { ...item, quantity: val };
+      }
+      return item;
+    }));
+  };
+
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredCustomers = customers.filter(c => c.fullName.toLowerCase().includes(customerSearch.toLowerCase()));
@@ -205,10 +225,16 @@ const PointOfSale = ({ user }) => {
                 <p className="font-bold text-slate-800 text-sm">{item.name}</p>
                 <p className="text-xs text-[#16A394] font-bold">₱{(item.price * item.quantity).toFixed(2)}</p>
               </div>
-              <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl">
-                <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394]"><Minus size={14}/></button>
-                <span className="text-sm font-black text-slate-700 w-4 text-center">{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.id, 1)} disabled={item.quantity >= item.stockQuantity} className="text-slate-400 hover:text-[#16A394]"><Plus size={14}/></button>
+              <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 group-focus-within:border-teal-500 transition-all">
+                <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394] transition-colors"><Minus size={14}/></button>
+                <input 
+                  type="number" 
+                  value={item.quantity}
+                  onChange={(e) => handleQuantityInput(item.id, e.target.value)}
+                  onBlur={() => { if(item.quantity === "" || item.quantity === 0) handleQuantityInput(item.id, "1"); }}
+                  className="text-sm font-black text-slate-700 w-10 text-center bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button onClick={() => updateQuantity(item.id, 1)} disabled={item.quantity >= item.stockQuantity} className="text-slate-400 hover:text-[#16A394] transition-colors disabled:opacity-10"><Plus size={14}/></button>
               </div>
               <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="ml-3 p-2 text-slate-300 hover:text-rose-500"><Trash2 size={18} /></button>
             </div>

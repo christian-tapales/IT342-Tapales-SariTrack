@@ -4,6 +4,7 @@ import edu.cit.tapales.saritrack.entity.Customer;
 import edu.cit.tapales.saritrack.entity.DebtPayment;
 import edu.cit.tapales.saritrack.repository.CustomerRepository;
 import edu.cit.tapales.saritrack.repository.DebtPaymentRepository;
+import edu.cit.tapales.saritrack.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
@@ -23,6 +24,9 @@ public class CustomerController {
     @Autowired
     private DebtPaymentRepository debtPaymentRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @GetMapping
     public List<Customer> getCustomers(@RequestParam Long vendorId) {
         return customerRepository.findByVendorId(vendorId);
@@ -41,19 +45,24 @@ public class CustomerController {
         Customer customer = customerRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Customer not found"));
         
-        // 1. Update Customer Debt
         double newDebt = Math.max(0, customer.getCurrentDebt() - amount);
         customer.setCurrentDebt(newDebt);
         customer.setLastUpdate(LocalDateTime.now());
         customer.setStatus(newDebt > 0 ? "Partial" : "Paid");
         Customer savedCustomer = customerRepository.save(customer);
 
-        // 2. Create Payment Record for history
         DebtPayment payment = new DebtPayment();
         payment.setCustomerId(id);
         payment.setAmount(amount);
         payment.setTimestamp(LocalDateTime.now());
         debtPaymentRepository.save(payment);
+
+        notificationService.createNotification(
+            customer.getVendorId(), 
+            "Payment Received!", 
+            customer.getFullName() + " paid ₱" + amount + ". Remaining debt: ₱" + newDebt, 
+            "SUCCESS"
+        );
         
         return savedCustomer;
     }
