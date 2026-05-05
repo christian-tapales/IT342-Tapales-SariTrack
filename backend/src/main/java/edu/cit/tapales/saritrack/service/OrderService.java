@@ -19,6 +19,9 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
     @Transactional
     public Order completeSale(Order transaction) {
         // 1. Apply Strategy Pattern for pricing
@@ -28,9 +31,14 @@ public class OrderService {
         // 2. Set the transaction time
         transaction.setTimestamp(LocalDateTime.now());
         
-        // 3. For Cash sales, deduct stock immediately and set status to PAID
-        if ("PAID".equals(transaction.getStatus())) {
+        // 3. Handle Cash or Debt sales
+        if ("PAID".equals(transaction.getStatus()) || "DEBT".equals(transaction.getStatus())) {
             deductStock(transaction);
+            
+            // If it's a debt, update the customer's balance
+            if ("DEBT".equals(transaction.getStatus()) && transaction.getCustomerId() != null) {
+                updateCustomerDebt(transaction.getCustomerId(), transaction.getTotalAmount());
+            }
         }
         
         // 4. Save the finalized order
@@ -67,5 +75,17 @@ public class OrderService {
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
+    }
+
+    private void updateCustomerDebt(Long customerId, Double amount) {
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new RuntimeException("Customer not found: " + customerId));
+        
+        double currentDebt = customer.getCurrentDebt() != null ? customer.getCurrentDebt() : 0.0;
+        customer.setCurrentDebt(currentDebt + amount);
+        customer.setLastUpdate(LocalDateTime.now());
+        customer.setStatus("Unpaid");
+        customerRepository.save(customer);
+        System.out.println("--- DEBT UPDATED FOR " + customer.getFullName() + ": +P" + amount + " ---");
     }
 }
