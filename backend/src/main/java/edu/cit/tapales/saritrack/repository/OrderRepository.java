@@ -11,4 +11,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByVendorIdAndTimestampAfter(Long vendorId, LocalDateTime timestamp);
     List<Order> findByVendorIdAndStatus(Long vendorId, String status);
     List<Order> findByVendorIdAndStatusAndTimestampAfter(Long vendorId, String status, LocalDateTime timestamp);
+    
+    long countByVendorId(Long vendorId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.vendorId = :vendorId AND (o.status = 'PAID' OR o.status = 'DEBT')")
+    Double sumTotalAmountByVendorId(Long vendorId);
 }

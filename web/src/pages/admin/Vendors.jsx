@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import axios from 'axios';
+import api from '../../api';
 
 const Vendors = () => {
   const [vendors, setVendors] = useState([]);
@@ -19,7 +20,7 @@ const Vendors = () => {
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/auth/vendors');
+        const response = await api.get('/admin/vendors/analytics');
         setVendors(response.data);
       } catch (error) {
         console.error("Error fetching vendors:", error);
@@ -30,16 +31,13 @@ const Vendors = () => {
     fetchVendors();
   }, []);
 
-  // Map backend User data to our table structure
-  const displayVendors = vendors.map(v => ({
-    id: v.id,
-    name: v.name + "'s Store", // Simulation
-    owner: v.name,
-    email: v.email,
-    status: "Active", // Default
-    joined: "2024-05-03", // Placeholder
-    sales: "₱0" // Placeholder
-  }));
+  // Use raw data from backend
+  const displayVendors = vendors;
+
+  // Header Stats Calculations
+  const totalVendorsCount = vendors.length;
+  const activeVendorsCount = vendors.filter(v => v.status !== 'New Member').length;
+  const topSellersCount = vendors.filter(v => v.status === 'Top Seller').length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 text-slate-200">
@@ -64,9 +62,9 @@ const Vendors = () => {
       {/* Stats Quick Look */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Total Vendors', value: '154', icon: Store, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-          { label: 'Active Today', value: '128', icon: Users, color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
-          { label: 'Pending Approval', value: '12', icon: AlertCircle, color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+          { label: 'Total Vendors', value: totalVendorsCount, icon: Store, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+          { label: 'Active Today', value: activeVendorsCount, icon: Users, color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },
+          { label: 'Top Sellers', value: topSellersCount, icon: ShieldCheck, color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
         ].map((stat) => (
           <div key={stat.label} className="bg-slate-900/50 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 shadow-2xl flex items-center gap-4">
             <div className={`${stat.color} p-3 rounded-2xl border shadow-lg`}>
@@ -100,7 +98,7 @@ const Vendors = () => {
                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Store Information</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Joined Date</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Sales</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Lifetime Sales</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
@@ -116,22 +114,26 @@ const Vendors = () => {
                       </div>
                       <div>
                         <p className="font-bold text-slate-200 flex items-center gap-2 group-hover:text-teal-400 transition-colors">
-                          {vendor.name}
+                          {vendor.name}'s Store
                           <ExternalLink size={12} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </p>
-                        <p className="text-xs text-slate-500">{vendor.owner} • {vendor.email}</p>
+                        <p className="text-xs text-slate-500">{vendor.name} • {vendor.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      vendor.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      vendor.status === 'Top Seller' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
+                      vendor.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
+                      'bg-slate-500/10 text-slate-400 border border-slate-500/20'
                     }`}>
                       {vendor.status}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-400 font-medium">{vendor.joined}</td>
-                  <td className="px-6 py-5 text-sm font-bold text-slate-300">{vendor.sales}</td>
+                  <td className="px-6 py-5 text-sm text-slate-400 font-medium">
+                    {vendor.registrationDate ? new Date(vendor.registrationDate).toLocaleDateString() : 'N/A'}
+                  </td>
+                  <td className="px-6 py-5 text-sm font-bold text-slate-300">₱{vendor.totalSales?.toFixed(2)}</td>
                   <td className="px-6 py-5 text-right">
                     <button className="p-2 text-slate-500 hover:text-teal-400 hover:bg-teal-500/10 rounded-lg transition-all">
                       <MoreVertical size={20} />
