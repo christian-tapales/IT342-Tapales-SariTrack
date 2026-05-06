@@ -28,30 +28,23 @@
             android:layout_height="wrap_content"
             android:padding="24dp">
 
-            <!-- Circular Logo Icon -->
-            <FrameLayout
+            <!-- Transparent Logo Icon -->
+            <ImageView
                 android:id="@+id/logoContainer"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_marginTop="60dp"
-                android:background="@drawable/bg_circle_teal"
+                android:scaleType="fitCenter"
+                android:src="@drawable/logo"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_lock"
-                    app:tint="@android:color/white" />
-            </FrameLayout>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tvWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-black"
                 android:text="Welcome Back"
                 android:textColor="@android:color/white"
@@ -187,20 +180,41 @@
                         android:textSize="11sp"
                         android:letterSpacing="0.1" />
 
-                    <!-- Google Button -->
-                    <com.google.android.material.button.MaterialButton
+                    <!-- Google Button (Web Style) -->
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/btnGoogle"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="64dp"
                         android:layout_marginTop="16dp"
-                        android:text="Sign in with Google"
-                        android:textColor="#1E293B"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_g"
-                        app:iconGravity="textStart"
-                        app:iconTint="@null"
-                        app:strokeColor="#E2E8F0" />
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:strokeColor="#E2E8F0"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_g" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:text="Google Account"
+                                android:textColor="#1E293B"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

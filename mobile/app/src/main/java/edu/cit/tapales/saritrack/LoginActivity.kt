@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import okhttp3.ResponseBody
@@ -28,6 +29,14 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 🌓 Apply Saved Theme
+        val sessionManager = SessionManager(this)
+        val targetMode = if (sessionManager.isDarkMode()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         // Ensure this matches your XML filename (e.g., activity_login or activity_main)
         setContentView(R.layout.activity_login)
 
@@ -44,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val btnLogin = findViewById<Button>(R.id.btnLogIn)
-        val btnGoogle = findViewById<Button>(R.id.btnGoogle)
+        val btnGoogle = findViewById<android.view.View>(R.id.btnGoogle)
         val tvToRegister = findViewById<TextView>(R.id.tvToRegister)
 
         // 1. Handle Login Logic

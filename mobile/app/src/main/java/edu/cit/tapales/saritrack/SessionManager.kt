@@ -63,7 +63,16 @@ class SessionManager(context: Context) {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 
-    fun clearSession() {
+    fun logout() {
         prefs.edit().clear().apply()
+    }
+
+    // Theme Persistence
+    fun saveTheme(isDarkMode: Boolean) {
+        prefs.edit().putBoolean("is_dark_mode", isDarkMode).apply()
+    }
+
+    fun isDarkMode(): Boolean {
+        return prefs.getBoolean("is_dark_mode", false)
     }
 }

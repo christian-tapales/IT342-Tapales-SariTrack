@@ -16,7 +16,7 @@ object RetrofitClient {
             || android.os.Build.MODEL.contains("Android SDK built for x86"))
 
     // 🚀 DEMO MODE: Replace this with your ngrok URL (e.g., "https://abcdef.ngrok-free.app")
-    private const val GLOBAL_URL = "https://snippet-sheath-cloak.ngrok-free.dev"
+    private const val GLOBAL_URL = "https://snippet-sheath-cloak.ngrok-free.dev/"
 
     // Use ngrok URL for everything to ensure cross-network stability
     private val BASE_URL = GLOBAL_URL
@@ -45,5 +45,14 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(AuthApiService::class.java)
+    }
+
+    fun getProductService(context: Context): ProductApiService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(getOkHttpClient(context))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(ProductApiService::class.java)
     }
 }
