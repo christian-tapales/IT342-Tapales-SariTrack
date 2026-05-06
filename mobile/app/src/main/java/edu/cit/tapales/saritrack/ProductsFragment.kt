@@ -35,7 +35,18 @@ class ProductsFragment : Fragment() {
         tvProductCount = view.findViewById(R.id.tvProductCount)
         
         rvProducts?.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
-        adapter = ProductAdapter(emptyList())
+        adapter = ProductAdapter(emptyList()) { product ->
+            val intent = android.content.Intent(context, AddProductActivity::class.java).apply {
+                putExtra("PRODUCT_ID", product.id)
+                putExtra("PRODUCT_NAME", product.name)
+                putExtra("PRODUCT_PRICE", product.price)
+                putExtra("PRODUCT_STOCK", product.stockQuantity)
+                putExtra("PRODUCT_BARCODE", product.barcode)
+                putExtra("PRODUCT_CATEGORY", product.category)
+                putExtra("PRODUCT_IMAGE_URL", product.imageUrl)
+            }
+            addProductLauncher.launch(intent)
+        }
         rvProducts?.adapter = adapter
 
         val fabAddProduct = view.findViewById<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton>(R.id.fabAddProduct)

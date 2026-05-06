@@ -8,8 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class ProductAdapter(private var products: List<Product>) :
-    RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+class ProductAdapter(
+    private var products: List<Product>,
+    private val onItemClick: (Product) -> Unit
+) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     class ProductViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val ivProduct: ImageView = view.findViewById(R.id.ivProduct)
@@ -27,7 +29,7 @@ class ProductAdapter(private var products: List<Product>) :
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
         holder.tvProductName.text = product.name
-        holder.tvProductStock.text = "${product.stockQuantity} in stock"
+        holder.tvProductStock.text = "${product.stockQuantity}"
         holder.tvProductPrice.text = "₱${String.format("%.2f", product.price)}"
 
         Glide.with(holder.itemView.context)
@@ -35,6 +37,8 @@ class ProductAdapter(private var products: List<Product>) :
             .placeholder(R.drawable.logo)
             .error(R.drawable.logo)
             .into(holder.ivProduct)
+
+        holder.itemView.setOnClickListener { onItemClick(product) }
     }
 
     override fun getItemCount() = products.size
