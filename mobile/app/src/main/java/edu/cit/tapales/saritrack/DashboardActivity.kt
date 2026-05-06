@@ -1,35 +1,39 @@
 package edu.cit.tapales.saritrack
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class DashboardActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_dashboard)
 
-        // Handle window insets for edge-to-edge
-        val rootView = findViewById<android.view.View>(R.id.main)
-        if (rootView != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
-                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-                insets
-            }
-        }
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        
+        // Set default fragment
+        loadFragment(HomeFragment())
 
-        val btnLogout = findViewById<Button>(R.id.btnLogout)
-        btnLogout.setOnClickListener {
-            // Simply go back to Login
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> loadFragment(HomeFragment())
+                R.id.nav_products -> {
+                    // Placeholder for Products Fragment
+                }
+                R.id.nav_scan -> {
+                    // Placeholder for Scan Fragment
+                }
+                // ... others
+            }
+            true
         }
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 }
