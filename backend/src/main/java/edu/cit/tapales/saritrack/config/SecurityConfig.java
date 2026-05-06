@@ -44,7 +44,7 @@ public class SecurityConfig {
                 // 2. Configure CORS
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174"));
+                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174", "https://*.ngrok-free.app", "*"));
                     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
