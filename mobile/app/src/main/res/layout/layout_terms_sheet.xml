@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        android:background="#E2E8F0"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Terms &amp; Conditions"
+        android:textColor="#1E293B"
+        android:textSize="24sp"
+        android:fontFamily="sans-serif-black" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Last updated: May 7, 2026"
+        android:textColor="#64748B"
+        android:textSize="12sp" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Acceptance of Terms"
+                android:textStyle="bold"
+                android:textColor="#1E293B"
+                android:layout_marginBottom="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="By accessing and using SariTrack, you agree to comply with and be bound by these terms. If you do not agree, please refrain from using the platform."
+                android:textColor="#64748B"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2. User Responsibility"
+                android:textStyle="bold"
+                android:textColor="#1E293B"
+                android:layout_marginBottom="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Vendors are responsible for the accuracy of their inventory and credit records. SariTrack is a tool to assist management but does not replace legal financial records."
+                android:textColor="#64748B"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3. Data Privacy"
+                android:textStyle="bold"
+                android:textColor="#1E293B"
+                android:layout_marginBottom="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your data is stored securely via Supabase. We do not sell your store information to third parties."
+                android:textColor="#64748B"
+                android:layout_marginBottom="16dp"/>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCloseTerms"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="I Understand"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        app:backgroundTint="#14B8A6"/>
+
+</LinearLayout>
