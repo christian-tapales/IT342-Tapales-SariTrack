@@ -94,7 +94,7 @@ class RegisterActivity : AppCompatActivity() {
             // 4. Proceed with Registration if validation passes
             val request = RegisterRequest(name, email, password)
 
-            RetrofitClient.instance.registerUser(request).enqueue(object : Callback<String> {
+            RetrofitClient.authInstance.registerUser(request).enqueue(object : Callback<String> {
                 override fun onResponse(call: Call<String>, response: Response<String>) {
                     android.util.Log.d("REG_DEBUG", "Status Code: ${response.code()}")
 
