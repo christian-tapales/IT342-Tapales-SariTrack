@@ -1,5 +1,7 @@
 package edu.cit.tapales.saritrack
 
+import android.content.Context
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -13,18 +15,35 @@ object RetrofitClient {
             || android.os.Build.MODEL.contains("Emulator")
             || android.os.Build.MODEL.contains("Android SDK built for x86"))
 
+    // 🚀 DEMO MODE: Replace this with your ngrok URL (e.g., "https://abcdef.ngrok-free.app")
+    private const val GLOBAL_URL = "https://snippet-sheath-cloak.ngrok-free.dev"
 
-    // Use 10.0.2.2 for Emulator, and your Laptop IP for Physical Phone
-    private const val LAPTOP_IP = "10.173.184.119" // Put your IP here
-    private val BASE_URL = if (isEmulator) "http://10.0.2.2:8080" else "http://$LAPTOP_IP:8080"
+    // Use ngrok URL for everything to ensure cross-network stability
+    private val BASE_URL = GLOBAL_URL
 
-    val instance: AuthApiService by lazy {
+    private fun getOkHttpClient(context: Context): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(SessionManager(context)))
+            .build()
+    }
+
+    fun <T> getService(serviceClass: Class<T>, context: Context): T {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(ScalarsConverterFactory.create()) // 2. ADD THIS FIRST (for Plain Text)
-            .addConverterFactory(GsonConverterFactory.create())    // 3. KEEP THIS SECOND (for JSON)
+            .client(getOkHttpClient(context))
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
+        return retrofit.create(serviceClass)
+    }
 
+    // For Auth (no interceptor needed or handled gracefully if token is null)
+    val authInstance: AuthApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
         retrofit.create(AuthApiService::class.java)
     }
 }

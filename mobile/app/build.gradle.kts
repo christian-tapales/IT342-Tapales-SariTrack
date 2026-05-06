@@ -41,6 +41,18 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     // Gson Converter to automatically convert JSON to Kotlin Data Classes
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    
+    // Security for EncryptedSharedPreferences
+    implementation("com.google.android.gms:play-services-auth:21.1.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    
+    // Lifecycle components
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

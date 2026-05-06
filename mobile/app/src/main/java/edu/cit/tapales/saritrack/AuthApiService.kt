@@ -10,5 +10,8 @@ interface AuthApiService {
     fun registerUser(@Body request: RegisterRequest): Call<String>
 
     @POST("/api/auth/login")
-    fun loginUser(@Body request: LoginRequest): Call<ResponseBody>
-}
+    fun loginUser(@Body request: LoginRequest): Call<LoginResponse>
+
+    @POST("/api/auth/google-mobile")
+    fun googleMobileLogin(@Body request: Map<String, String>): Call<LoginResponse>
+}

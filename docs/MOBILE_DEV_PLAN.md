@@ -9,9 +9,9 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 - [x] **Basic Auth Screens**: Login and Register layouts.
 - [x] **API Connectivity**: Basic Retrofit setup.
-- [ ] **Session Manager**: Implement `EncryptedSharedPreferences` to persist the JWT token.
-- [ ] **OkHttp Interceptor**: Automatic `Authorization: Bearer <token>` header injection.
-- [ ] **Base Data Models**: Kotlin data classes for `User`, `Product`, `Customer`, and `Order`.
+- [x] **Session Manager**: Implement `EncryptedSharedPreferences` to persist the JWT token.
+- [x] **OkHttp Interceptor**: Automatic `Authorization: Bearer <token>` header injection.
+- [x] **Base Data Models**: Kotlin data classes for `User`, `Product`, `Customer`, and `Order`.
 
 ---
 
@@ -21,7 +21,7 @@ This document tracks the progress of the Android Mobile application. It serves a
 - [ ] **ProductApiService**: Fetch inventory and search by barcode.
 - [ ] **CustomerApiService**: Fetch customer list and balance.
 - [ ] **OrderApiService**: Submit sales and record debt.
-- [ ] **Image Loading**: Integrate **Glide** for product image rendering.
+- [ ] **Image Loading**: Integrate **Glide** for product image rendering. (Dependencies added)
 
 ---
 
@@ -65,6 +65,6 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 ---
 
-## 📈 Current Progress: **15%**
+## 📈 Current Progress: **40%**
 *Last Updated: 2026-05-07*
-*Focusing on: **Phase 1 (Session Management & Networking)***
+*Focusing on: **Phase 2 (Core Data Layer)***
