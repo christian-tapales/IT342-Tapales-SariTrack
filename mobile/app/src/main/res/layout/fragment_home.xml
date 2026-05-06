@@ -5,14 +5,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F4F8">
+    android:background="@drawable/bg_dashboard">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Premium Header with Gradient -->
+        <!-- Premium Header -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="220dp">
@@ -29,8 +29,8 @@
 
                 <ImageView
                     android:id="@+id/ivAvatar"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
                     android:src="@drawable/ic_user"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -40,227 +40,257 @@
                     android:id="@+id/tvGreeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="14dp"
                     android:fontFamily="sans-serif-black"
                     android:text="Kumusta, Vendor!"
                     android:textColor="@android:color/white"
-                    android:textSize="22sp"
+                    android:textSize="24sp"
                     app:layout_constraintStart_toEndOf="@id/ivAvatar"
                     app:layout_constraintTop_toTopOf="@id/ivAvatar" />
+
+                <!-- Theme Toggle Button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnThemeToggle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="#26FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintStart_toEndOf="@id/ivAvatar"
+                    app:layout_constraintTop_toBottomOf="@id/tvGreeting"
+                    android:layout_marginTop="8dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_theme_toggle"
+                        app:tint="@android:color/white" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:id="@+id/tvDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thursday, 7 May 2026"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="@id/tvGreeting"
-                    app:layout_constraintTop_toBottomOf="@id/tvGreeting" />
+                    android:text="May 7, 2026"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/btnThemeToggle"
+                    app:layout_constraintTop_toTopOf="@id/btnThemeToggle"
+                    app:layout_constraintBottom_toBottomOf="@id/btnThemeToggle"
+                    android:layout_marginStart="12dp"/>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnLogout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="#33FFFFFF"
-                    app:cardCornerRadius="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="#26FFFFFF"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:text="OPEN"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:text="LOGOUT"
                         android:textColor="@android:color/white"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Floating Summary Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/summaryCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="8dp"
-                    app:layout_constraintTop_toBottomOf="@id/ivAvatar">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="20dp"
-                        android:baselineAligned="false">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Today's Sales"
-                                android:textColor="#64748B"
-                                android:textSize="12sp" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₱2,450.00"
-                                android:textColor="#1E293B"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="match_parent"
-                            android:background="#E2E8F0"
-                            android:layout_marginHorizontal="16dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Orders"
-                                android:textColor="#64748B"
-                                android:textSize="12sp" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="14"
-                                android:textColor="#14B8A6"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>
 
+        <!-- KPI Cards Grid (Themable) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="40dp"
+            android:layout_marginTop="-50dp"
+            android:paddingHorizontal="20dp"
             android:paddingBottom="100dp">
-
-            <!-- Quick Actions Grid -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Quick Actions"
-                android:textColor="#1E293B"
-                android:textSize="16sp"
-                android:textStyle="bold" />
 
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:columnCount="2"
-                android:alignmentMode="alignMargins"
-                android:columnOrderPreserved="false">
+                android:alignmentMode="alignMargins">
 
-                <!-- Action 1: Scan -->
+                <!-- Sales KPI -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:orientation="vertical"
                         android:padding="20dp">
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_teal"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_inventory"
+                            app:tint="@color/primary_teal" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Today's Sales"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvTodaySales"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱2,450"
+                            android:textColor="@color/text_title"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Orders KPI -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_blue"
+                            android:padding="8dp"
                             android:src="@drawable/ic_scan"
-                            app:tint="#14B8A6" />
+                            app:tint="@color/primary_blue" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Scan &amp; Sell"
-                            android:textColor="#1E293B"
-                            android:textSize="14sp"
+                            android:layout_marginTop="16dp"
+                            android:text="Total Orders"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvOrders"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="14"
+                            android:textColor="@color/text_title"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Action 2: Credit -->
+                <!-- Debt KPI -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:orientation="vertical"
                         android:padding="20dp">
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_orange"
+                            android:padding="8dp"
                             android:src="@drawable/ic_credits"
-                            app:tint="#F59E0B" />
+                            app:tint="@color/primary_orange" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Add Credit"
-                            android:textColor="#1E293B"
-                            android:textSize="14sp"
+                            android:layout_marginTop="16dp"
+                            android:text="Outstanding"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvTotalOutstanding"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱12,450"
+                            android:textColor="#EF4444"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Collected KPI -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_purple"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_more"
+                            app:tint="@color/primary_purple" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Collected"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="65%"
+                            android:textColor="@color/text_title"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </GridLayout>
 
-            <!-- Listahan Overview Premium -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Listahan Insights"
-                    android:textColor="#1E293B"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="Details"
-                    android:textColor="#14B8A6"
-                    android:textStyle="bold" />
-            </RelativeLayout>
-
+            <!-- Insights (Themable) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
+                app:cardBackgroundColor="@color/card_surface"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
+                app:strokeColor="@color/border_subtle"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -270,32 +300,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Outstanding"
-                        android:textColor="#64748B"
-                        android:textSize="12sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="₱12,450.00"
-                        android:textColor="#EF4444"
-                        android:textSize="24sp"
+                        android:text="Collection Progress"
+                        android:textColor="@color/text_title"
                         android:textStyle="bold" />
                     <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressCollection"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:progress="65"
-                        app:indicatorColor="#14B8A6"
-                        app:trackColor="#F1F5F9"
+                        app:indicatorColor="@color/primary_teal"
+                        app:trackColor="@color/border_subtle"
                         app:trackCornerRadius="4dp"
-                        app:trackThickness="8dp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="65% collection rate this month"
-                        android:textColor="#64748B"
-                        android:textSize="12sp" />
+                        app:trackThickness="10dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

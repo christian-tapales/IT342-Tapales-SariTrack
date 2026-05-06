@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Semantic Colors (Night Mode) -->
+    <color name="dashboard_bg">#0F172A</color>
+    <color name="card_surface">#1E293B</color>
+    <color name="text_title">#FFFFFF</color>
+    <color name="text_body">#94A3B8</color>
+    <color name="border_subtle">#334155</color>
+
+    <!-- Branding Colors (Night Mode Fallbacks) -->
+    <color name="primary_teal">#14B8A6</color>
+    <color name="primary_blue">#3B82F6</color>
+    <color name="primary_orange">#F59E0B</color>
+    <color name="primary_purple">#8B5CF6</color>
+</resources>
