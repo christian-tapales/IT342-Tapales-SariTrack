@@ -37,7 +37,7 @@ class HomeFragment : Fragment() {
         val sessionManager = SessionManager(context)
         val name = sessionManager.getUserName() ?: "Vendor"
         
-        tvGreeting?.text = "Kumusta, $name!"
+        tvGreeting?.text = name
         
         btnLogout?.setOnClickListener {
             sessionManager.logout()

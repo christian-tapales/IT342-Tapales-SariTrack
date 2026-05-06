@@ -36,17 +36,35 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:tint="@android:color/white" />
 
-                <TextView
-                    android:id="@+id/tvGreeting"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/layoutGreeting"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:fontFamily="sans-serif-black"
-                    android:text="Kumusta, Vendor!"
-                    android:textColor="@android:color/white"
-                    android:textSize="24sp"
+                    android:layout_marginEnd="12dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toStartOf="@id/btnLogout"
                     app:layout_constraintStart_toEndOf="@id/ivAvatar"
-                    app:layout_constraintTop_toTopOf="@id/ivAvatar" />
+                    app:layout_constraintTop_toTopOf="@id/ivAvatar">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kumusta,"
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvGreeting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif-black"
+                        android:maxLines="2"
+                        android:text="Vendor!"
+                        android:textColor="@android:color/white"
+                        android:textSize="22sp" />
+                </LinearLayout>
 
                 <!-- Theme Toggle Button -->
                 <com.google.android.material.card.MaterialCardView
@@ -60,7 +78,7 @@
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
                     app:layout_constraintStart_toEndOf="@id/ivAvatar"
-                    app:layout_constraintTop_toBottomOf="@id/tvGreeting"
+                    app:layout_constraintTop_toBottomOf="@id/layoutGreeting"
                     android:layout_marginTop="8dp">
                     <ImageView
                         android:layout_width="24dp"
