@@ -10,6 +10,7 @@ import {
   Box
 } from 'lucide-react';
 import api from '../../api';
+import Skeleton from '../../components/Skeleton';
 
 const GlobalProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');

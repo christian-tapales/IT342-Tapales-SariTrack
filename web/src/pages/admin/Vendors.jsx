@@ -9,9 +9,8 @@ import {
   ShieldCheck,
   AlertCircle
 } from 'lucide-react';
-
-import axios from 'axios';
 import api from '../../api';
+import Skeleton from '../../components/Skeleton';
 
 const Vendors = () => {
   const [vendors, setVendors] = useState([]);
@@ -31,7 +30,6 @@ const Vendors = () => {
     fetchVendors();
   }, []);
 
-  // Use raw data from backend
   const displayVendors = vendors;
 
   // Header Stats Calculations
