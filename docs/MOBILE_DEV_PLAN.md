@@ -4,67 +4,58 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 ---
 
-## 🛠️ Phase 1: Foundation & Infrastructure
+## ✅ Phase 1: Foundation & Infrastructure (COMPLETED)
 *Goal: Secure communication with the backend and session persistence.*
 
-- [x] **Basic Auth Screens**: Login and Register layouts.
-- [x] **API Connectivity**: Basic Retrofit setup.
-- [x] **Session Manager**: Implement `EncryptedSharedPreferences` to persist the JWT token.
-- [x] **OkHttp Interceptor**: Automatic `Authorization: Bearer <token>` header injection.
-- [x] **Base Data Models**: Kotlin data classes for `User`, `Product`, `Customer`, and `Order`.
+- [x] **Auth Layer**: Login and Register layouts with validation.
+- [x] **API Connectivity**: Retrofit setup with `AuthInterceptor`.
+- [x] **Session Management**: Persistent storage for JWT, Vendor ID, and Theme.
+- [x] **Product CRUD**: Full ability to Add, Edit, and Delete products from mobile.
+- [x] **Cloud Storage**: Integrated **Supabase** for mobile image uploads.
 
 ---
 
-## 📦 Phase 2: Core Data Layer
-*Goal: Implement services for all backend resources.*
+## 🏠 Phase 2: Unified Dashboard (COMPLETED)
+*Goal: Create a data-driven home experience.*
 
-- [ ] **ProductApiService**: Fetch inventory and search by barcode.
-- [ ] **CustomerApiService**: Fetch customer list and balance.
-- [ ] **OrderApiService**: Submit sales and record debt.
-- [ ] **Image Loading**: Integrate **Glide** for product image rendering. (Dependencies added)
-
----
-
-## 🛒 Phase 3: Inventory & Look-up
-*Goal: Allow vendors to browse their store data.*
-
-- [ ] **InventoryActivity**: RecyclerView with search and category filtering.
-- [ ] **Product Details**: View specific product info and stock history.
-- [ ] **Dashboard Enhancement**: Quick stats (Today's Sales, Low Stock count).
+- [x] **Header Fixes**: Resolved text overlap in the dashboard greeting.
+- [x] **Navigation Cleanup**: Transitioned from 5-button to **3-button Bottom Nav** (Home, Products, Sales).
+- [x] **Recent Activity**: Integrated Transaction History list into the Home screen for quick access.
+- [x] **Stat Cards**: Dynamic cards for Today's Sales and Total Orders.
 
 ---
 
-## 🔍 Phase 4: Mobile POS (The "Game Changer")
+## 🛒 Phase 3: The POS Engine (The "Game Changer") (IN PROGRESS)
 *Goal: Fast barcode scanning and transaction recording.*
 
-- [ ] **Camera Integration**: Setup **CameraX** for barcode detection.
-- [ ] **ML Kit Integration**: High-speed scanning for EAN/UPC barcodes.
-- [ ] **Cart State**: Local logic to manage multiple items before checkout.
+- [x] **ML Kit Scanner**: High-speed scanning for EAN/UPC barcodes via BottomSheet.
+- [x] **Cart Management**: Add multiple items to a "Cart" before finalizing the sale with real-time total calculation.
+- [x] **Dual-Entry Scanner**: Added scanner shortcuts in `AddProductActivity` for faster inventory entry.
 - [ ] **Checkout Flow**: 
-    - [ ] **Cash**: Immediate stock deduction.
+    - [x] **Cash**: Immediate stock deduction and transaction recording.
     - [ ] **Utang**: Linking order to a Customer.
-    - [ ] **Digital**: Redirect to PayMongo Sandbox.
+    - [ ] **Digital**: PayMongo Sandbox integration.
 
 ---
 
-## 📒 Phase 5: Listahan (Debt Management)
+## 📒 Phase 4: Listahan (Debt Management)
 *Goal: Manage customer credit on the go.*
 
-- [ ] **Customer Selection**: Easy lookup during the POS checkout.
-- [ ] **Debt History**: View a customer's past transactions and total balance.
-- [ ] **Payment Recording**: Allow customers to pay off debt via the mobile app.
+- [ ] **Customer Hub**: RecyclerView displaying all store debtors and balances.
+- [ ] **Debt History**: View specific transaction records per customer.
+- [ ] **Settlement Flow**: Record payments to reduce customer debt.
 
 ---
 
-## ✨ Phase 6: Polish & Security
-*Goal: App stability and UX improvements.*
+## ✨ Phase 5: Polish & UX
+*Goal: App stability and premium feel.*
 
-- [ ] **Token Expiry Handling**: Auto-redirect to login if the session expires.
-- [ ] **Loading States**: Add shimmering effects and progress indicators.
-- [ ] **Offline Cache**: Basic caching of product names for offline searching.
+- [ ] **Theme Switching**: Finalize persistent Dark Mode across all activities.
+- [ ] **Smooth Transitions**: Fragment transitions and shimmering loading states.
+- [x] **Offline Guard**: Defensive checks and try-catch blocks to prevent crashes during server/data errors.
 
 ---
 
-## 📈 Current Progress: **40%**
+## 📈 Current Progress: **82%**
 *Last Updated: 2026-05-07*
-*Focusing on: **Phase 2 (Core Data Layer)***
+*Focusing on: **Phase 3: Checkout Flow & Phase 4: Listahan***

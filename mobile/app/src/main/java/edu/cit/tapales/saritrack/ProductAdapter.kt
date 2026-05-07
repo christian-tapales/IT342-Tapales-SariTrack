@@ -28,7 +28,7 @@ class ProductAdapter(
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
-        holder.tvProductName.text = product.name
+        holder.tvProductName.text = product.name ?: "Unnamed Product"
         holder.tvProductStock.text = "${product.stockQuantity}"
         holder.tvProductPrice.text = "₱${String.format("%.2f", product.price)}"
 

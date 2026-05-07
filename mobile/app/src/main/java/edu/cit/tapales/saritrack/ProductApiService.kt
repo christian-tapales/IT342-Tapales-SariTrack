@@ -23,4 +23,13 @@ interface ProductApiService {
         @retrofit2.http.Path("id") id: Long,
         @retrofit2.http.Query("vendorId") vendorId: Long
     ): Call<okhttp3.ResponseBody>
+
+    @GET("api/products/barcode/{barcode}")
+    fun getProductByBarcode(
+        @Path("barcode") barcode: String,
+        @retrofit2.http.Query("vendorId") vendorId: Long
+    ): Call<Product>
+
+    @GET("api/products/lookup/{barcode}")
+    fun lookupProduct(@Path("barcode") barcode: String): Call<Map<String, String>>
 }

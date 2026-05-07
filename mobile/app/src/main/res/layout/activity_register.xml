@@ -178,9 +178,7 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         app:backgroundTint="#14B8A6"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_more"
-                        app:iconGravity="textEnd" />
+                        app:cornerRadius="16dp" />
 
                     <TextView
                         android:layout_width="wrap_content"

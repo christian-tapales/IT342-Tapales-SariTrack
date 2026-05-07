@@ -136,13 +136,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp">
 
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Remember me"
-                            android:textColor="#64748B"
-                            android:textSize="12sp" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -165,10 +158,7 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         app:backgroundTint="#14B8A6"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_more"
-                        app:iconGravity="textEnd"
-                        app:iconPadding="8dp" />
+                        app:cornerRadius="16dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
