@@ -1,8 +1,23 @@
-import { useState } from 'react';
-import { LogOut, Settings, UserCog, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LogOut, Settings, UserCog, ChevronDown, Sun, Moon } from 'lucide-react';
 
 const Topbar = ({ user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    return document.documentElement.classList.contains('dark') || 
+           localStorage.getItem('sariTrack_theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('sariTrack_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('sariTrack_theme', 'light');
+    }
+  }, [isDark]);
+
   const isAdmin = user?.role === 'ADMIN';
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : (isAdmin ? 'A' : 'V');
 
@@ -16,6 +31,15 @@ const Topbar = ({ user, onLogout }) => {
       </div>
       
       <div className="flex items-center space-x-4">
+        {/* Theme Toggle */}
+        <button 
+          onClick={() => setIsDark(!isDark)}
+          className={`p-2 rounded-xl transition-all active:scale-95 ${isAdmin ? 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-teal-600' : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400'}`}
+          title={isDark ? "Light Mode" : "Dark Mode"}
+        >
+          {isDark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} />}
+        </button>
+
         <div className="text-right hidden sm:block">
           <p className={`text-sm font-bold ${isAdmin ? 'text-slate-800 dark:text-slate-200' : 'text-slate-800 dark:text-slate-200'}`}>
             {user?.name || (isAdmin ? "Super Admin" : "User")}
