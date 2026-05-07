@@ -27,6 +27,7 @@ class SalesFragment : Fragment() {
     private lateinit var tvCartTotal: TextView
     private lateinit var btnCheckout: MaterialButton
     private lateinit var btnChargeDebt: MaterialButton
+    private lateinit var btnDigitalPay: MaterialButton
 
     private var allProducts = listOf<Product>()
     private val cart = mutableMapOf<Product, Int>()
@@ -43,7 +44,9 @@ class SalesFragment : Fragment() {
         tvCartTotal = view.findViewById(R.id.tvCartTotal)
         btnCheckout = view.findViewById(R.id.btnCheckout)
         btnChargeDebt = view.findViewById(R.id.btnChargeDebt)
+        btnDigitalPay = view.findViewById(R.id.btnDigitalPay)
         val btnOpenScanner = view.findViewById<MaterialButton>(R.id.btnOpenScanner)
+        val btnFilter = view.findViewById<MaterialButton>(R.id.btnFilter)
 
         rvProducts.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
         adapter = ProductAdapter(emptyList()) { product ->
@@ -53,25 +56,35 @@ class SalesFragment : Fragment() {
 
         fetchProducts()
 
-        etSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) { filterProducts(s.toString()) }
+        etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) { filterProducts(s.toString()) }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
-
-        val btnFilter = view.findViewById<MaterialButton>(R.id.btnFilter)
 
         btnOpenScanner.setOnClickListener { openScanner() }
         btnCheckout.setOnClickListener { performCheckout("PAID") }
         btnChargeDebt.setOnClickListener { openCustomerPicker() }
         btnFilter.setOnClickListener { showFilterMenu(it) }
+        
+        btnDigitalPay.setOnClickListener {
+            try {
+                startDigitalPayment()
+            } catch (e: Exception) {
+                handlePaymentError("Crash caught: ${e.message}")
+            }
+        }
 
         view.findViewById<View>(R.id.cartSummaryCard).setOnClickListener {
-            if (cart.isNotEmpty()) {
-                val cartSheet = CartBottomSheet(cart) {
-                    updateCartUI()
+            try {
+                if (cart.isNotEmpty()) {
+                    val cartSheet = CartBottomSheet(cart) {
+                        updateCartUI()
+                    }
+                    cartSheet.show(parentFragmentManager, "CartSheet")
                 }
-                cartSheet.show(parentFragmentManager, "CartSheet")
+            } catch (e: Exception) {
+                Log.e("SalesFragment", "Cart click error", e)
             }
         }
 
@@ -188,8 +201,100 @@ class SalesFragment : Fragment() {
             tvCartTotal.text = "₱${String.format("%.2f", totalPrice)}"
             btnCheckout.isEnabled = totalItems > 0
             btnChargeDebt.isEnabled = totalItems > 0
+            btnDigitalPay.isEnabled = totalItems > 0
         } catch (e: Exception) {
             Log.e("SalesFragment", "UI Update failed", e)
+        }
+    }
+
+    private fun startDigitalPayment() {
+        val context = context ?: return
+        val vendorId = SessionManager(context).getUserId()
+        val totalAmount = cart.entries.sumOf { (it.key.price ?: 0.0) * it.value }
+
+        if (cart.isEmpty()) {
+            Toast.makeText(context, "Cart is empty", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 1. Create Pending Order
+        val orderItems = cart.map { (product, qty) ->
+            OrderItem(productId = product.id ?: 0L, quantity = qty, priceAtSale = product.price ?: 0.0)
+        }
+        val order = Order(totalAmount = totalAmount, vendorId = vendorId, status = "PENDING", items = orderItems)
+
+        btnDigitalPay.isEnabled = false
+        btnDigitalPay.text = "Wait..."
+
+        RetrofitClient.getTransactionService(context).placeOrder(order)
+            .enqueue(object : Callback<Order> {
+                override fun onResponse(call: Call<Order>, response: Response<Order>) {
+                    try {
+                        if (response.isSuccessful && response.body() != null) {
+                            val savedOrder = response.body()!!
+                            val orderId = savedOrder.id ?: throw Exception("Missing Order ID")
+
+                            // 2. Create PayMongo Session
+                            val payload = PaymentRequest(
+                                amount = totalAmount,
+                                orderId = orderId,
+                                description = "SariTrack Purchase - Order #$orderId"
+                            )
+                            
+                            RetrofitClient.getPaymentService(context).createCheckoutSession(payload)
+                                .enqueue(object : Callback<PaymentResponse> {
+                                    override fun onResponse(call: Call<PaymentResponse>, res: Response<PaymentResponse>) {
+                                        btnDigitalPay.text = "Digital"
+                                        btnDigitalPay.isEnabled = true
+                                        
+                                        if (res.isSuccessful && res.body() != null) {
+                                            val checkoutUrl = res.body()?.checkout_url
+                                            if (checkoutUrl != null) {
+                                                val intent = android.content.Intent(context, PaymentActivity::class.java)
+                                                intent.putExtra("CHECKOUT_URL", checkoutUrl)
+                                                startActivityForResult(intent, 2002)
+                                            } else {
+                                                handlePaymentError("No URL received")
+                                            }
+                                        } else {
+                                            handlePaymentError("Payment session failed")
+                                        }
+                                    }
+                                    override fun onFailure(call: Call<PaymentResponse>, t: Throwable) {
+                                        handlePaymentError("Network Error (Payment)")
+                                    }
+                                })
+                        } else {
+                            handlePaymentError("Failed to create order")
+                        }
+                    } catch (e: Exception) {
+                        handlePaymentError("Inner Error: ${e.message}")
+                    }
+                }
+                override fun onFailure(call: Call<Order>, t: Throwable) {
+                    handlePaymentError("Network Error (Order)")
+                }
+            })
+    }
+
+    private fun handlePaymentError(message: String) {
+        btnDigitalPay.text = "Digital"
+        btnDigitalPay.isEnabled = true
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        Log.e("SalesFragment", message)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 2002) {
+            if (resultCode == android.app.Activity.RESULT_OK) {
+                cart.clear()
+                updateCartUI()
+                fetchProducts()
+                Toast.makeText(context, "Payment Success!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Payment was not completed", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

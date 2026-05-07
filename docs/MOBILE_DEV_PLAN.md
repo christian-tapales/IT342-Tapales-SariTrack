@@ -31,10 +31,10 @@ This document tracks the progress of the Android Mobile application. It serves a
 - [x] **ML Kit Scanner**: High-speed scanning for EAN/UPC barcodes via BottomSheet.
 - [x] **Cart Management**: Add/Remove/Adjust items before finalizing with real-time calculations.
 - [x] **Dual-Entry Scanner**: Added scanner shortcuts in `AddProductActivity`.
-- [ ] **Checkout Flow**: 
+- [x] **Checkout Flow**: 
     - [x] **Cash**: Immediate stock deduction and transaction recording.
     - [x] **Utang**: Linking order to a Customer with automated debt updates.
-    - [ ] **Digital**: PayMongo Sandbox integration.
+    - [x] **Digital**: PayMongo Sandbox integration (GCash/Maya/Card).
 
 ---
 
@@ -56,6 +56,6 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 ---
 
-## 📈 Current Progress: **92%**
+## 📈 Current Progress: **95%**
 *Last Updated: 2026-05-07*
 *Focusing on: **Phase 4: Debt History & Phase 5: UI Polish***
