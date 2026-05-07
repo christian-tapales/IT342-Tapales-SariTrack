@@ -33,14 +33,27 @@
                 android:id="@+id/etSearchProduct"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_toStartOf="@+id/btnOpenScanner"
-                android:layout_marginEnd="12dp"
+                android:layout_toStartOf="@+id/btnFilter"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_input_gray"
                 android:hint="Search item..."
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:textColor="@color/text_title"
                 android:textColorHint="@color/text_body" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFilter"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_toStartOf="@+id/btnOpenScanner"
+                android:layout_marginEnd="8dp"
+                app:icon="@drawable/ic_filter"
+                app:iconSize="24dp"
+                app:iconTint="@color/text_title"
+                app:backgroundTint="#F1F5F9"
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnOpenScanner"
@@ -81,43 +94,75 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="20dp"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:padding="20dp">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:id="@+id/tvCartItemsCount"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="0 Items"
-                    android:textColor="@color/text_body"
-                    android:textSize="12sp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvCartTotal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="₱0.00"
-                    android:textColor="@color/primary_teal"
-                    android:textSize="20sp"
-                    android:fontFamily="sans-serif-black" />
+                    <TextView
+                        android:id="@+id/tvCartItemsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 Items"
+                        android:textColor="@color/text_body"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvCartTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₱0.00"
+                        android:textColor="@color/primary_teal"
+                        android:textSize="20sp"
+                        android:fontFamily="sans-serif-black" />
+                </LinearLayout>
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCheckout"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
-                android:text="Checkout"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                app:cornerRadius="16dp"
-                app:backgroundTint="@color/primary_teal" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCheckout"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Cash"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp"
+                    app:backgroundTint="@color/primary_teal"
+                    android:enabled="false" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChargeDebt"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Utang"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp"
+                    app:strokeColor="#EF4444"
+                    app:strokeWidth="1dp"
+                    android:textColor="#EF4444"
+                    app:backgroundTint="@color/white"
+                    android:enabled="false" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

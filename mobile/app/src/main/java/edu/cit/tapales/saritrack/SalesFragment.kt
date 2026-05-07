@@ -26,6 +26,7 @@ class SalesFragment : Fragment() {
     private lateinit var tvCartItemsCount: TextView
     private lateinit var tvCartTotal: TextView
     private lateinit var btnCheckout: MaterialButton
+    private lateinit var btnChargeDebt: MaterialButton
 
     private var allProducts = listOf<Product>()
     private val cart = mutableMapOf<Product, Int>()
@@ -41,6 +42,7 @@ class SalesFragment : Fragment() {
         tvCartItemsCount = view.findViewById(R.id.tvCartItemsCount)
         tvCartTotal = view.findViewById(R.id.tvCartTotal)
         btnCheckout = view.findViewById(R.id.btnCheckout)
+        btnChargeDebt = view.findViewById(R.id.btnChargeDebt)
         val btnOpenScanner = view.findViewById<MaterialButton>(R.id.btnOpenScanner)
 
         rvProducts.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
@@ -57,15 +59,60 @@ class SalesFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
+        val btnFilter = view.findViewById<MaterialButton>(R.id.btnFilter)
+
         btnOpenScanner.setOnClickListener { openScanner() }
-        btnCheckout.setOnClickListener { performCheckout() }
+        btnCheckout.setOnClickListener { performCheckout("PAID") }
+        btnChargeDebt.setOnClickListener { openCustomerPicker() }
+        btnFilter.setOnClickListener { showFilterMenu(it) }
+
+        view.findViewById<View>(R.id.cartSummaryCard).setOnClickListener {
+            if (cart.isNotEmpty()) {
+                val cartSheet = CartBottomSheet(cart) {
+                    updateCartUI()
+                }
+                cartSheet.show(parentFragmentManager, "CartSheet")
+            }
+        }
 
         return view
     }
 
+    private fun openCustomerPicker() {
+        val picker = CustomerPickerBottomSheet { customer ->
+            performCheckout("DEBT", customer.id)
+        }
+        picker.show(parentFragmentManager, "CustomerPicker")
+    }
+
+    private fun showFilterMenu(view: View) {
+        val popup = androidx.appcompat.widget.PopupMenu(requireContext(), view)
+        popup.menu.add("Sort: A to Z")
+        popup.menu.add("Price: Low to High")
+        popup.menu.add("Price: High to Low")
+        
+        popup.setOnMenuItemClickListener { item ->
+            when (item.title) {
+                "Sort: A to Z" -> {
+                    allProducts = allProducts.sortedBy { it.name }
+                }
+                "Price: Low to High" -> {
+                    allProducts = allProducts.sortedBy { it.price }
+                }
+                "Price: High to Low" -> {
+                    allProducts = allProducts.sortedByDescending { it.price }
+                }
+            }
+            filterProducts(etSearch.text.toString()) // Apply filter after sorting
+            true
+        }
+        popup.show()
+    }
+
     private fun fetchProducts() {
-        val vendorId = SessionManager(requireContext()).getUserId()
-        RetrofitClient.getProductService(requireContext()).getVendorProducts(vendorId)
+        val context = context ?: return
+        val vendorId = SessionManager(context).getUserId()
+        RetrofitClient.getProductService(context).getVendorProducts(vendorId)
             .enqueue(object : Callback<List<Product>> {
                 override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
                     if (response.isSuccessful) {
@@ -88,17 +135,11 @@ class SalesFragment : Fragment() {
     }
 
     private fun openScanner() {
-        // Check Camera Permission first
         if (androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) 
             == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             
             val scanner = ScannerBottomSheet { code ->
-                // Ultra-clean the code: remove all whitespace, newlines, and hidden characters
                 val cleanScannedCode = code.replace("\\s".toRegex(), "").trim()
-                
-                android.util.Log.d("SalesFragment", "Searching for clean barcode: '$cleanScannedCode'")
-                
-                // Also clean the database barcodes when searching
                 val product = allProducts.find { 
                     (it.barcode?.replace("\\s".toRegex(), "")?.trim() ?: "") == cleanScannedCode 
                 }
@@ -112,7 +153,6 @@ class SalesFragment : Fragment() {
             }
             scanner.show(parentFragmentManager, "SalesScanner")
         } else {
-            // Request Permission
             requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1001)
         }
     }
@@ -127,18 +167,14 @@ class SalesFragment : Fragment() {
 
     private fun addToCart(product: Product) {
         try {
-            // Check if product or its details are missing
             if (product.stockQuantity <= 0) {
                 Toast.makeText(context, "Out of stock!", Toast.LENGTH_SHORT).show()
                 return
             }
-            
             val currentQty = cart[product] ?: 0
             cart[product] = currentQty + 1
-            
             updateCartUI()
         } catch (e: Exception) {
-            android.util.Log.e("SalesFragment", "Add to cart failed: ${e.message}", e)
             Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
     }
@@ -151,12 +187,13 @@ class SalesFragment : Fragment() {
             tvCartItemsCount.text = "$totalItems Items"
             tvCartTotal.text = "₱${String.format("%.2f", totalPrice)}"
             btnCheckout.isEnabled = totalItems > 0
+            btnChargeDebt.isEnabled = totalItems > 0
         } catch (e: Exception) {
             Log.e("SalesFragment", "UI Update failed", e)
         }
     }
 
-    private fun performCheckout() {
+    private fun performCheckout(status: String, customerId: Long? = null) {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
         
@@ -173,42 +210,39 @@ class SalesFragment : Fragment() {
             val order = Order(
                 totalAmount = totalPrice,
                 vendorId = vendorId,
+                status = status,
+                customerId = customerId,
                 items = orderItems
             )
 
             btnCheckout.isEnabled = false
-            btnCheckout.text = "Processing..."
+            btnChargeDebt.isEnabled = false
 
             RetrofitClient.getTransactionService(context).placeOrder(order)
                 .enqueue(object : Callback<Order> {
                     override fun onResponse(call: Call<Order>, response: Response<Order>) {
                         if (response.isSuccessful) {
-                            Toast.makeText(context, "Sale completed successfully!", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Sale Recorded: $status", Toast.LENGTH_LONG).show()
                             cart.clear()
                             updateCartUI()
-                            fetchProducts() // Refresh stock
+                            fetchProducts()
                         } else {
                             Toast.makeText(context, "Error: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
                         }
-                        btnCheckout.text = "Checkout"
                         btnCheckout.isEnabled = cart.isNotEmpty()
+                        btnChargeDebt.isEnabled = cart.isNotEmpty()
                     }
 
                     override fun onFailure(call: Call<Order>, t: Throwable) {
-                        Toast.makeText(context, "Network Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                        btnCheckout.text = "Checkout"
+                        Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
                         btnCheckout.isEnabled = true
+                        btnChargeDebt.isEnabled = true
                     }
                 })
         } catch (e: Exception) {
             Log.e("SalesFragment", "Checkout failed", e)
-            Toast.makeText(context, "Error processing checkout", Toast.LENGTH_SHORT).show()
             btnCheckout.isEnabled = true
-            btnCheckout.text = "Checkout"
+            btnChargeDebt.isEnabled = true
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
     }
 }
