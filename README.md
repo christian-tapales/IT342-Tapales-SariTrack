@@ -81,4 +81,4 @@ Detailed design specs and development roadmaps are available in the `docs/` dire
 
 ## 📝 License
 Educational project for **IT342 - System Integration and Architecture**.  
-Developed by **Christian Kyle Bayarcal Tapales**.
+Developed by **Christian Kyle B. Tapales**.
