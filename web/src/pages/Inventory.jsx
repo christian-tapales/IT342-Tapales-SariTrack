@@ -257,7 +257,7 @@ const Inventory = ({ user }) => {
                 </button>
              </div>
           </div>
-        ))}
+        )))}
       </div>
 
       {/* Product Modal (Handles both Add & Edit) */}

@@ -159,7 +159,6 @@ const Vendors = () => {
           </button>
         </div>
       </div>
-v>
     </div>
   );
 };
