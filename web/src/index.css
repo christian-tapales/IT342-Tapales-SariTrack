@@ -1,20 +1,30 @@
 @import "tailwindcss";
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light dark;
-  background-color: #242424; /* Keep your dark background */
+
+@layer base {
+  :root {
+    --background: #F8FAFB;
+    --foreground: #1E293B;
+    --card: #FFFFFF;
+    --border: #F1F5F9;
+  }
+
+  .dark {
+    --background: #0F172A;
+    --foreground: #F8FAFB;
+    --card: #1E293B;
+    --border: #334155;
+    
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300;
+    margin: 0;
+    min-width: 100%;
+    min-height: 100%;
+  }
 }
 
-/* Remove the flex and place-items from the body */
-body {
-  margin: 0;
-  min-width: 100%;
-  min-height: 100%;
-}
-
-/* Ensure the root container takes up the full width */
 #root {
   width: 100%;
 }

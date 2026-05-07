@@ -44,18 +44,18 @@ const Register = () => {
     /* NOTE: We removed the outer <div> that had the background image 
        because AuthLayout.jsx handles that now.
     */
-    <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl border border-white/20 text-slate-800 animate-in fade-in zoom-in duration-300">
+    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in duration-300 transition-colors">
       
       {/* Header Section */}
       <div className="flex flex-col items-center mb-8 text-center">
         <div className="flex items-center gap-2 mb-2">
            <ShoppingCart className="w-10 h-10 text-[#16A394]" />
-           <h1 className="text-3xl font-bold tracking-tight">
+           <h1 className="text-3xl font-bold tracking-tight dark:text-white">
              Sari<span className="text-[#16A394]">Track</span>
            </h1>
         </div>
-        <h2 className="text-xl font-semibold text-slate-700">Create Account</h2>
-        <p className="text-slate-500 text-sm mt-1">Join SariTrack to manage your store today.</p>
+        <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">Create Account</h2>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Join SariTrack to manage your store today.</p>
       </div>
 
       {/* Registration Form */}
@@ -99,14 +99,14 @@ const Register = () => {
 
         <button 
           type="submit" 
-          className="w-full bg-[#16A394] hover:bg-[#0D7A6F] text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 mt-4"
+          className="w-full bg-[#16A394] hover:bg-[#0D7A6F] text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition-all active:scale-95 mt-4"
         >
           Create Account
         </button>
       </form>
 
       {/* Footer Link */}
-      <p className="text-center text-sm text-slate-600 mt-8">
+      <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-8">
         Already have an account? <Link to="/login" className="text-[#16A394] font-bold hover:underline">Login</Link>
       </p>
     </div>

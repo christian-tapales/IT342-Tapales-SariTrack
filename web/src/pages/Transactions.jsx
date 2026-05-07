@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package } from 'lucide-react';
 import api from '../api';
+import Skeleton from '../components/Skeleton';
 
 const Transactions = ({ user }) => {
   const [orders, setOrders] = useState([]);
@@ -66,27 +67,27 @@ const Transactions = ({ user }) => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-800">Transaction History</h1>
-          <p className="text-slate-500 font-medium">Review and manage all your store sales.</p>
+          <h1 className="text-3xl font-black text-slate-800 dark:text-white">Transaction History</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Review and manage all your store sales.</p>
         </div>
         <button 
           onClick={handleExport}
-          className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+          className="flex items-center gap-2 bg-slate-900 dark:bg-[#16A394] text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-[#0D7A6F] transition-all shadow-lg active:scale-95"
         >
           <Download size={20} /> Export Report
         </button>
       </div>
 
       {/* Filters bar */}
-      <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl flex flex-col md:flex-row gap-4 items-center transition-colors">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
+          <Search className="absolute left-4 top-3.5 text-slate-400 dark:text-slate-500" size={20} />
           <input
             type="text"
             placeholder="Search Order ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-[#16A394] outline-none transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-[#16A394] outline-none transition-all"
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
@@ -97,7 +98,7 @@ const Transactions = ({ user }) => {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 statusFilter === status 
                 ? 'bg-[#16A394] text-white shadow-md' 
-                : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
               {status}
@@ -107,52 +108,64 @@ const Transactions = ({ user }) => {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden transition-colors">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/50">
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Order ID</th>
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Date & Time</th>
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Amount</th>
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Items</th>
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
-              <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+            <tr className="bg-slate-50/50 dark:bg-slate-800/50">
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Order ID</th>
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Date & Time</th>
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Amount</th>
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Items</th>
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+              <th className="p-6 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
             {loading ? (
-              <tr><td colSpan="6" className="p-20 text-center text-slate-400 font-bold italic">Loading records...</td></tr>
+              Array(6).fill(0).map((_, idx) => (
+                <tr key={idx}>
+                  <td className="p-6"><Skeleton className="h-8 w-20 dark:bg-slate-800" /></td>
+                  <td className="p-6">
+                    <Skeleton className="h-5 w-32 mb-1 dark:bg-slate-800" />
+                    <Skeleton className="h-4 w-24 dark:bg-slate-800" />
+                  </td>
+                  <td className="p-6"><Skeleton className="h-8 w-24 dark:bg-slate-800" /></td>
+                  <td className="p-6"><Skeleton className="h-5 w-16 dark:bg-slate-800" /></td>
+                  <td className="p-6"><Skeleton className="h-8 w-24 rounded-full dark:bg-slate-800" /></td>
+                  <td className="p-6 text-right"><Skeleton className="h-5 w-12 ml-auto dark:bg-slate-800" /></td>
+                </tr>
+              ))
             ) : filteredOrders.length === 0 ? (
-              <tr><td colSpan="6" className="p-20 text-center text-slate-400 font-bold italic">No transactions found.</td></tr>
+              <tr><td colSpan="6" className="p-20 text-center text-slate-400 dark:text-slate-500 font-bold italic">No transactions found.</td></tr>
             ) : filteredOrders.map((order) => {
               const status = getStatusStyle(order.status);
               const StatusIcon = status.icon;
               return (
-                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
                   <td className="p-6">
-                    <span className="font-black text-slate-800 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">#{order.id}</span>
+                    <span className="font-black text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-sm">#{order.id}</span>
                   </td>
                   <td className="p-6">
                     <div className="flex flex-col">
-                      <span className="font-bold text-slate-700">{new Date(order.timestamp).toLocaleDateString()}</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">{new Date(order.timestamp).toLocaleDateString()}</span>
                       <span className="text-xs text-slate-400 font-medium">{new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </td>
-                  <td className="p-6 font-black text-slate-800 text-lg">
+                  <td className="p-6 font-black text-slate-800 dark:text-slate-100 text-lg">
                     ₱{(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="p-6 text-sm text-slate-500 font-medium">
+                  <td className="p-6 text-sm text-slate-500 dark:text-slate-400 font-medium">
                     {order.items?.length || 0} items
                   </td>
                   <td className="p-6">
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${status.bg} ${status.text}`}>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${status.bg} ${status.text} dark:brightness-125 dark:saturate-150 transition-all`}>
                       <StatusIcon size={12} /> {order.status || 'PENDING'}
                     </div>
                   </td>
                   <td className="p-6 text-right">
                     <button 
                       onClick={() => setSelectedOrder(order)}
-                      className="text-slate-400 hover:text-[#16A394] font-bold text-sm transition-colors"
+                      className="text-slate-400 dark:text-slate-500 hover:text-[#16A394] dark:hover:text-teal-400 font-bold text-sm transition-colors"
                     >
                       Details
                     </button>
@@ -164,31 +177,31 @@ const Transactions = ({ user }) => {
         </table>
 
         {/* Pagination placeholder */}
-        <div className="p-6 bg-slate-50/30 flex justify-between items-center border-t border-slate-50">
-          <p className="text-xs text-slate-400 font-bold">Showing {filteredOrders.length} transactions</p>
+        <div className="p-6 bg-slate-50/30 dark:bg-slate-800/30 flex justify-between items-center border-t border-slate-50 dark:border-slate-800 transition-colors">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">Showing {filteredOrders.length} transactions</p>
           <div className="flex gap-2">
-            <button className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-[#16A394] transition-all"><ChevronLeft size={20} /></button>
-            <button className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-[#16A394] transition-all"><ChevronRight size={20} /></button>
+            <button className="p-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:text-[#16A394] dark:hover:text-teal-400 transition-all shadow-sm"><ChevronLeft size={20} /></button>
+            <button className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:text-[#16A394] dark:hover:text-teal-400 transition-all shadow-sm"><ChevronRight size={20} /></button>
           </div>
         </div>
       </div>
 
       {/* Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300 border border-transparent dark:border-slate-800 transition-colors">
+            <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
               <div>
-                <h2 className="text-2xl font-black text-slate-800">Order #{selectedOrder.id}</h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{new Date(selectedOrder.timestamp).toLocaleString()}</p>
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white">Order #{selectedOrder.id}</h2>
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{new Date(selectedOrder.timestamp).toLocaleString()}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-3 bg-white rounded-2xl text-slate-400 hover:text-rose-500 shadow-sm transition-all"><X size={20} /></button>
+              <button onClick={() => setSelectedOrder(null)} className="p-3 bg-white dark:bg-slate-800/50 rounded-2xl text-slate-400 hover:text-rose-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-all"><X size={20} /></button>
             </div>
             
             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
               {selectedOrder.items?.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-4 group">
-                  <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">
+                  <div className="h-12 w-12 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-center text-slate-300 dark:text-slate-700 border border-slate-100 dark:border-slate-800">
                     {item.product?.imageUrl ? (
                       <img src={item.product.imageUrl} alt="" className="h-full w-full object-cover rounded-2xl" />
                     ) : (
@@ -196,17 +209,17 @@ const Transactions = ({ user }) => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-slate-800">{item.product?.name || `Product #${item.productId}`}</p>
-                    <p className="text-xs text-slate-400 font-bold">{item.quantity} x ₱{(item.priceAtSale || 0).toFixed(2)}</p>
+                    <p className="font-bold text-slate-800 dark:text-slate-200">{item.product?.name || `Product #${item.productId}`}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">{item.quantity} x ₱{(item.priceAtSale || 0).toFixed(2)}</p>
                   </div>
-                  <p className="font-black text-slate-800 text-sm">₱{(item.quantity * item.priceAtSale).toFixed(2)}</p>
+                  <p className="font-black text-slate-800 dark:text-slate-100 text-sm">₱{(item.quantity * item.priceAtSale).toFixed(2)}</p>
                 </div>
               ))}
             </div>
 
-            <div className="p-8 bg-slate-900 text-white">
+            <div className="p-8 bg-slate-900 dark:bg-black text-white">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-white/60">Grand Total</span>
+                <span className="font-bold text-white/60 dark:text-slate-500">Grand Total</span>
                 <span className="text-3xl font-black text-teal-400">₱{(selectedOrder.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
