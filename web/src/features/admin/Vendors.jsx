@@ -9,8 +9,8 @@ import {
   ShieldCheck,
   AlertCircle
 } from 'lucide-react';
-import api from '../../api';
-import Skeleton from '../../components/Skeleton';
+import api from '../../core/api/api';
+import Skeleton from '../../core/components/Skeleton';
 
 const Vendors = () => {
   const [vendors, setVendors] = useState([]);

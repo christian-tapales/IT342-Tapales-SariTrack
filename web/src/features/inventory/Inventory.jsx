@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
+import api from '../../core/api/api';
 import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload, Wand2, FileText, Download } from 'lucide-react';
-import { supabase } from '../supabaseClient';
-import Skeleton from '../components/Skeleton';
+import { supabase } from '../../core/api/supabaseClient';
+import Skeleton from '../../core/components/Skeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

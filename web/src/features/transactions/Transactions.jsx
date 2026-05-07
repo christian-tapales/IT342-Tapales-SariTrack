@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package, FileText } from 'lucide-react';
-import api from '../api';
-import Skeleton from '../components/Skeleton';
+import api from '../../core/api/api';
+import Skeleton from '../../core/components/Skeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

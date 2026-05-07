@@ -1,19 +1,19 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import AuthLayout from './layouts/AuthLayout';
-import DashboardLayout from './layouts/DashboardLayout';
-import Login from './components/Login';
-import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import Inventory from './pages/Inventory';
-import PointOfSale from './pages/PointOfSale';
-import Listahan from './pages/Listahan';
-import Vendors from './pages/admin/Vendors';
-import GlobalProducts from './pages/admin/GlobalProducts';
-import Settings from './pages/admin/Settings';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentCancel from './pages/PaymentCancel';
-import Transactions from './pages/Transactions';
+import AuthLayout from './core/layouts/AuthLayout';
+import DashboardLayout from './core/layouts/DashboardLayout';
+import Login from './features/auth/Login';
+import Register from './features/auth/Register';
+import Dashboard from './features/dashboard/Dashboard';
+import Inventory from './features/inventory/Inventory';
+import PointOfSale from './features/pos/PointOfSale';
+import Listahan from './features/listahan/Listahan';
+import Vendors from './features/admin/Vendors';
+import GlobalProducts from './features/admin/GlobalProducts';
+import Settings from './features/admin/Settings';
+import PaymentSuccess from './features/payment/PaymentSuccess';
+import PaymentCancel from './features/payment/PaymentCancel';
+import Transactions from './features/transactions/Transactions';
 
 function App() {
   // Load user from localStorage on startup

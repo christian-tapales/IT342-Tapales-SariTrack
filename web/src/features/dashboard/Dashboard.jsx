@@ -1,7 +1,7 @@
 import { Search, Wallet, Package, BookOpen, ChevronRight, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
+import api from '../../core/api/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ActionCard = ({ icon: Icon, label, value, subtext, colorClass, btnLabel, onClick }) => (

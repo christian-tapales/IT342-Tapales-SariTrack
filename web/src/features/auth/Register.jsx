@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, User, Lock, Eye, EyeOff, ShoppingCart } from 'lucide-react'; 
-import Input from './Input'; 
+import Input from '../../core/components/Input'; 
 
 const Register = () => {
   const [formData, setFormData] = useState({

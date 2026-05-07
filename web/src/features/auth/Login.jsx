@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Mail, Lock, ShoppingCart, Eye, EyeOff } from 'lucide-react';
-import Input from './Input';
+import Input from '../../core/components/Input';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 

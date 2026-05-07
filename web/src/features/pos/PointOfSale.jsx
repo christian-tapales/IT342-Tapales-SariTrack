@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
+import api from '../../core/api/api';
 import { Search, ShoppingCart, Plus, Minus, Trash2, CheckCircle, Package, BookOpen, X, UserPlus } from 'lucide-react';
-import Skeleton from '../components/Skeleton';
+import Skeleton from '../../core/components/Skeleton';
 
 const PointOfSale = ({ user }) => {
   const [products, setProducts] = useState([]);

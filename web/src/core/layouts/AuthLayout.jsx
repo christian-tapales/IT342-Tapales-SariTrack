@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import bgImage from '../assets/Typical_sari-sari_store.jpg';
+import bgImage from '../../assets/Typical_sari-sari_store.jpg';
 
 const AuthLayout = () => {
   return (
