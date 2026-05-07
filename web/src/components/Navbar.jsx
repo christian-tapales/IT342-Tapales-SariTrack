@@ -155,9 +155,6 @@ const Navbar = ({ user, onLogout }) => {
               </span>
             )}
           </button>
-...
-      </div>
-    </nav>
 
           {isNotificationsOpen && (
             <>

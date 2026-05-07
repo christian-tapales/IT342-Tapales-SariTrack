@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, UserPlus, CreditCard, Clock, CheckCircle2, ChevronRight, X, Package, Trash2, History, Banknote } from 'lucide-react';
 import api from '../api';
+import Skeleton from '../components/Skeleton';
 
 const Listahan = ({ user }) => {
   const [customers, setCustomers] = useState([]);
