@@ -36,13 +36,14 @@ class DashboardActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> loadFragment(HomeFragment())
                 R.id.nav_products -> loadFragment(ProductsFragment())
-                R.id.nav_scan -> loadFragment(ScanFragment())
+                R.id.nav_sales -> loadFragment(SalesFragment())
                 R.id.nav_credits -> loadFragment(CreditsFragment())
-                R.id.nav_more -> { /* Future Profile */ }
             }
             true
         }
     }
+
+    private var backPressedTime: Long = 0
 
     private fun loadFragment(fragment: Fragment) {
         try {
@@ -53,5 +54,15 @@ class DashboardActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onBackPressed() {
+        if (backPressedTime + 2000 > System.currentTimeMillis()) {
+            super.onBackPressed()
+            return
+        } else {
+            android.widget.Toast.makeText(baseContext, "Press back again to exit", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        backPressedTime = System.currentTimeMillis()
     }
 }

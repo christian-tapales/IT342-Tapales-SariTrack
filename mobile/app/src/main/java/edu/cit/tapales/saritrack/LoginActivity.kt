@@ -71,7 +71,6 @@ class LoginActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             val loginResponse = response.body()
                             if (loginResponse != null) {
-                                // Save session with NAME
                                 sessionManager.saveAuthToken(loginResponse.token)
                                 sessionManager.saveUserDetail(
                                     loginResponse.id,
@@ -79,19 +78,30 @@ class LoginActivity : AppCompatActivity() {
                                     loginResponse.role,
                                     loginResponse.name
                                 )
-
                                 Toast.makeText(this@LoginActivity, "Welcome, ${loginResponse.name}!", Toast.LENGTH_SHORT).show()
-                                val intent = Intent(this@LoginActivity, DashboardActivity::class.java)
-                                startActivity(intent)
+                                startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                 finish()
                             }
                         } else {
-                            Toast.makeText(this@LoginActivity, "Invalid Credentials", Toast.LENGTH_SHORT).show()
+                            // Try to parse the error JSON {"error": "..."}
+                            val errorMsg = try {
+                                val errorBody = response.errorBody()?.string()
+                                val json = com.google.gson.JsonParser.parseString(errorBody).asJsonObject
+                                json.get("error").asString
+                            } catch (e: Exception) {
+                                "Invalid email or password"
+                            }
+                            Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_LONG).show()
                         }
                     }
 
                     override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                        Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                        // If it's a JSON error, it's usually because the server sent an error string instead of a user object
+                        if (t is com.google.gson.JsonSyntaxException || t.message?.contains("JsonReader") == true) {
+                            Toast.makeText(this@LoginActivity, "Invalid email or password", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@LoginActivity, "Connection Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 })
             }

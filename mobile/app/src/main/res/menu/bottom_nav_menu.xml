@@ -9,15 +9,11 @@
         android:icon="@drawable/ic_inventory"
         android:title="Products" />
     <item
-        android:id="@+id/nav_scan"
-        android:icon="@drawable/ic_scan"
-        android:title="Bar Code" />
+        android:id="@+id/nav_sales"
+        android:icon="@drawable/ic_inventory"
+        android:title="Sales" />
     <item
         android:id="@+id/nav_credits"
         android:icon="@drawable/ic_credits"
         android:title="Credits" />
-    <item
-        android:id="@+id/nav_more"
-        android:icon="@drawable/ic_more"
-        android:title="More" />
 </menu>

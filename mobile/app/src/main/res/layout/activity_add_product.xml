@@ -14,7 +14,7 @@
         android:background="@color/card_surface"
         app:title="New Product"
         app:titleTextColor="@color/text_title"
-        app:navigationIcon="@drawable/ic_scan"
+        app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="@color/text_title"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -77,6 +77,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilProductBarcode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

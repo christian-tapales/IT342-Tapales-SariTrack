@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -113,6 +114,17 @@ class AddProductActivity : AppCompatActivity() {
                 })
         }
 
+        val tilBarcode = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilProductBarcode)
+        
+        tilBarcode.setEndIconOnClickListener {
+            // Check Camera Permission first
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                openScannerBottomSheet(etProductBarcode, etProductName)
+            } else {
+                requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+            }
+        }
+
         btnSaveProduct.setOnClickListener {
             val name = etProductName.text.toString().trim()
             val barcode = etProductBarcode.text.toString().trim()
@@ -179,6 +191,43 @@ class AddProductActivity : AppCompatActivity() {
                 Toast.makeText(this@AddProductActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(this, "Permission granted! Click the scanner again.", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Camera permission is required for scanning.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openScannerBottomSheet(etBarcode: TextInputEditText, etName: TextInputEditText) {
+        val scanner = ScannerBottomSheet { code ->
+            etBarcode.setText(code)
+            // If Name is empty, try to lookup
+            if (etName.text.isNullOrBlank()) {
+                lookupProductName(code, etName)
+            }
+        }
+        scanner.show(supportFragmentManager, "ScannerBottomSheet")
+    }
+
+    private fun lookupProductName(barcode: String, etName: TextInputEditText) {
+        RetrofitClient.getProductService(this).lookupProduct(barcode)
+            .enqueue(object : Callback<Map<String, String>> {
+                override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
+                    if (response.isSuccessful) {
+                        val name = response.body()?.get("productName")
+                        if (!name.isNullOrEmpty() && name != "Product Not Found") {
+                            etName.setText(name)
+                            Toast.makeText(this@AddProductActivity, "Auto-filled name: $name", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
+                    // Fail silently for lookup
+                }
+            })
     }
 
     private fun uploadImageToSupabase(uri: Uri, callback: (String?) -> Unit) {
