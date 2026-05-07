@@ -288,10 +288,12 @@ class SalesFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2002) {
             if (resultCode == android.app.Activity.RESULT_OK) {
+                // Success screen for Digital is slightly different as cart is already cleared in some logic
+                // For now, let's just clear and show success toast or simple screen
+                Toast.makeText(context, "Digital Payment Success!", Toast.LENGTH_LONG).show()
                 cart.clear()
                 updateCartUI()
                 fetchProducts()
-                Toast.makeText(context, "Payment Success!", Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(context, "Payment was not completed", Toast.LENGTH_SHORT).show()
             }
@@ -326,8 +328,8 @@ class SalesFragment : Fragment() {
             RetrofitClient.getTransactionService(context).placeOrder(order)
                 .enqueue(object : Callback<Order> {
                     override fun onResponse(call: Call<Order>, response: Response<Order>) {
-                        if (response.isSuccessful) {
-                            Toast.makeText(context, "Sale Recorded: $status", Toast.LENGTH_LONG).show()
+                        if (response.isSuccessful && response.body() != null) {
+                            showSuccessScreen(response.body()!!, status)
                             cart.clear()
                             updateCartUI()
                             fetchProducts()
@@ -349,5 +351,19 @@ class SalesFragment : Fragment() {
             btnCheckout.isEnabled = true
             btnChargeDebt.isEnabled = true
         }
+    }
+
+    private fun showSuccessScreen(order: Order, status: String) {
+        val context = context ?: return
+        val intent = android.content.Intent(context, SaleSuccessActivity::class.java)
+        intent.putExtra("ORDER_ID", order.id)
+        intent.putExtra("TOTAL", order.totalAmount)
+        intent.putExtra("STATUS", status)
+        
+        val itemsSummary = cart.entries.joinToString("\n") { (p, qty) ->
+            "$qty x ${p.name} (₱${p.price})"
+        }
+        intent.putExtra("ITEMS", itemsSummary)
+        startActivity(intent)
     }
 }
