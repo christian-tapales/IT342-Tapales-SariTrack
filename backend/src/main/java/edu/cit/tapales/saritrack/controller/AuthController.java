@@ -49,7 +49,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Object login(@RequestBody User loginRequest) {
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
         return userRepository.findByEmail(loginRequest.getEmail())
                 .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
                 .map(user -> {
@@ -60,9 +60,10 @@ public class AuthController {
                     response.put("email", user.getEmail());
                     response.put("role", user.getRole());
                     response.put("token", token);
-                    return (Object) response;
+                    return ResponseEntity.ok(response);
                 })
-                .orElse("Error: Invalid credentials.");
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Collections.singletonMap("error", "Invalid email or password")));
     }
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
