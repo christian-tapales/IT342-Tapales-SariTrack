@@ -19,15 +19,12 @@
         <activity
             android:name=".TermsActivity"
             android:exported="false" />
-        <activity
-            android:name=".DashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AddProductActivity"
-            android:exported="false" />
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".AddProductActivity" android:exported="false" />
+        <activity android:name=".PaymentActivity" android:exported="false" />
+        <activity android:name=".CustomerHistoryActivity" android:exported="false" />
+        <activity android:name=".SaleSuccessActivity" android:exported="false" />
+        <activity android:name=".DashboardActivity" android:exported="false" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">

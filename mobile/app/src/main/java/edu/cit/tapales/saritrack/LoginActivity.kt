@@ -114,6 +114,9 @@ class LoginActivity : AppCompatActivity() {
             .build()
 
         val googleSignInClient = GoogleSignIn.getClient(this, gso)
+        
+        // Ensure we start fresh so the next click always shows the account picker
+        googleSignInClient.signOut()
 
         val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)

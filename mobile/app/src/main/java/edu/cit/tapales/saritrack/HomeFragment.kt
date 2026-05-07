@@ -22,7 +22,8 @@ class HomeFragment : Fragment() {
 
     private var tvGreeting: TextView? = null
     private var tvTodaySales: TextView? = null
-    private var tvOrders: TextView? = null
+    private var tvLowStockCount: TextView? = null
+    private var tvInventoryValue: TextView? = null
     private var tvTotalOutstanding: TextView? = null
     private var rvRecentTransactions: RecyclerView? = null
     private var chartContainer: FrameLayout? = null
@@ -36,7 +37,8 @@ class HomeFragment : Fragment() {
         
         tvGreeting = view.findViewById(R.id.tvGreeting)
         tvTodaySales = view.findViewById(R.id.tvTodaySales)
-        tvOrders = view.findViewById(R.id.tvOrders)
+        tvLowStockCount = view.findViewById(R.id.tvLowStockCount)
+        tvInventoryValue = view.findViewById(R.id.tvInventoryValue)
         tvTotalOutstanding = view.findViewById(R.id.tvTotalOutstanding)
         rvRecentTransactions = view.findViewById(R.id.rvRecentTransactions)
         chartContainer = view.findViewById(R.id.chartContainer)
@@ -45,6 +47,12 @@ class HomeFragment : Fragment() {
         val btnLogout: View? = view.findViewById(R.id.btnLogout)
         val btnThemeToggle: View? = view.findViewById(R.id.btnThemeToggle)
         val tvRefresh: View? = view.findViewById(R.id.tvViewAllSales)
+
+        // KPI Cards for navigation
+        val cardSales: View? = view.findViewById(R.id.cardTodaySales)
+        val cardLowStock: View? = view.findViewById(R.id.cardLowStock)
+        val cardDebt: View? = view.findViewById(R.id.cardTotalOutstanding)
+        val cardInventoryValue: View? = view.findViewById(R.id.cardInventoryValue)
         
         val context = context ?: return view
         val sessionManager = SessionManager(context)
@@ -57,6 +65,13 @@ class HomeFragment : Fragment() {
         fetchDashboardData()
         
         tvRefresh?.setOnClickListener { fetchDashboardData() }
+
+        // Navigation Shortcuts
+        val mainActivity = activity as? DashboardActivity
+        cardSales?.setOnClickListener { mainActivity?.navigateToFragment(R.id.nav_sales) }
+        cardLowStock?.setOnClickListener { mainActivity?.navigateToFragment(R.id.nav_products) }
+        cardDebt?.setOnClickListener { mainActivity?.navigateToFragment(R.id.nav_credits) }
+        cardInventoryValue?.setOnClickListener { mainActivity?.navigateToFragment(R.id.nav_products) }
 
         btnLogout?.setOnClickListener {
             sessionManager.logout()
@@ -98,7 +113,8 @@ class HomeFragment : Fragment() {
 
     private fun updateUI(stats: DashboardStats) {
         tvTodaySales?.text = "₱${String.format("%.0f", stats.todaySales)}"
-        tvOrders?.text = stats.recentTransactions.size.toString()
+        tvLowStockCount?.text = stats.lowStockCount.toString()
+        tvInventoryValue?.text = "₱${String.format("%.0f", stats.inventoryValue)}"
         tvTotalOutstanding?.text = "₱${String.format("%.0f", stats.totalDebt)}"
 
         // Update Recent Transactions
@@ -108,10 +124,23 @@ class HomeFragment : Fragment() {
         } else {
             tvEmptyRecentSales?.visibility = View.GONE
             rvRecentTransactions?.visibility = View.VISIBLE
-            rvRecentTransactions?.adapter = TransactionAdapter(stats.recentTransactions)
+            
+            // Reusing SaleSuccessActivity to show details
+            rvRecentTransactions?.adapter = TransactionAdapter(stats.recentTransactions) { order ->
+                val intent = Intent(context, SaleSuccessActivity::class.java)
+                intent.putExtra("ORDER_ID", order.id)
+                intent.putExtra("TOTAL", order.totalAmount)
+                intent.putExtra("STATUS", order.status)
+                
+                val itemsSummary = order.items.joinToString("\n") { item ->
+                    "${item.quantity}x ${item.product?.name ?: "Product #${item.productId}"} (₱${item.priceAtSale})"
+                }
+                intent.putExtra("ITEMS", itemsSummary)
+                startActivity(intent)
+            }
         }
 
-        // Draw simple bar chart
+        // Draw line chart with Y-axis
         drawWeeklyChart(stats.weeklySales)
     }
 
@@ -151,6 +180,28 @@ class HomeFragment : Fragment() {
                 val stepX = chartWidth / (data.size - 1)
                 val path = android.graphics.Path()
                 val fillPath = android.graphics.Path()
+
+                // Draw Y-axis labels
+                val textPaint = android.graphics.Paint().apply {
+                    color = ContextCompat.getColor(context, R.color.text_body)
+                    textSize = 24f
+                    isAntiAlias = true
+                }
+                
+                // Draw grid lines and labels
+                val gridPaint = android.graphics.Paint().apply {
+                    color = (0x1A000000).toInt()
+                    strokeWidth = 2f
+                    isAntiAlias = true
+                }
+
+                val labelCount = 3
+                for (i in 0 until labelCount) {
+                    val labelY = height - padding - (i.toFloat() / (labelCount - 1) * chartHeight)
+                    val labelValue = (i.toFloat() / (labelCount - 1) * finalMax)
+                    canvas.drawText("₱${String.format("%.0f", labelValue)}", 5f, labelY, textPaint)
+                    canvas.drawLine(padding, labelY, width - padding, labelY, gridPaint)
+                }
 
                 data.forEachIndexed { i, item ->
                     val x = padding + (i * stepX)
@@ -218,7 +269,8 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         tvGreeting = null
         tvTodaySales = null
-        tvOrders = null
+        tvLowStockCount = null
+        tvInventoryValue = null
         tvTotalOutstanding = null
         rvRecentTransactions = null
         chartContainer = null

@@ -43,6 +43,11 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    fun navigateToFragment(itemId: Int) {
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav.selectedItemId = itemId
+    }
+
     private var backPressedTime: Long = 0
 
     private fun loadFragment(fragment: Fragment) {

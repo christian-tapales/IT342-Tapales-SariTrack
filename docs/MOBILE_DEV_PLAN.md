@@ -29,33 +29,34 @@ This document tracks the progress of the Android Mobile application. It serves a
 *Goal: Fast barcode scanning and transaction recording.*
 
 - [x] **ML Kit Scanner**: High-speed scanning for EAN/UPC barcodes via BottomSheet.
-- [x] **Cart Management**: Add multiple items to a "Cart" before finalizing the sale with real-time total calculation.
-- [x] **Dual-Entry Scanner**: Added scanner shortcuts in `AddProductActivity` for faster inventory entry.
-- [ ] **Checkout Flow**: 
+- [x] **Cart Management**: Add/Remove/Adjust items before finalizing with real-time calculations.
+- [x] **Dual-Entry Scanner**: Added scanner shortcuts in `AddProductActivity`.
+- [x] **Checkout Flow**: 
     - [x] **Cash**: Immediate stock deduction and transaction recording.
-    - [ ] **Utang**: Linking order to a Customer.
-    - [ ] **Digital**: PayMongo Sandbox integration.
+    - [x] **Utang**: Linking order to a Customer with automated debt updates.
+    - [x] **Digital**: PayMongo Sandbox integration (GCash/Maya/Card).
 
 ---
 
 ## 📒 Phase 4: Listahan (Debt Management)
 *Goal: Manage customer credit on the go.*
 
-- [ ] **Customer Hub**: RecyclerView displaying all store debtors and balances.
-- [ ] **Debt History**: View specific transaction records per customer.
-- [ ] **Settlement Flow**: Record payments to reduce customer debt.
+- [x] **Customer Hub**: RecyclerView displaying all store debtors and balances.
+- [x] **Debt History**: View specific transaction records per customer (Chronological Timeline).
+- [x] **Settlement Flow**: Record payments to reduce customer debt via PaymentBottomSheet.
 
 ---
 
 ## ✨ Phase 5: Polish & UX
 *Goal: App stability and premium feel.*
 
-- [ ] **Theme Switching**: Finalize persistent Dark Mode across all activities.
-- [ ] **Smooth Transitions**: Fragment transitions and shimmering loading states.
+- [x] **Theme Switching**: Finalize persistent Dark Mode across all activities.
+- [x] **Smooth Transitions**: Fragment transitions and shimmering loading states.
 - [x] **Offline Guard**: Defensive checks and try-catch blocks to prevent crashes during server/data errors.
+- [x] **Receipt System**: Professional Success screen with receipt sharing support.
 
 ---
 
-## 📈 Current Progress: **82%**
+## 📈 Current Progress: **100%**
 *Last Updated: 2026-05-07*
-*Focusing on: **Phase 3: Checkout Flow & Phase 4: Listahan***
+*Status: **SariTrack Mobile POS is Production-Ready!***

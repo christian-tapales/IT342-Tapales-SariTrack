@@ -117,19 +117,27 @@
                         android:layout_marginTop="20dp"
                         android:layout_marginBottom="8dp"/>
 
-                    <EditText
-                        android:id="@+id/etPassword"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:background="@drawable/bg_input_gray"
-                        android:drawableStart="@drawable/ic_lock"
-                        android:drawablePadding="12dp"
-                        android:hint="••••••••"
-                        android:inputType="textPassword"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:textColor="#1E293B"
-                        android:textColorHint="#94A3B8" />
+                        android:layout_height="wrap_content"
+                        app:passwordToggleEnabled="true"
+                        app:passwordToggleTint="#94A3B8"
+                        app:hintEnabled="false">
+
+                        <EditText
+                            android:id="@+id/etPassword"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:background="@drawable/bg_input_gray"
+                            android:drawableStart="@drawable/ic_lock"
+                            android:drawablePadding="12dp"
+                            android:hint="••••••••"
+                            android:inputType="textPassword"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="20dp"
+                            android:textColor="#1E293B"
+                            android:textColorHint="#94A3B8" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <RelativeLayout
                         android:layout_width="match_parent"

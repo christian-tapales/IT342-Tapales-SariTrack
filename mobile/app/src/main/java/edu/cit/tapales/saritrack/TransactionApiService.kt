@@ -10,4 +10,7 @@ interface TransactionApiService {
 
     @retrofit2.http.POST("api/orders")
     fun placeOrder(@retrofit2.http.Body order: Order): Call<Order>
+
+    @GET("api/orders/customer/{customerId}")
+    fun getCustomerOrderHistory(@retrofit2.http.Path("customerId") customerId: Long): Call<List<Order>>
 }

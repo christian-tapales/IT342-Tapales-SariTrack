@@ -56,4 +56,12 @@ object RetrofitClient {
     fun getTransactionService(context: Context): TransactionApiService {
         return getInstance(context).create(TransactionApiService::class.java)
     }
+
+    fun getCustomerService(context: Context): CustomerApiService {
+        return getInstance(context).create(CustomerApiService::class.java)
+    }
+
+    fun getPaymentService(context: Context): PaymentApiService {
+        return getInstance(context).create(PaymentApiService::class.java)
+    }
 }
