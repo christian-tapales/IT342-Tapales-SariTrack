@@ -191,4 +191,8 @@ public class OrderService {
             );
         }
     }
+
+    public java.util.List<Order> getOrdersByCustomer(Long customerId) {
+        return orderRepository.findByCustomerId(customerId);
+    }
 }

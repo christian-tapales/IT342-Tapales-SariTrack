@@ -9,7 +9,7 @@ const DashboardLayout = ({ user, onLogout }) => {
 
   if (isVendor) {
     return (
-      <div className="flex flex-col h-screen bg-[#F8FAFB] overflow-hidden">
+      <div className="flex flex-col h-screen bg-[#F8FAFB] dark:bg-slate-900 overflow-hidden transition-colors duration-300">
         {/* Unified Top Navigation for Vendors */}
         <Navbar user={user} onLogout={onLogout} />
         
@@ -20,13 +20,13 @@ const DashboardLayout = ({ user, onLogout }) => {
     );
   }
 
-  // Admin Control Center (Full Dark Theme)
+  // Admin Control Center
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 overflow-hidden font-sans transition-colors duration-300">
       <Sidebar onLogout={onLogout} />
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-950">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-950">
         <Topbar user={user} onLogout={onLogout} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-8 bg-[#020617]">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-8 bg-slate-50 dark:bg-[#020617]">
           <Outlet /> 
         </main>
       </div>

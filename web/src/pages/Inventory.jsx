@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload, Wand2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import Skeleton from '../components/Skeleton';
 
 const Inventory = ({ user }) => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -62,10 +64,13 @@ const Inventory = ({ user }) => {
   const fetchProducts = async () => {
     if (!user?.id) return;
     try {
+      setLoading(true);
       const response = await api.get(`/products?vendorId=${user.id}`);
       setProducts(response.data);
     } catch (error) {
       console.error("Fetch failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,6 +121,36 @@ const Inventory = ({ user }) => {
     }
   };
 
+  const handleExportCSV = () => {
+    if (products.length === 0) {
+      alert("No products to export.");
+      return;
+    }
+
+    const headers = ["ID", "Name", "Barcode", "Price", "Stock", "Category"];
+    const csvContent = [
+      headers.join(","),
+      ...products.map(p => [
+        p.id,
+        `"${p.name}"`,
+        p.barcode || 'N/A',
+        p.price,
+        p.stockQuantity,
+        p.category || 'General'
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
@@ -131,50 +166,76 @@ const Inventory = ({ user }) => {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-slate-800">Inventory</h1>
-          <p className="text-slate-500 font-medium">Manage your items and stock levels.</p>
+          <h1 className="text-3xl font-black text-slate-800 dark:text-white">Inventory</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Manage your items and stock levels.</p>
         </div>
-        <button 
-          onClick={() => {
-            setEditingId(null);
-            setFormData({ name: '', barcode: '', price: '', stockQuantity: '', imageUrl: '', vendorId: user.id });
-            setIsModalOpen(true);
-          }}
-          className="bg-[#16A394] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-[#16A394]/20 hover:bg-[#0D7A6F] transition-all active:scale-95 flex items-center gap-2"
-        >
-          <Plus size={20} /> Add Product
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleExportCSV}
+            className="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center gap-2"
+          >
+            <Upload size={20} className="rotate-180" /> Export CSV
+          </button>
+          <button 
+            onClick={() => {
+              setEditingId(null);
+              setFormData({ name: '', barcode: '', price: '', stockQuantity: '', imageUrl: '', vendorId: user.id });
+              setIsModalOpen(true);
+            }}
+            className="bg-[#16A394] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-[#16A394]/20 hover:bg-[#0D7A6F] transition-all active:scale-95 flex items-center gap-2"
+          >
+            <Plus size={20} /> Add Product
+          </button>
+        </div>
       </div>
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div key={product.id} className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 group relative overflow-hidden">
+        {loading ? (
+          Array(8).fill(0).map((_, idx) => (
+            <div key={idx} className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
+              <Skeleton className="h-40 w-full mb-4 dark:bg-slate-700" />
+              <Skeleton className="h-6 w-3/4 mb-3 dark:bg-slate-700" />
+              <Skeleton className="h-4 w-1/2 mb-4 dark:bg-slate-700" />
+              <div className="flex justify-between items-end pt-3 border-t border-slate-50 dark:border-slate-700/50">
+                <Skeleton className="h-10 w-20 dark:bg-slate-700" />
+                <Skeleton className="h-10 w-16 dark:bg-slate-700" />
+              </div>
+            </div>
+          ))
+        ) : products.length === 0 ? (
+          <div className="col-span-full py-20 text-center bg-white dark:bg-slate-800 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-700">
+            <Package className="mx-auto text-slate-200 dark:text-slate-700 mb-4" size={64} />
+            <p className="text-slate-400 font-bold italic">No products found in your inventory.</p>
+          </div>
+        ) : (
+          products.map((product) => (
+            <div key={product.id} className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 group relative overflow-hidden">
              {/* Product Image */}
-             <div className="h-40 w-full bg-slate-50 rounded-3xl mb-4 overflow-hidden flex items-center justify-center text-[#16A394]">
+             <div className="h-40 w-full bg-slate-50 dark:bg-slate-900/50 rounded-3xl mb-4 overflow-hidden flex items-center justify-center text-[#16A394]">
                {product.imageUrl ? (
                  <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
                ) : (
                  <div className="flex flex-col items-center gap-2">
                    <Package size={40} />
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">No Image</span>
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300 dark:text-slate-600">No Image</span>
                  </div>
                )}
              </div>
 
-             <h3 className="font-bold text-slate-800 text-lg truncate">{product.name}</h3>
+             <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg truncate">{product.name}</h3>
              <p className="text-xs text-slate-400 font-bold mb-3 flex items-center gap-1">
                <Barcode size={12} /> {product.barcode || 'N/A'}
              </p>
 
-             <div className="flex justify-between items-end border-t border-slate-50 pt-3">
+             <div className="flex justify-between items-end border-t border-slate-50 dark:border-slate-700/50 pt-3">
                <div>
                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Price</p>
                  <p className="text-xl font-black text-[#16A394]">₱{(product.price || 0).toFixed(2)}</p>
                </div>
                <div className="flex flex-col items-end">
                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Stock</p>
-                 <p className={`font-bold ${product.stockQuantity < 5 ? 'text-rose-500' : 'text-slate-700'}`}>
+                 <p className={`font-bold ${product.stockQuantity < 5 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300'}`}>
                    {product.stockQuantity}
                  </p>
                </div>
@@ -196,27 +257,27 @@ const Inventory = ({ user }) => {
                 </button>
              </div>
           </div>
-        ))}
+        )))}
       </div>
 
       {/* Product Modal (Handles both Add & Edit) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 animate-in zoom-in duration-200 border border-transparent dark:border-slate-800">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-black text-slate-800">{editingId ? "Edit Product" : "New Product"}</h2>
-                <p className="text-xs text-slate-500 font-medium">Update your product details below.</p>
+                <h2 className="text-xl font-black text-slate-800 dark:text-white">{editingId ? "Edit Product" : "New Product"}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Update your product details below.</p>
               </div>
-              <button onClick={() => { setIsModalOpen(false); setEditingId(null); }}><X className="text-slate-400 hover:text-slate-600" /></button>
+              <button onClick={() => { setIsModalOpen(false); setEditingId(null); }} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"><X className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Product Image</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-2">Product Image</label>
                 
                 {/* Image Preview & Upload Area */}
                 <div className="relative group">
-                  <div className={`w-full h-40 rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden bg-slate-50 ${formData.imageUrl ? 'border-teal-500/30' : 'border-slate-200 hover:border-teal-400'}`}>
+                  <div className={`w-full h-40 rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 ${formData.imageUrl ? 'border-teal-500/30' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400'}`}>
                     {formData.imageUrl ? (
                       <div className="relative w-full h-full group">
                         <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -242,10 +303,10 @@ const Inventory = ({ user }) => {
 
                 {/* Optional Manual URL Fallback */}
                 <div className="relative">
-                  <ImageIcon className="absolute left-4 top-3 text-slate-300" size={16} />
+                  <ImageIcon className="absolute left-4 top-3 text-slate-300 dark:text-slate-600" size={16} />
                   <input 
                     type="text" placeholder="Or paste image link..."
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 text-slate-900 rounded-xl outline-none focus:ring-2 focus:ring-[#16A394] text-[10px] font-medium"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl outline-none focus:ring-2 focus:ring-[#16A394] text-[10px] font-medium border border-transparent dark:border-slate-800"
                     value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})}
                   />
                 </div>
@@ -253,19 +314,19 @@ const Inventory = ({ user }) => {
 
               <input 
                 type="text" placeholder="Product Name" required
-                className="w-full p-4 bg-slate-50 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
+                className="w-full p-4 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] border border-transparent dark:border-slate-800"
                 value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
               />
               <div className="relative flex gap-2">
                 <input 
                   type="text" placeholder="Barcode"
-                  className="flex-1 p-4 bg-slate-50 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
+                  className="flex-1 p-4 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] border border-transparent dark:border-slate-800"
                   value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})}
                 />
                 <button 
                   type="button"
                   onClick={handleLookup}
-                  className="bg-amber-400 text-white p-4 rounded-2xl hover:bg-amber-500 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-400/20"
+                  className="bg-amber-400 text-white px-5 rounded-2xl hover:bg-amber-500 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-400/20"
                   title="Lookup Name via Barcode"
                 >
                   <Wand2 size={20} />
@@ -274,12 +335,12 @@ const Inventory = ({ user }) => {
               <div className="grid grid-cols-2 gap-4">
                 <input 
                   type="number" placeholder="Price (₱)" required
-                  className="w-full p-4 bg-slate-50 text-slate-900  rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white  rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] border border-transparent dark:border-slate-800"
                   value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})}
                 />
                 <input 
                   type="number" placeholder="Stock Qty" required
-                  className="w-full p-4 bg-slate-50 text-slate-900  rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394]"
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white  rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] border border-transparent dark:border-slate-800"
                   value={formData.stockQuantity} onChange={e => setFormData({...formData, stockQuantity: e.target.value})}
                 />
               </div>

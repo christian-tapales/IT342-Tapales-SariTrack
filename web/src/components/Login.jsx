@@ -49,15 +49,15 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl border border-white/20 text-slate-800 animate-in fade-in zoom-in duration-300">
+    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in duration-300 transition-colors">
       <div className="flex flex-col items-center mb-8 text-center">
         <div className="flex items-center gap-2 mb-2">
            <ShoppingCart className="w-10 h-10 text-[#16A394]" />
-           <h1 className="text-3xl font-bold tracking-tight">
+           <h1 className="text-3xl font-bold tracking-tight dark:text-white">
              Sari<span className="text-[#16A394]">Track</span>
            </h1>
         </div>
-        <p className="text-slate-500 text-sm">Sign in to manage your store</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">Sign in to manage your store</p>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-5">
@@ -77,27 +77,27 @@ const Login = ({ onLoginSuccess }) => {
           showPasswordButton={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           onTogglePassword={() => setShowPassword(!showPassword)}
         />
-        <button type="submit" className="w-full bg-[#16A394] hover:bg-[#0D7A6F] text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">
+        <button type="submit" className="w-full bg-[#16A394] hover:bg-[#0D7A6F] text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition-all active:scale-95">
           Login
         </button>
       </form>
 
-      {/* --- ADDED GOOGLE DIVIDER AND BUTTON --- */}
+      {/* --- GOOGLE DIVIDER AND BUTTON --- */}
       <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-300"></span></div>
-        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-500">Or continue with</span></div>
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200 dark:border-slate-800"></span></div>
+        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white/90 dark:bg-slate-900/90 px-2 text-slate-500 dark:text-slate-400">Or continue with</span></div>
       </div>
 
       <button 
         onClick={handleGoogleLogin}
         type="button"
-        className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 rounded-2xl shadow-sm transition-all active:scale-95"
+        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-3 rounded-2xl shadow-sm transition-all active:scale-95"
       >
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
         Google Account
       </button>
 
-      <p className="text-center text-sm text-slate-600 mt-8">
+      <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-8">
         Need an account? <Link to="/register" className="text-[#16A394] font-bold hover:underline">Register</Link>
       </p>
     </div>

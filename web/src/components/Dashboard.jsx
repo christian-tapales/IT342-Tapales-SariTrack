@@ -7,20 +7,20 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const ActionCard = ({ icon: Icon, label, value, subtext, colorClass, btnLabel, onClick }) => (
   <div
     onClick={onClick}
-    className={`${colorClass} p-6 rounded-[2rem] text-white shadow-lg flex flex-col justify-between h-48 transition-all hover:scale-[1.02] hover:shadow-2xl cursor-pointer active:scale-95`}
+    className={`${colorClass} p-6 rounded-[2rem] shadow-lg flex flex-col justify-between h-48 transition-all hover:scale-[1.02] hover:shadow-2xl cursor-pointer active:scale-95`}
   >
     <div className="flex justify-between items-start">
-      <div className="bg-white/20 p-3 rounded-2xl">
-        <Icon size={24} />
+      <div className="bg-teal-500/10 p-3 rounded-2xl border border-teal-500/20">
+        <Icon size={24} className="text-teal-600 dark:text-teal-400" />
       </div>
-      <button className="bg-white/20 hover:bg-white/30 px-4 py-1.5 rounded-full text-xs font-bold transition-colors">
+      <button className="bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors">
         {btnLabel}
       </button>
     </div>
     <div>
-      <p className="text-white/80 text-xs font-bold uppercase tracking-wider">{label}</p>
-      <p className="text-3xl font-black mt-1">{value}</p>
-      {subtext && <p className="text-white/60 text-[10px] mt-1 font-medium">{subtext}</p>}
+      <p className="text-slate-400 dark:text-white/60 text-xs font-bold uppercase tracking-wider">{label}</p>
+      <p className="text-3xl font-black mt-1 text-slate-800 dark:text-white">{value}</p>
+      {subtext && <p className="text-slate-500 dark:text-white/40 text-[10px] mt-1 font-medium">{subtext}</p>}
     </div>
   </div>
 );
@@ -89,15 +89,15 @@ const Dashboard = ({ user }) => {
   };
 
   return (
-    <div className={`max-w-7xl mx-auto space-y-8 pb-10 animate-in fade-in duration-500 ${isAdmin ? 'text-slate-200' : 'text-slate-800'}`}>
+    <div className="max-w-7xl mx-auto space-y-8 pb-10 animate-in fade-in duration-500 text-slate-800 dark:text-slate-200">
 
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className={`text-3xl font-black ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
+          <h1 className="text-3xl font-black text-slate-800 dark:text-white">
             {isAdmin ? "Platform Control" : "Kumusta"}, <span className="text-[#16A394]">{user?.name?.split(' ')[0] || "Admin"}</span>!
           </h1>
-          <p className={isAdmin ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'}>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">
             {isAdmin ? "Global system status and platform health." : "Here is what's happening today."}
           </p>
         </div>
@@ -113,7 +113,7 @@ const Dashboard = ({ user }) => {
             <input
               type="text"
               placeholder="Search transactions, products..."
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] shadow-sm transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-[#16A394] shadow-sm transition-all text-slate-900 dark:text-white"
             />
           </div>
         )}
@@ -126,7 +126,7 @@ const Dashboard = ({ user }) => {
           label={isAdmin ? "Lifetime Platform Sales" : "Today's Sales"}
           value={isAdmin ? `₱${(platformStats.totalPlatformSales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : `₱${(stats.todaySales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
           subtext={isAdmin ? "Total platform revenue (All-Time)" : "Confirmed payments only"}
-          colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-[#16A394]"}
+          colorClass="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5"
           btnLabel={isAdmin ? "Audit" : "POS"}
           onClick={() => navigate(isAdmin ? '/admin/vendors' : '/sales')}
         />
@@ -135,7 +135,7 @@ const Dashboard = ({ user }) => {
           label={isAdmin ? "Active Vendors" : "Low Stock Alert"}
           value={isAdmin ? `${platformStats.totalVendors} Stores` : `${stats.lowStockCount} Items`}
           subtext={isAdmin ? "Current onboarded sellers" : "Requires attention"}
-          colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-rose-500"}
+          colorClass="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5"
           btnLabel={isAdmin ? "Manage" : "Check"}
           onClick={() => navigate(isAdmin ? '/admin/vendors' : '/inventory')}
         />
@@ -144,17 +144,17 @@ const Dashboard = ({ user }) => {
           label={isAdmin ? "System Health" : "Listahan Overview"}
           value={isAdmin ? `${platformStats.systemHealth}%` : `₱${(stats.totalDebt || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
           subtext={isAdmin ? "API & Database Uptime" : "Total active credits"}
-          colorClass={isAdmin ? "bg-slate-900 border border-white/5" : "bg-amber-400"}
+          colorClass="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5"
           btnLabel={isAdmin ? "View" : "Open"}
           onClick={() => navigate(isAdmin ? '/admin/settings' : '/listahan')}
         />
       </div>
 
       {/* Sales Analytics Chart */}
-      <div className={`${isAdmin ? 'bg-slate-900 border border-white/5' : 'bg-white border border-slate-100'} p-8 rounded-[3rem] shadow-xl space-y-6`}>
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-[3rem] shadow-xl space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h3 className={`text-xl font-bold ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">
               {isAdmin ? "Global Platform Revenue" : "Weekly Revenue"}
             </h3>
             <p className="text-sm text-slate-500 font-medium">
@@ -165,7 +165,7 @@ const Dashboard = ({ user }) => {
             <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">
               {isAdmin ? "7-Day Platform Total" : "Estimated Week Total"}
             </p>
-            <p className={`text-2xl font-black ${isAdmin ? 'text-teal-400' : 'text-[#16A394]'}`}>
+            <p className={`text-2xl font-black ${isAdmin ? 'text-teal-500 dark:text-teal-400' : 'text-[#16A394]'}`}>
               ₱{((isAdmin ? platformStats.weeklySales : stats.weeklySales) || []).reduce((acc, curr) => acc + (curr.sales || 0), 0).toLocaleString()}
             </p>
           </div>
@@ -176,11 +176,11 @@ const Dashboard = ({ user }) => {
             <AreaChart data={(isAdmin ? platformStats.weeklySales : stats.weeklySales) || []}>
               <defs>
                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={isAdmin ? "#2DD4BF" : "#16A394"} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={isAdmin ? "#2DD4BF" : "#16A394"} stopOpacity={0}/>
+                  <stop offset="5%" stopColor={isAdmin ? "#14B8A6" : "#16A394"} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={isAdmin ? "#14B8A6" : "#16A394"} stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isAdmin ? "#1e293b" : "#f1f5f9"} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? "#1e293b" : "#f1f5f9"} />
               <XAxis 
                 dataKey="day" 
                 axisLine={false} 
@@ -194,15 +194,15 @@ const Dashboard = ({ user }) => {
                   borderRadius: '16px', 
                   border: 'none', 
                   boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                  backgroundColor: isAdmin ? '#0f172a' : '#ffffff',
-                  color: isAdmin ? '#f8fafc' : '#1e293b'
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+                  color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b'
                 }}
                 formatter={(value) => [`₱${value.toLocaleString()}`, 'Sales']}
               />
               <Area 
                 type="monotone" 
                 dataKey="sales" 
-                stroke={isAdmin ? "#2DD4BF" : "#16A394"} 
+                stroke={isAdmin ? "#14B8A6" : "#16A394"} 
                 strokeWidth={4}
                 fillOpacity={1} 
                 fill="url(#colorSales)" 
@@ -216,7 +216,7 @@ const Dashboard = ({ user }) => {
         {/* Recent Activity Section */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center px-2">
-            <h3 className={`text-xl font-bold ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">
               {isAdmin ? "Global Platform Activity" : "Recent Transactions"}
             </h3>
             <button 
@@ -227,18 +227,18 @@ const Dashboard = ({ user }) => {
             </button>
           </div>
 
-          <div className={`${isAdmin ? 'bg-slate-900/50 border border-white/5' : 'bg-white border border-slate-100'} rounded-[3rem] shadow-xl overflow-hidden`}>
-            <div className={`divide-y ${isAdmin ? 'divide-white/5' : 'divide-slate-50'}`}>
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] shadow-xl overflow-hidden">
+            <div className="divide-y divide-slate-50 dark:divide-slate-800">
               {((isAdmin ? platformStats.recentTransactions : stats.recentTransactions) || []).length === 0 ? (
                 <div className="p-10 text-center text-slate-400 font-medium italic">No recent activity.</div>
               ) : ((isAdmin ? platformStats.recentTransactions : stats.recentTransactions) || []).map((txn) => (
-                <div key={txn.id} className={`p-6 flex items-center justify-between transition-colors cursor-pointer group ${isAdmin ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+                <div key={txn.id} className="p-6 flex items-center justify-between transition-colors cursor-pointer group hover:bg-slate-50 dark:hover:bg-slate-800">
                   <div className="flex items-center gap-4">
-                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-bold transition-colors ${isAdmin ? 'bg-slate-800 text-teal-400' : 'bg-slate-50 text-[#16A394]'}`}>
+                    <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center font-bold transition-colors text-[#16A394] dark:text-teal-400">
                       #{txn.id}
                     </div>
                     <div>
-                      <p className={`font-bold ${isAdmin ? 'text-slate-200' : 'text-slate-800'}`}>
+                      <p className="font-bold text-slate-800 dark:text-slate-200">
                         {isAdmin ? `Order #${txn.id}` : `Transaction #${txn.id}`}
                       </p>
                       <p className="text-xs text-slate-500 font-medium">
@@ -248,7 +248,7 @@ const Dashboard = ({ user }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-black ${isAdmin ? 'text-white' : 'text-slate-800'}`}>₱{(txn.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    <p className="font-black text-slate-800 dark:text-white">₱{(txn.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                     {getStatusBadge(txn.status)}
                   </div>
                 </div>
@@ -259,10 +259,10 @@ const Dashboard = ({ user }) => {
 
         {/* Top Selling Section / Vendor Performance */}
         <div className="space-y-4">
-          <h3 className={`text-xl font-bold px-2 ${isAdmin ? 'text-white' : 'text-slate-800'}`}>
+          <h3 className="text-xl font-bold px-2 text-slate-800 dark:text-white">
             {isAdmin ? "Top Vendors" : "Top Selling Items"}
           </h3>
-          <div className={`${isAdmin ? 'bg-slate-900/50 border border-white/5' : 'bg-white border border-slate-100'} p-8 rounded-[3rem] shadow-xl space-y-6`}>
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-[3rem] shadow-xl space-y-6">
             {isAdmin ? (
               (platformStats.topVendors || []).length === 0 ? (
                 <div className="text-center text-slate-400 py-10 italic">No vendor data yet.</div>
@@ -274,10 +274,10 @@ const Dashboard = ({ user }) => {
                   return (
                     <div key={index} className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="font-bold text-slate-300">{item.name}</span>
-                        <span className="font-black text-teal-400">₱{item.sales?.toLocaleString()}</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">{item.name}</span>
+                        <span className="font-black text-teal-600 dark:text-teal-400">₱{item.sales?.toLocaleString()}</span>
                       </div>
-                      <div className="h-2 w-full rounded-full overflow-hidden bg-slate-800">
+                      <div className="h-2 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <div
                           className={`h-full ${colors[index % colors.length]} rounded-full transition-all duration-1000`}
                           style={{ width: `${percentage}%` }}
@@ -298,10 +298,10 @@ const Dashboard = ({ user }) => {
                   return (
                     <div key={index} className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="font-bold text-slate-700">{item.name}</span>
-                        <span className="font-black text-slate-500">{item.sold} sold</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">{item.name}</span>
+                        <span className="font-black text-slate-500 dark:text-slate-400">{item.sold} sold</span>
                       </div>
-                      <div className="h-2 w-full rounded-full overflow-hidden bg-slate-50">
+                      <div className="h-2 w-full rounded-full overflow-hidden bg-slate-50 dark:bg-slate-800">
                         <div
                           className={`h-full ${colors[index % colors.length]} rounded-full transition-all duration-1000`}
                           style={{ width: `${percentage}%` }}
@@ -314,8 +314,7 @@ const Dashboard = ({ user }) => {
             )}
             <button
               onClick={() => navigate(isAdmin ? '/admin/vendors' : '/inventory')}
-              className={`w-full py-4 mt-4 border-2 border-dashed rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isAdmin ? 'border-white/10 text-slate-500 hover:border-teal-400 hover:text-teal-400' : 'border-slate-200 text-slate-400 hover:border-[#16A394] hover:text-[#16A394]'
-                }`}>
+              className="w-full py-4 mt-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm text-slate-400 dark:text-slate-500 hover:border-[#16A394] hover:text-[#16A394] transition-all flex items-center justify-center gap-2">
               {isAdmin ? "Full Platform Audit" : "Full Inventory Report"} <ChevronRight size={16} />
             </button>
           </div>
