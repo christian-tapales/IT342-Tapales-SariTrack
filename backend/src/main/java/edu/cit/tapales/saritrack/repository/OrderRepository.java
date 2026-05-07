@@ -11,6 +11,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByVendorIdAndTimestampAfter(Long vendorId, LocalDateTime timestamp);
     List<Order> findByVendorIdAndStatus(Long vendorId, String status);
     List<Order> findByVendorIdAndStatusAndTimestampAfter(Long vendorId, String status, LocalDateTime timestamp);
+    List<Order> findByCustomerId(Long customerId);
     
     long countByVendorId(Long vendorId);
 

@@ -42,7 +42,7 @@ This document tracks the progress of the Android Mobile application. It serves a
 *Goal: Manage customer credit on the go.*
 
 - [x] **Customer Hub**: RecyclerView displaying all store debtors and balances.
-- [ ] **Debt History**: View specific transaction records per customer.
+- [x] **Debt History**: View specific transaction records per customer (Chronological Timeline).
 - [x] **Settlement Flow**: Record payments to reduce customer debt via PaymentBottomSheet.
 
 ---
@@ -56,6 +56,6 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 ---
 
-## 📈 Current Progress: **95%**
+## 📈 Current Progress: **98%**
 *Last Updated: 2026-05-07*
-*Focusing on: **Phase 4: Debt History & Phase 5: UI Polish***
+*Focusing on: **Phase 5: Polish & UX***

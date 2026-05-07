@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 
 class CustomerAdapter(
     private var customers: List<Customer>,
-    private val onClick: (Customer) -> Unit
+    private val showPayButton: Boolean = true,
+    private val onHistoryClick: (Customer) -> Unit,
+    private val onPayClick: (Customer) -> Unit = {}
 ) : RecyclerView.Adapter<CustomerAdapter.CustomerViewHolder>() {
 
     class CustomerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -17,6 +19,7 @@ class CustomerAdapter(
         val tvLastUpdate: TextView = view.findViewById(R.id.tvLastUpdate)
         val tvDebt: TextView = view.findViewById(R.id.tvDebt)
         val tvStatus: TextView = view.findViewById(R.id.tvStatus)
+        val btnPay: View = view.findViewById(R.id.btnPay)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomerViewHolder {
@@ -41,7 +44,10 @@ class CustomerAdapter(
         // Date placeholder for now
         holder.tvLastUpdate.text = "Last active: ${customer.lastUpdate?.substringBefore("T") ?: "N/A"}"
 
-        holder.itemView.setOnClickListener { onClick(customer) }
+        holder.btnPay.visibility = if (showPayButton) View.VISIBLE else View.GONE
+
+        holder.itemView.setOnClickListener { onHistoryClick(customer) }
+        holder.btnPay.setOnClickListener { onPayClick(customer) }
     }
 
     override fun getItemCount() = customers.size

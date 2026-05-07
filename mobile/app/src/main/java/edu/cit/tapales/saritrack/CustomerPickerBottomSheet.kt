@@ -32,10 +32,14 @@ class CustomerPickerBottomSheet(
         rvPicker = view.findViewById(R.id.rvCustomerPicker)
         rvPicker.layoutManager = LinearLayoutManager(context)
         
-        adapter = CustomerAdapter(emptyList()) { customer ->
-            onCustomerSelected(customer)
-            dismiss()
-        }
+        adapter = CustomerAdapter(
+            customers = emptyList(),
+            showPayButton = false,
+            onHistoryClick = { customer ->
+                onCustomerSelected(customer)
+                dismiss()
+            }
+        )
         rvPicker.adapter = adapter
 
         fetchCustomers()

@@ -30,12 +30,22 @@ class CreditsFragment : Fragment() {
         tvTotalDebt = view.findViewById(R.id.tvTotalDebt)
 
         rvCustomers.layoutManager = LinearLayoutManager(context)
-        adapter = CustomerAdapter(emptyList()) { customer ->
-            val paymentSheet = PaymentBottomSheet(customer) {
-                fetchCustomers() // Refresh list on success
+        adapter = CustomerAdapter(
+            customers = emptyList(),
+            onHistoryClick = { customer ->
+                val intent = android.content.Intent(context, CustomerHistoryActivity::class.java)
+                intent.putExtra("CUSTOMER_ID", customer.id)
+                intent.putExtra("CUSTOMER_NAME", customer.fullName)
+                intent.putExtra("CURRENT_DEBT", customer.currentDebt)
+                startActivity(intent)
+            },
+            onPayClick = { customer ->
+                val paymentSheet = PaymentBottomSheet(customer) {
+                    fetchCustomers()
+                }
+                paymentSheet.show(parentFragmentManager, "PaymentSheet")
             }
-            paymentSheet.show(parentFragmentManager, "PaymentSheet")
-        }
+        )
         rvCustomers.adapter = adapter
 
         fetchCustomers()
@@ -54,7 +64,7 @@ class CreditsFragment : Fragment() {
                         allCustomers = response.body() ?: emptyList()
                         adapter.updateCustomers(allCustomers)
                         
-                        val total = allCustomers.sumOf { it.currentDebt ?: 0.0 }
+                        val total = allCustomers.sumOf { it.currentDebt }
                         tvTotalDebt.text = "₱${String.format("%.2f", total)}"
                     }
                 }

@@ -23,4 +23,10 @@ public class OrderController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<java.util.List<Order>> getOrdersByCustomer(@PathVariable Long customerId) {
+        java.util.List<Order> orders = orderService.getOrdersByCustomer(customerId);
+        return ResponseEntity.ok(orders);
+    }
 }
