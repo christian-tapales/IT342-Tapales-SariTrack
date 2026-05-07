@@ -1,30 +1,59 @@
 package edu.cit.tapales.saritrack
 
+import android.content.Context
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object RetrofitClient {
-    // Check if the device is an emulator
-    private val isEmulator: Boolean = (android.os.Build.BRAND.startsWith("generic")
-            || android.os.Build.DEVICE.startsWith("generic")
-            || android.os.Build.FINGERPRINT.contains("generic")
-            || android.os.Build.MODEL.contains("google_sdk")
-            || android.os.Build.MODEL.contains("Emulator")
-            || android.os.Build.MODEL.contains("Android SDK built for x86"))
+    private const val BASE_URL = "https://snippet-sheath-cloak.ngrok-free.dev/"
 
+    private fun getOkHttpClient(context: Context?): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        
+        if (context != null) {
+            builder.addInterceptor(AuthInterceptor(SessionManager(context)))
+        }
+        return builder.build()
+    }
 
-    // Use 10.0.2.2 for Emulator, and your Laptop IP for Physical Phone
-    private const val LAPTOP_IP = "10.173.184.119" // Put your IP here
-    private val BASE_URL = if (isEmulator) "http://10.0.2.2:8080" else "http://$LAPTOP_IP:8080"
-
-    val instance: AuthApiService by lazy {
+    val authInstance: AuthApiService by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(ScalarsConverterFactory.create()) // 2. ADD THIS FIRST (for Plain Text)
-            .addConverterFactory(GsonConverterFactory.create())    // 3. KEEP THIS SECOND (for JSON)
+            .client(getOkHttpClient(null)) // Login doesn't need auth interceptor but needs timeout
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
-
         retrofit.create(AuthApiService::class.java)
+    }
+
+    private var instance: Retrofit? = null
+
+    fun getInstance(context: Context): Retrofit {
+        if (instance == null) {
+            instance = Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .client(getOkHttpClient(context))
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
+        return instance!!
+    }
+
+    fun getDashboardService(context: Context): DashboardApiService {
+        return getInstance(context).create(DashboardApiService::class.java)
+    }
+
+    fun getProductService(context: Context): ProductApiService {
+        return getInstance(context).create(ProductApiService::class.java)
+    }
+
+    fun getTransactionService(context: Context): TransactionApiService {
+        return getInstance(context).create(TransactionApiService::class.java)
     }
 }

@@ -43,17 +43,27 @@ public class SecurityConfig {
 
                 // 2. Configure CORS
                 .cors(cors -> cors.configurationSource(request -> {
-                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174"));
-                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    corsConfiguration.setAllowedHeaders(List.of("*"));
+                    org.springframework.web.cors.CorsConfiguration corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    // Explicitly list allowed origins to support setAllowCredentials(true)
+                    corsConfiguration.setAllowedOriginPatterns(List.of(
+                        "http://localhost:5173", 
+                        "http://localhost:5174", 
+                        "https://*.ngrok-free.app",
+                        "https://*.ngrok-free.dev"
+                    ));
+                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    corsConfiguration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "ngrok-skip-browser-warning"));
                     corsConfiguration.setAllowCredentials(true);
-                    return corsConfiguration;
+                    
+                    org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+                    source.registerCorsConfiguration("/**", corsConfiguration);
+                    return source.getCorsConfiguration(request);
                 }))
 
                 // 3. Define URLs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
+                        .requestMatchers("/", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**", "/error").permitAll()
                         .anyRequest().authenticated())
 
                 // 4. ADD JWT FILTER

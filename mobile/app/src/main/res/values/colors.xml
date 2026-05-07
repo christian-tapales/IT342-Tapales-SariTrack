@@ -2,4 +2,17 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Semantic Colors (Light Mode) -->
+    <color name="dashboard_bg">#F8FAFC</color>
+    <color name="card_surface">#FFFFFF</color>
+    <color name="text_title">#0F172A</color>
+    <color name="text_body">#64748B</color>
+    <color name="border_subtle">#E2E8F0</color>
+
+    <!-- SariTrack Branding -->
+    <color name="primary_teal">#14B8A6</color>
+    <color name="primary_blue">#3B82F6</color>
+    <color name="primary_orange">#F59E0B</color>
+    <color name="primary_purple">#8B5CF6</color>
 </resources>

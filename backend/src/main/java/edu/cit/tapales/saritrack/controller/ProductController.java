@@ -24,6 +24,18 @@ public class ProductController {
         return ResponseEntity.ok(java.util.Map.of("productName", productName));
     }
 
+    @GetMapping("/barcode/{barcode}")
+    public ResponseEntity<Product> getByBarcode(@PathVariable String barcode, @RequestParam Long vendorId) {
+        String cleanBarcode = barcode.trim();
+        System.out.println("--- BARCODE LOOKUP: '" + cleanBarcode + "' FOR VENDOR: " + vendorId + " ---");
+        return productRepository.findByBarcodeAndVendorId(cleanBarcode, vendorId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    System.out.println("--- PRODUCT NOT FOUND: " + cleanBarcode + " ---");
+                    return ResponseEntity.notFound().build();
+                });
+    }
+
     @GetMapping
     public List<Product> getAll(@RequestParam(required = false) Long vendorId) {
         if (vendorId != null) {
@@ -34,6 +46,9 @@ public class ProductController {
 
     @PostMapping
     public Product save(@RequestBody Product product) {
+        if (product.getBarcode() != null) {
+            product.setBarcode(product.getBarcode().trim());
+        }
         return productRepository.save(product);
     }
 
@@ -48,7 +63,11 @@ public class ProductController {
         }
 
         product.setName(productDetails.getName());
-        product.setBarcode(productDetails.getBarcode());
+        if (productDetails.getBarcode() != null) {
+            product.setBarcode(productDetails.getBarcode().trim());
+        } else {
+            product.setBarcode(null);
+        }
         product.setPrice(productDetails.getPrice());
         product.setStockQuantity(productDetails.getStockQuantity());
         product.setCategory(productDetails.getCategory());

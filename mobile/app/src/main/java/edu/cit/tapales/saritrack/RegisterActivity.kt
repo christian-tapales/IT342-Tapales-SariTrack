@@ -10,6 +10,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import okhttp3.ResponseBody
@@ -21,6 +22,14 @@ class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // 🌓 Apply Saved Theme
+        val sessionManager = SessionManager(this)
+        val targetMode = if (sessionManager.isDarkMode()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
 
         setContentView(R.layout.activity_register)
 
@@ -47,8 +56,7 @@ class RegisterActivity : AppCompatActivity() {
         val tvTermsLink = findViewById<TextView>(R.id.tvTermsLink)
 
         tvTermsLink.setOnClickListener {
-            val intent = Intent(this, TermsActivity::class.java)
-            startActivity(intent)
+            showTermsBottomSheet()
         }
         // The Checkbox Listener: This is where you put the cbTerms logic
         cbTerms.setOnCheckedChangeListener { _, isChecked ->
@@ -94,7 +102,7 @@ class RegisterActivity : AppCompatActivity() {
             // 4. Proceed with Registration if validation passes
             val request = RegisterRequest(name, email, password)
 
-            RetrofitClient.instance.registerUser(request).enqueue(object : Callback<String> {
+            RetrofitClient.authInstance.registerUser(request).enqueue(object : Callback<String> {
                 override fun onResponse(call: Call<String>, response: Response<String>) {
                     android.util.Log.d("REG_DEBUG", "Status Code: ${response.code()}")
 
@@ -119,5 +127,17 @@ class RegisterActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    private fun showTermsBottomSheet() {
+        val bottomSheetDialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.layout_terms_sheet, null)
+        bottomSheetDialog.setContentView(view)
+        
+        view.findViewById<android.view.View>(R.id.btnCloseTerms).setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+        
+        bottomSheetDialog.show()
     }
 }
