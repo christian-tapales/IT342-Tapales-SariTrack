@@ -21,11 +21,22 @@ This document tracks the progress of the Android Mobile application. It serves a
 - [x] **Header Fixes**: Resolved text overlap in the dashboard greeting.
 - [x] **Navigation Cleanup**: Transitioned from 5-button to **3-button Bottom Nav** (Home, Products, Sales).
 - [x] **Recent Activity**: Integrated Transaction History list into the Home screen for quick access.
-- [x] **Stat Cards**: Dynamic cards for Today's Sales and Total Orders.
+- [x] **Stat Cards**: Dynamic cards for Today's Sales, Low Stock, Outstanding Debt, and Inventory Value.
+- [x] **Interactivity**: Made all KPI cards clickable with direct navigation to modules.
+- [x] **Analytics**: Enhanced weekly sales chart with Y-axis price labels and grid lines.
 
 ---
 
-## 🛒 Phase 3: The POS Engine (The "Game Changer") (IN PROGRESS)
+## 🔐 Phase 3: Auth & Security Polishing (COMPLETED)
+*Goal: Secure and user-friendly entry points.*
+
+- [x] **Google Account Picker**: Forced account selection prompt on login.
+- [x] **Password Visibility**: Added toggle icons (eye) to login and register fields.
+- [x] **Registration Cleanup**: Simplified the sign-up flow by removing redundant social options.
+
+---
+
+## 🛒 Phase 4: The POS Engine (IN PROGRESS)
 *Goal: Fast barcode scanning and transaction recording.*
 
 - [x] **ML Kit Scanner**: High-speed scanning for EAN/UPC barcodes via BottomSheet.

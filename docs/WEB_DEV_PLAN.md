@@ -20,7 +20,7 @@ This document tracks the progress of the React Web Application (Vite). The web p
 
 ---
 
-## 📊 Phase 3: Analytics & Reporting
+## 📊 Phase 3: Analytics & Reporting (IN PROGRESS)
 - [x] **Vendor Dashboard**: Real-time stats for sales, stock, and customers.
 - [x] **Charts**: Visual representation of sales trends using Chart.js/Recharts.
 - [ ] **Data Export**: CSV/PDF export for inventory and transaction history.
