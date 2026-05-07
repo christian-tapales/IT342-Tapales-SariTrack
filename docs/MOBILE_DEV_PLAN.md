@@ -41,9 +41,9 @@ This document tracks the progress of the Android Mobile application. It serves a
 ## 📒 Phase 4: Listahan (Debt Management)
 *Goal: Manage customer credit on the go.*
 
-- [ ] **Customer Hub**: RecyclerView displaying all store debtors and balances.
+- [x] **Customer Hub**: RecyclerView displaying all store debtors and balances.
 - [ ] **Debt History**: View specific transaction records per customer.
-- [ ] **Settlement Flow**: Record payments to reduce customer debt.
+- [x] **Settlement Flow**: Record payments to reduce customer debt via PaymentBottomSheet.
 
 ---
 
@@ -56,6 +56,6 @@ This document tracks the progress of the Android Mobile application. It serves a
 
 ---
 
-## 📈 Current Progress: **82%**
+## 📈 Current Progress: **88%**
 *Last Updated: 2026-05-07*
-*Focusing on: **Phase 3: Checkout Flow & Phase 4: Listahan***
+*Focusing on: **Phase 3: Checkout Flow (Utang) & Phase 4: Debt History***
