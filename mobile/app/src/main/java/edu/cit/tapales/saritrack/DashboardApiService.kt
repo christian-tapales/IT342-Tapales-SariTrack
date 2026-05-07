@@ -7,6 +7,7 @@ import retrofit2.http.Query
 data class DashboardStats(
     val todaySales: Double,
     val lowStockCount: Int,
+    val inventoryValue: Double,
     val totalDebt: Double,
     val recentTransactions: List<Order>,
     val weeklySales: List<WeeklySalesData>

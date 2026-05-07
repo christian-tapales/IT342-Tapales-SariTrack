@@ -6,8 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class TransactionAdapter(private var transactions: List<Order>) :
-    RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
+class TransactionAdapter(
+    private var transactions: List<Order>,
+    private val onClick: (Order) -> Unit = {}
+) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
     class TransactionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTitle: TextView = view.findViewById(R.id.tvTransactionTitle)
@@ -33,6 +35,8 @@ class TransactionAdapter(private var transactions: List<Order>) :
         } else {
             holder.tvAmount.setTextColor(holder.itemView.context.getColor(R.color.primary_teal))
         }
+
+        holder.itemView.setOnClickListener { onClick(transaction) }
     }
 
     override fun getItemCount() = transactions.size

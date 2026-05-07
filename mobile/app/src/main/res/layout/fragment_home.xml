@@ -142,10 +142,13 @@
 
                 <!-- Sales KPI -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTodaySales"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
                     android:layout_margin="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:cardBackgroundColor="@color/card_surface"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="4dp"
@@ -173,59 +176,22 @@
                             android:id="@+id/tvTodaySales"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₱2,450"
+                            android:text="₱---"
                             android:textColor="@color/text_title"
                             android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Orders KPI -->
+                <!-- Low Stock KPI (Improved) -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLowStock"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
                     android:layout_margin="8dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="4dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/bg_circle_blue"
-                            android:padding="8dp"
-                            android:src="@drawable/ic_scan"
-                            app:tint="@color/primary_blue" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:text="Total Orders"
-                            android:textColor="@color/text_body"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:id="@+id/tvOrders"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="14"
-                            android:textColor="@color/text_title"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Debt KPI -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:cardBackgroundColor="@color/card_surface"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="4dp"
@@ -240,8 +206,51 @@
                             android:layout_height="36dp"
                             android:background="@drawable/bg_circle_orange"
                             android:padding="8dp"
-                            android:src="@drawable/ic_credits"
+                            android:src="@drawable/ic_scan"
                             app:tint="@color/primary_orange" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Low Stock Items"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvLowStockCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="---"
+                            android:textColor="#F59E0B"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Debt KPI -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTotalOutstanding"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_blue"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_credits"
+                            app:tint="@color/primary_blue" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -253,8 +262,51 @@
                             android:id="@+id/tvTotalOutstanding"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₱12,450"
+                            android:text="₱---"
                             android:textColor="#EF4444"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Inventory Value KPI (New) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardInventoryValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_purple"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_inventory"
+                            app:tint="@color/primary_purple" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Inventory Value"
+                            android:textColor="@color/text_body"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tvInventoryValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱---"
+                            android:textColor="@color/primary_purple"
                             android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>

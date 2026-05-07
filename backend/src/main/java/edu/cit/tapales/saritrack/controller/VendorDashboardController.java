@@ -36,12 +36,20 @@ public class VendorDashboardController {
                 .sum();
         stats.put("todaySales", totalSales);
 
-        // 2. Count Low Stock Items (< 5)
+        // 2. Count Low Stock Items (< 5) and Calculate Total Inventory Value
         List<Product> allProducts = productRepository.findByVendorId(vendorId);
+        
         long lowStockCount = allProducts.stream()
-                .filter(p -> p.getStockQuantity() < 5)
+                .filter(p -> p.getStockQuantity() != null && p.getStockQuantity() < 5)
                 .count();
+
+        double inventoryValue = allProducts.stream()
+                .filter(p -> p.getPrice() != null && p.getStockQuantity() != null)
+                .mapToDouble(p -> p.getPrice() * p.getStockQuantity())
+                .sum();
+        
         stats.put("lowStockCount", lowStockCount);
+        stats.put("inventoryValue", inventoryValue);
 
         // 3. Calculate Total Listahan (Outstanding Credit)
         List<Customer> customers = customerRepository.findByVendorId(vendorId);
