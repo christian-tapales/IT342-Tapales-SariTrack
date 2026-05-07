@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload, Wand2 } from 'lucide-react';
+import { Plus, Package, Trash2, Barcode, X, Pencil, Image as ImageIcon, Loader2, Upload, Wand2, FileText, Download } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import Skeleton from '../components/Skeleton';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Inventory = ({ user }) => {
   const [products, setProducts] = useState([]);
@@ -121,6 +123,8 @@ const Inventory = ({ user }) => {
     }
   };
 
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+
   const handleExportCSV = () => {
     if (products.length === 0) {
       alert("No products to export.");
@@ -144,11 +148,56 @@ const Inventory = ({ user }) => {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `SariTrack_Inventory_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setIsExportMenuOpen(false);
+  };
+
+  const handleExportPDF = () => {
+    if (products.length === 0) {
+      alert("No products to export.");
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      
+      // Add Header
+      doc.setFontSize(20);
+      doc.text('SariTrack Inventory Report', 14, 22);
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(`Vendor: ${user?.name || 'SariTrack Store'}`, 14, 36);
+
+      const tableColumn = ["ID", "Product Name", "Barcode", "Price", "Stock"];
+      const tableRows = products.map(p => [
+        p.id,
+        p.name,
+        p.barcode || 'N/A',
+        `PHP ${(p.price || 0).toLocaleString()}`,
+        p.stockQuantity || 0
+      ]);
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 45,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 163, 148] }, // Hex #16A394 in RGB
+        styles: { fontSize: 9 }
+      });
+
+      doc.save(`SariTrack_Inventory_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error("PDF Export failed:", error);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsExportMenuOpen(false);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -170,12 +219,35 @@ const Inventory = ({ user }) => {
           <p className="text-slate-500 dark:text-slate-400 font-medium">Manage your items and stock levels.</p>
         </div>
         <div className="flex gap-3">
-          <button 
-            onClick={handleExportCSV}
-            className="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center gap-2"
-          >
-            <Upload size={20} className="rotate-180" /> Export CSV
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              className="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center gap-2 shadow-sm"
+            >
+              <Download size={20} /> Export
+            </button>
+
+            {isExportMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsExportMenuOpen(false)}></div>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <button 
+                    onClick={handleExportCSV}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-[#16A394] transition-colors"
+                  >
+                    <Download size={18} /> Export as CSV
+                  </button>
+                  <button 
+                    onClick={handleExportPDF}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-[#16A394] transition-colors"
+                  >
+                    <FileText size={18} /> Export as PDF
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          
           <button 
             onClick={() => {
               setEditingId(null);

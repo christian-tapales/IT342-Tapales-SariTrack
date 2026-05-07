@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package, FileText } from 'lucide-react';
 import api from '../api';
 import Skeleton from '../components/Skeleton';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Transactions = ({ user }) => {
   const [orders, setOrders] = useState([]);
@@ -9,6 +11,7 @@ const Transactions = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -41,7 +44,7 @@ const Transactions = ({ user }) => {
     }
   };
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     const headers = ['Order ID', 'Date', 'Time', 'Total Amount', 'Status', 'Items Count'];
     const csvRows = filteredOrders.map(order => [
       `#${order.id}`,
@@ -57,9 +60,68 @@ const Transactions = ({ user }) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SariTrack_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `SariTrack_Transactions_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+    setIsExportMenuOpen(false);
+  };
+
+  const handleExportPDF = () => {
+    // Sanity check: if filteredOrders is somehow missing or empty
+    const dataToExport = filteredOrders && filteredOrders.length > 0 ? filteredOrders : orders;
+    
+    if (!dataToExport || dataToExport.length === 0) {
+      alert("No transaction data available to export.");
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      
+      // Add Header
+      doc.setFontSize(20);
+      doc.text('SariTrack Transaction Report', 14, 22);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(`Store: ${user?.name || 'SariTrack Store'}`, 14, 36);
+
+      const tableColumn = ["Order ID", "Date", "Items", "Amount", "Status"];
+      const tableRows = dataToExport.map(order => {
+        // Ensure values are strings or numbers
+        const orderId = order.id ? `#${order.id}` : 'N/A';
+        const dateStr = order.timestamp ? new Date(order.timestamp).toLocaleDateString() : 'N/A';
+        const itemCount = order.items ? order.items.length : 0;
+        const amount = order.totalAmount ? `PHP ${Number(order.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : 'PHP 0.00';
+        const status = order.status || 'PENDING';
+
+        return [orderId, dateStr, itemCount, amount, status];
+      });
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 45,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 163, 148], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 35 },
+          2: { halign: 'center' },
+          3: { halign: 'right' },
+          4: { halign: 'center' }
+        }
+      });
+
+      doc.save(`SariTrack_Transactions_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error("PDF Export failed:", error);
+      alert("An error occurred while generating the PDF. Please try again.");
+    } finally {
+      setIsExportMenuOpen(false);
+    }
   };
 
   return (
@@ -70,12 +132,35 @@ const Transactions = ({ user }) => {
           <h1 className="text-3xl font-black text-slate-800 dark:text-white">Transaction History</h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium">Review and manage all your store sales.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 bg-slate-900 dark:bg-[#16A394] text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-[#0D7A6F] transition-all shadow-lg active:scale-95"
-        >
-          <Download size={20} /> Export Report
-        </button>
+        
+        <div className="relative">
+          <button 
+            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+            className="flex items-center gap-2 bg-slate-900 dark:bg-[#16A394] text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-[#0D7A6F] transition-all shadow-lg active:scale-95"
+          >
+            <Download size={20} /> Export Report
+          </button>
+
+          {isExportMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsExportMenuOpen(false)}></div>
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <button 
+                  onClick={handleExportCSV}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-[#16A394] transition-colors"
+                >
+                  <Download size={18} /> Export as CSV
+                </button>
+                <button 
+                  onClick={handleExportPDF}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-[#16A394] transition-colors"
+                >
+                  <FileText size={18} /> Export as PDF
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Filters bar */}
