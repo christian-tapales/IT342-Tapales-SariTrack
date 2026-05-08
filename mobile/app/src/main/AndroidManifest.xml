@@ -17,16 +17,16 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".TermsActivity"
+            android:name=".core.ui.TermsActivity"
             android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".AddProductActivity" android:exported="false" />
-        <activity android:name=".PaymentActivity" android:exported="false" />
-        <activity android:name=".CustomerHistoryActivity" android:exported="false" />
-        <activity android:name=".SaleSuccessActivity" android:exported="false" />
-        <activity android:name=".DashboardActivity" android:exported="false" />
+        <activity android:name=".feature.auth.RegisterActivity" android:exported="false" />
+        <activity android:name=".feature.inventory.AddProductActivity" android:exported="false" />
+        <activity android:name=".feature.payment.PaymentActivity" android:exported="false" />
+        <activity android:name=".feature.customer.CustomerHistoryActivity" android:exported="false" />
+        <activity android:name=".feature.transaction.SaleSuccessActivity" android:exported="false" />
+        <activity android:name=".feature.dashboard.DashboardActivity" android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".feature.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
