@@ -42,14 +42,20 @@ To provide robust regression evidence, automated tests have been implemented for
 | :--- | :--- | :--- | :--- |
 | `OrderServiceTest` | `testCompleteSale_DeductsStock` | Inventory stock deduction logic | **PASSED** |
 | `OrderServiceTest` | `testCompleteSale_DebtRecords` | Customer debt/utang calculation | **PASSED** |
+| `OrderServiceTest` | `testFinalizeDigitalOrder` | Digital payment stock handling | **PASSED** |
 | `AdminServiceTest` | `testGetPlatformStats` | Global sales aggregation algorithms | **PASSED** |
 | `AdminServiceTest` | `testVendorAnalyticsStatus` | Vendor performance tier logic | **PASSED** |
+| `NotificationServiceTest` | `testSyncLowStock` | Automated low stock alert logic | **PASSED** |
+| `NotificationServiceTest` | `testSpamPrevention` | Duplicate notification avoidance | **PASSED** |
+| `CurrencyServiceTest` | `testPHPBaseRate` | Multi-currency base logic (PHP=1.0) | **PASSED** |
+| `CurrencyServiceTest` | `testMajorCurrencies` | Currency data mapping verification | **PASSED** |
+| `PayMongoServiceTest` | `testSignatureValidation` | Payment webhook cryptographic security | **PASSED** |
 | `SaritrackApplicationTests` | `contextLoads` | Spring Boot context initialization | **PASSED** |
 
 ### 5.2 Automation Evidence
 * **Tool:** Maven Surefire Plugin
 * **Execution Date:** May 8, 2026
-* **Result:** `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`
+* **Result:** `Tests run: 11, Failures: 0, Errors: 0, Skipped: 0`
 
 ---
 *Generated as part of Phase 3 Refactoring Requirements.*

@@ -14,10 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -120,6 +117,25 @@ public class OrderServiceTest {
         // Verify debt increased (100 + 50 = 150)
         assertEquals(150.0, customer.getCurrentDebt());
         verify(customerRepository, times(1)).save(customer);
+        verify(notificationService, times(1)).createNotification(any(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testFinalizeDigitalOrder_DeductsStockAndUpdatesStatus() {
+        // Arrange
+        testOrder.setId(500L);
+        testOrder.setStatus("PENDING");
+        
+        when(orderRepository.findById(500L)).thenReturn(Optional.of(testOrder));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+
+        // Act
+        orderService.finalizeDigitalOrder(500L);
+
+        // Assert
+        assertEquals("PAID", testOrder.getStatus());
+        assertEquals(8, testProduct.getStockQuantity()); // 10 - 2
+        verify(orderRepository, times(1)).save(testOrder);
         verify(notificationService, times(1)).createNotification(any(), anyString(), anyString(), anyString());
     }
 }
