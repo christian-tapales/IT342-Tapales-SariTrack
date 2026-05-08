@@ -31,6 +31,8 @@ This Software Test Plan defines the testing strategy, scenarios, and matrix for 
 | **TC-008** | Reports | Real-time Analytics | Verify Analytics Dashboard | 1. Go to Dashboard | UI renders accurate Sales, Orders, and Top Selling items | Pending |
 | **TC-009** | Reports | Data Portability | Verify Data Export (CSV/PDF) | 1. Click Export CSV/PDF | Browser downloads correctly formatted file | Pending |
 | **TC-010** | Admin | System Monitoring | Verify Global Vendor Monitoring | 1. Access Admin Panel | Views global stats, registered vendors, and overall platform health | Pending |
+| **TC-011** | Core | Currency Localization | Verify Real-time Exchange Rates | 1. Select USD/EUR in settings | Prices across POS and Inventory update based on live rates | Pending |
+| **TC-012** | Inventory | Business Intelligence | Verify Low-Stock Alerts | 1. Set product stock to 1 <br> 2. Perform a sale | Dashboard shows "Low Stock" indicator and notification is sent | Pending |
 
 ---
 
@@ -50,12 +52,20 @@ To provide robust regression evidence, automated tests have been implemented for
 | `CurrencyServiceTest` | `testPHPBaseRate` | Multi-currency base logic (PHP=1.0) | **PASSED** |
 | `CurrencyServiceTest` | `testMajorCurrencies` | Currency data mapping verification | **PASSED** |
 | `PayMongoServiceTest` | `testSignatureValidation` | Payment webhook cryptographic security | **PASSED** |
+| `ProductLookupServiceTest` | `testLookupProductName` | External barcode API integration logic | **PASSED** |
 | `SaritrackApplicationTests` | `contextLoads` | Spring Boot context initialization | **PASSED** |
+
+## Screenshots of Automated Test Results
+
+![alt text](./assets/AutomatedTest-001.png)
+![alt text](./assets/AutomatedTest-002.png)
+![alt text](./assets/AutomatedTest-003.png)
+![alt text](./assets/AutomatedTest-004.png)
 
 ### 5.2 Automation Evidence
 * **Tool:** Maven Surefire Plugin
 * **Execution Date:** May 8, 2026
-* **Result:** `Tests run: 11, Failures: 0, Errors: 0, Skipped: 0`
+* **Result:** `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`
 
 ---
 *Generated as part of Phase 3 Refactoring Requirements.*
