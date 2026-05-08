@@ -33,6 +33,7 @@ This Software Test Plan defines the testing strategy, scenarios, and matrix for 
 | **TC-010** | Admin | System Monitoring | Verify Global Vendor Monitoring | 1. Access Admin Panel | Views global stats, registered vendors, and overall platform health | Pending |
 | **TC-011** | Core | Currency Localization | Verify Real-time Exchange Rates | 1. Select USD/EUR in settings | Prices across POS and Inventory update based on live rates | Pending |
 | **TC-012** | Inventory | Business Intelligence | Verify Low-Stock Alerts | 1. Set product stock to 1 <br> 2. Perform a sale | Dashboard shows "Low Stock" indicator and notification is sent | Pending |
+| **TC-013** | Mobile | Hardware Integration | Verify Barcode Camera Scanner | 1. Open Scanner on Android <br> 2. Point at a physical barcode | Camera overlay appears, barcode is detected, and data is sent to API | Pending |
 
 ---
 
