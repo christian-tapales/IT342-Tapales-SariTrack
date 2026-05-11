@@ -47,6 +47,13 @@ public class CurrencyService {
         return getFallbackRates();
     }
 
+    public double convert(double amount, String toCurrency) {
+        Map<String, Double> rates = getLatestRates();
+        Double rate = rates.get(toCurrency);
+        if (rate == null) return amount; // Fallback to 1:1 if not found
+        return amount * rate;
+    }
+
     private Map<String, Double> getFallbackRates() {
         Map<String, Double> fallback = new HashMap<>();
         fallback.put("USD", 0.018);

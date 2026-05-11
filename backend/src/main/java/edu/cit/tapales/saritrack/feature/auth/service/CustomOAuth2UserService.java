@@ -23,7 +23,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // 1. Fetch the user info from Google
-        OAuth2User googleUser = super.loadUser(userRequest);
+        OAuth2User googleUser = fetchGoogleUser(userRequest);
         
         String email = googleUser.getAttribute("email");
         String name = googleUser.getAttribute("name");
@@ -51,5 +51,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         return googleUser;
+    }
+
+    protected OAuth2User fetchGoogleUser(OAuth2UserRequest userRequest) {
+        return super.loadUser(userRequest);
     }
 }
