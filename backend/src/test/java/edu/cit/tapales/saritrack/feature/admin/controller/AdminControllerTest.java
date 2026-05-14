@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -23,17 +23,17 @@ class AdminControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AdminService adminService;
 
     // Security mocks
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.feature.auth.service.CustomOAuth2UserService customOAuth2UserService;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.feature.auth.repository.UserRepository userRepository;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.core.security.JwtUtils jwtUtils;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.core.security.JwtFilter jwtFilter;
 
     @Test

@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,17 +22,17 @@ class NotificationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private NotificationService notificationService;
 
     // Security mocks
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.feature.auth.service.CustomOAuth2UserService customOAuth2UserService;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.feature.auth.repository.UserRepository userRepository;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.core.security.JwtUtils jwtUtils;
-    @MockBean
+    @MockitoBean
     private edu.cit.tapales.saritrack.core.security.JwtFilter jwtFilter;
 
     @Test
