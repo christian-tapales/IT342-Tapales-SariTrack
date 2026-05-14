@@ -95,7 +95,7 @@ class SalesFragment : Fragment() {
             try {
                 val cartManager = viewModel.cartManager.value
                 if (cartManager != null && !cartManager.isEmpty()) {
-                    val cartSheet = CartBottomSheet(cartManager.getItems() as MutableMap<Product, Int>) {
+                    val cartSheet = CartBottomSheet(cartManager.getItems().toMutableMap()) {
                         updateCartUI()
                     }
                     cartSheet.show(parentFragmentManager, "CartSheet")
