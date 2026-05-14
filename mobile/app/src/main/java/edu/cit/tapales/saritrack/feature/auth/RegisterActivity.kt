@@ -87,25 +87,33 @@ class RegisterActivity : AppCompatActivity() {
             val password = etPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim() // Get confirm password
 
-            // 1. Check if any fields are empty
-            if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            // 1. Validate using Utils
+            if (!ValidationUtils.isValidName(name)) {
+                etName.error = "Name must be at least 2 characters"
+                etName.requestFocus()
+                return@setOnClickListener
+            }
+
+            if (!ValidationUtils.isValidEmail(email)) {
+                etEmail.error = "Invalid email format"
+                etEmail.requestFocus()
+                return@setOnClickListener
+            }
+
+            if (!ValidationUtils.isStrongPassword(password)) {
+                etPassword.error = "Password must be at least 6 characters"
+                etPassword.requestFocus()
                 return@setOnClickListener
             }
 
             // 2. Check if passwords match
             if (password != confirmPassword) {
-                // Option A: Set an error directly on the text box (Cleaner UI)
                 etConfirmPassword.error = "Passwords do not match!"
                 etConfirmPassword.requestFocus()
-
-                // Option B: Show a Toast
-                Toast.makeText(this, "Passwords do not match. Please try again.", Toast.LENGTH_SHORT).show()
-
-                return@setOnClickListener // Stops the code from proceeding to the API call
+                return@setOnClickListener
             }
 
-            //3. Check if the checkbox for the terms and conditions are checked
+            // 3. Check Terms
             if (!cbTerms.isChecked) {
                 Toast.makeText(this, "Please agree to the Terms & Conditions", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener

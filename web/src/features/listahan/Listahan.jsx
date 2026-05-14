@@ -186,6 +186,7 @@ const Listahan = ({ user }) => {
                   <td className="p-8">
                     <div className="flex justify-end gap-2">
                       <button 
+                        aria-label="View history"
                         onClick={() => { setSelectedCustomer(customer); fetchHistory(customer.id); setActiveTab('DEBT'); }}
                         className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-900 dark:hover:bg-amber-500 hover:text-white rounded-2xl transition-all"
                       ><History size={20} /></button>

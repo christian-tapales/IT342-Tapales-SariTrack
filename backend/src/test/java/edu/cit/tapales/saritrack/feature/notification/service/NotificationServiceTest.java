@@ -12,7 +12,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -65,5 +68,40 @@ public class NotificationServiceTest {
 
         // Assert
         verify(notificationRepository, never()).save(any(Notification.class));
+    }
+
+    @Test
+    void testMarkAsRead_ShouldUpdateStatus() {
+        // Arrange
+        Notification notification = new Notification();
+        notification.setId(1L);
+        notification.setIsRead(false);
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
+
+        // Act
+        notificationService.markAsRead(1L);
+
+        // Assert
+        assertTrue(notification.getIsRead());
+        verify(notificationRepository).save(notification);
+    }
+
+    @Test
+    void testMarkAllAsRead_ShouldUpdateAllUnread() {
+        // Arrange
+        Notification n1 = new Notification();
+        n1.setIsRead(false);
+        Notification n2 = new Notification();
+        n2.setIsRead(false);
+        when(notificationRepository.findByVendorIdAndIsReadOrderByTimestampDesc(1L, false))
+                .thenReturn(List.of(n1, n2));
+
+        // Act
+        notificationService.markAllAsRead(1L);
+
+        // Assert
+        assertTrue(n1.getIsRead());
+        assertTrue(n2.getIsRead());
+        verify(notificationRepository).saveAll(anyList());
     }
 }

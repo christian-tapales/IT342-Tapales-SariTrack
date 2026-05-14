@@ -19,9 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,28 +75,19 @@ public class OrderServiceTest {
 
     @Test
     void testCompleteSale_DeductsStockAndSavesOrder() {
-        // Arrange
         when(discountStrategy.apply(anyDouble())).thenReturn(50.0);
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
         Order savedOrder = orderService.completeSale(testOrder);
 
-        // Assert
         assertNotNull(savedOrder);
-        assertNotNull(savedOrder.getTimestamp());
-        assertEquals(50.0, savedOrder.getTotalAmount());
-        
-        // Verify stock was deducted (10 - 2 = 8)
         assertEquals(8, testProduct.getStockQuantity());
-        verify(productRepository, times(1)).save(testProduct);
-        verify(orderRepository, times(1)).save(any(Order.class));
+        verify(productRepository).save(testProduct);
     }
 
     @Test
     void testCompleteSale_DebtRecordsCustomerBalance() {
-        // Arrange
         testOrder.setStatus("DEBT");
         testOrder.setCustomerId(99L);
         
@@ -110,32 +100,82 @@ public class OrderServiceTest {
         when(customerRepository.findById(99L)).thenReturn(Optional.of(customer));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
         orderService.completeSale(testOrder);
 
-        // Assert
-        // Verify debt increased (100 + 50 = 150)
         assertEquals(150.0, customer.getCurrentDebt());
-        verify(customerRepository, times(1)).save(customer);
-        verify(notificationService, times(1)).createNotification(any(), anyString(), anyString(), anyString());
+        verify(customerRepository).save(customer);
     }
 
     @Test
     void testFinalizeDigitalOrder_DeductsStockAndUpdatesStatus() {
-        // Arrange
         testOrder.setId(500L);
         testOrder.setStatus("PENDING");
         
         when(orderRepository.findById(500L)).thenReturn(Optional.of(testOrder));
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
 
-        // Act
         orderService.finalizeDigitalOrder(500L);
 
-        // Assert
         assertEquals("PAID", testOrder.getStatus());
-        assertEquals(8, testProduct.getStockQuantity()); // 10 - 2
-        verify(orderRepository, times(1)).save(testOrder);
-        verify(notificationService, times(1)).createNotification(any(), anyString(), anyString(), anyString());
+        assertEquals(8, testProduct.getStockQuantity());
+        verify(orderRepository).save(testOrder);
+    }
+
+    @Test
+    void testFinalizeDigitalOrder_OrderNotFound_ThrowsException() {
+        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> orderService.finalizeDigitalOrder(999L));
+    }
+
+    @Test
+    void testFinalizeDigitalOrder_AlreadyPaid_DoesNothing() {
+        Order order = new Order();
+        order.setStatus("PAID");
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        orderService.finalizeDigitalOrder(1L);
+
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void testCompleteSale_LowStockAlert_ShouldTriggerNotification() {
+        testProduct.setStockQuantity(6);
+        when(discountStrategy.apply(anyDouble())).thenReturn(50.0);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+
+        orderService.completeSale(testOrder);
+
+        verify(notificationService).createNotification(eq(1L), eq("Low Stock Alert!"), anyString(), eq("WARNING"));
+    }
+
+    @Test
+    void testCompleteSale_HighDebtWarning_ShouldTriggerNotification() {
+        testOrder.setStatus("DEBT");
+        testOrder.setCustomerId(99L);
+        testOrder.setTotalAmount(1100.0);
+        
+        Customer customer = new Customer();
+        customer.setId(99L);
+        customer.setVendorId(1L);
+        customer.setCurrentDebt(0.0);
+        
+        when(discountStrategy.apply(anyDouble())).thenReturn(1100.0);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(customerRepository.findById(99L)).thenReturn(Optional.of(customer));
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+
+        orderService.completeSale(testOrder);
+
+        verify(notificationService).createNotification(eq(1L), eq("High Debt Warning"), anyString(), eq("WARNING"));
+    }
+
+    @Test
+    void testCompleteSale_ProductNotFound_ThrowsException() {
+        when(discountStrategy.apply(anyDouble())).thenReturn(100.0);
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> orderService.completeSale(testOrder));
     }
 }

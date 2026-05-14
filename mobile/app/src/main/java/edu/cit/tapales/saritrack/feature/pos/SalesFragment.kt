@@ -42,7 +42,8 @@ class SalesFragment : Fragment() {
     private lateinit var btnDigitalPay: MaterialButton
 
     private var allProducts = listOf<Product>()
-    private val cart = mutableMapOf<Product, Int>()
+    private val cartManager = CartManager()
+    private val productHelper = ProductHelper()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -89,8 +90,8 @@ class SalesFragment : Fragment() {
 
         view.findViewById<View>(R.id.cartSummaryCard).setOnClickListener {
             try {
-                if (cart.isNotEmpty()) {
-                    val cartSheet = CartBottomSheet(cart) {
+                if (!cartManager.isEmpty()) {
+                    val cartSheet = CartBottomSheet(cartManager.getItems() as MutableMap<Product, Int>) {
                         updateCartUI()
                     }
                     cartSheet.show(parentFragmentManager, "CartSheet")
@@ -119,13 +120,13 @@ class SalesFragment : Fragment() {
         popup.setOnMenuItemClickListener { item ->
             when (item.title) {
                 "Sort: A to Z" -> {
-                    allProducts = allProducts.sortedBy { it.name }
+                    allProducts = productHelper.sortByName(allProducts)
                 }
                 "Price: Low to High" -> {
-                    allProducts = allProducts.sortedBy { it.price }
+                    allProducts = productHelper.sortByPriceLowToHigh(allProducts)
                 }
                 "Price: High to Low" -> {
-                    allProducts = allProducts.sortedByDescending { it.price }
+                    allProducts = productHelper.sortByPriceHighToLow(allProducts)
                 }
             }
             filterProducts(etSearch.text.toString()) // Apply filter after sorting
@@ -152,10 +153,7 @@ class SalesFragment : Fragment() {
     }
 
     private fun filterProducts(query: String) {
-        val filtered = allProducts.filter { 
-            (it.name?.contains(query, ignoreCase = true) == true) || 
-            (it.barcode?.contains(query) == true) 
-        }
+        val filtered = productHelper.filter(allProducts, query)
         adapter.updateProducts(filtered)
     }
 
@@ -192,13 +190,11 @@ class SalesFragment : Fragment() {
 
     private fun addToCart(product: Product) {
         try {
-            if (product.stockQuantity <= 0) {
-                Toast.makeText(context, "Out of stock!", Toast.LENGTH_SHORT).show()
-                return
+            if (cartManager.addItem(product)) {
+                updateCartUI()
+            } else {
+                Toast.makeText(context, "Stock Limit Reached!", Toast.LENGTH_SHORT).show()
             }
-            val currentQty = cart[product] ?: 0
-            cart[product] = currentQty + 1
-            updateCartUI()
         } catch (e: Exception) {
             Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
@@ -206,8 +202,8 @@ class SalesFragment : Fragment() {
 
     private fun updateCartUI() {
         try {
-            val totalItems = cart.values.sum()
-            val totalPrice = cart.entries.sumOf { (it.key.price ?: 0.0) * it.value }
+            val totalItems = cartManager.getTotalItems()
+            val totalPrice = cartManager.getTotalPrice()
 
             tvCartItemsCount.text = "$totalItems Items"
             tvCartTotal.text = "₱${String.format("%.2f", totalPrice)}"
@@ -222,15 +218,15 @@ class SalesFragment : Fragment() {
     private fun startDigitalPayment() {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
-        val totalAmount = cart.entries.sumOf { (it.key.price ?: 0.0) * it.value }
+        val totalAmount = cartManager.getTotalPrice()
 
-        if (cart.isEmpty()) {
+        if (cartManager.isEmpty()) {
             Toast.makeText(context, "Cart is empty", Toast.LENGTH_SHORT).show()
             return
         }
 
         // 1. Create Pending Order
-        val orderItems = cart.map { (product, qty) ->
+        val orderItems = cartManager.getItems().map { (product, qty) ->
             OrderItem(productId = product.id ?: 0L, quantity = qty, priceAtSale = product.price ?: 0.0)
         }
         val order = Order(totalAmount = totalAmount, vendorId = vendorId, status = "PENDING", items = orderItems)
@@ -303,7 +299,7 @@ class SalesFragment : Fragment() {
                 // Success screen for Digital is slightly different as cart is already cleared in some logic
                 // For now, let's just clear and show success toast or simple screen
                 Toast.makeText(context, "Digital Payment Success!", Toast.LENGTH_LONG).show()
-                cart.clear()
+                cartManager.clear()
                 updateCartUI()
                 fetchProducts()
             } else {
@@ -317,7 +313,7 @@ class SalesFragment : Fragment() {
         val vendorId = SessionManager(context).getUserId()
         
         try {
-            val orderItems = cart.map { (product, qty) ->
+            val orderItems = cartManager.getItems().map { (product, qty) ->
                 OrderItem(
                     productId = product.id ?: 0L,
                     quantity = qty,
@@ -325,7 +321,7 @@ class SalesFragment : Fragment() {
                 )
             }
 
-            val totalPrice = cart.entries.sumOf { (it.key.price ?: 0.0) * it.value }
+            val totalPrice = cartManager.getTotalPrice()
             val order = Order(
                 totalAmount = totalPrice,
                 vendorId = vendorId,
@@ -342,14 +338,14 @@ class SalesFragment : Fragment() {
                     override fun onResponse(call: Call<Order>, response: Response<Order>) {
                         if (response.isSuccessful && response.body() != null) {
                             showSuccessScreen(response.body()!!, status)
-                            cart.clear()
+                            cartManager.clear()
                             updateCartUI()
                             fetchProducts()
                         } else {
                             Toast.makeText(context, "Error: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
                         }
-                        btnCheckout.isEnabled = cart.isNotEmpty()
-                        btnChargeDebt.isEnabled = cart.isNotEmpty()
+                        btnCheckout.isEnabled = !cartManager.isEmpty()
+                        btnChargeDebt.isEnabled = !cartManager.isEmpty()
                     }
 
                     override fun onFailure(call: Call<Order>, t: Throwable) {
@@ -372,7 +368,7 @@ class SalesFragment : Fragment() {
         intent.putExtra("TOTAL", order.totalAmount)
         intent.putExtra("STATUS", status)
         
-        val itemsSummary = cart.entries.joinToString("\n") { (p, qty) ->
+        val itemsSummary = cartManager.getItems().entries.joinToString("\n") { (p, qty) ->
             "$qty x ${p.name} (₱${p.price})"
         }
         intent.putExtra("ITEMS", itemsSummary)

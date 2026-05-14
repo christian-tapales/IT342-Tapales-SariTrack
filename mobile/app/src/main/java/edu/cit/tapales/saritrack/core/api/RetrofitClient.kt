@@ -27,9 +27,27 @@ object RetrofitClient {
             .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
         
-        if (context != null) {
-            builder.addInterceptor(AuthInterceptor(SessionManager(context)))
+        // 📊 Add Network Logging
+        val logging = okhttp3.logging.HttpLoggingInterceptor()
+        logging.setLevel(okhttp3.logging.HttpLoggingInterceptor.Level.BODY)
+        builder.addInterceptor(logging)
+        
+        // Add interceptor for EVERY request to skip ngrok warning
+        builder.addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("ngrok-skip-browser-warning", "true")
+            
+            // If we have a context, we can also add the Bearer token
+            if (context != null) {
+                val token = SessionManager(context).fetchAuthToken()
+                if (token != null) {
+                    request.addHeader("Authorization", "Bearer $token")
+                }
+            }
+            
+            chain.proceed(request.build())
         }
+
         return builder.build()
     }
 

@@ -281,16 +281,16 @@ const PointOfSale = ({ user }) => {
                 <p className="text-xs text-[#16A394] font-bold">₱{(item.price * item.quantity).toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700 group-focus-within:border-teal-500 transition-all">
-                <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394] transition-colors"><Minus size={14}/></button>
+                <button aria-label="Decrease quantity" onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394] transition-colors"><Minus size={14}/></button>
                 <input 
                   type="number" 
                   value={item.quantity}
                   onChange={(e) => handleQuantityInput(item.id, e.target.value)}
                   className="text-sm font-black text-slate-700 dark:text-slate-200 w-10 text-center bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <button onClick={() => updateQuantity(item.id, 1)} disabled={item.quantity >= item.stockQuantity} className="text-slate-400 hover:text-[#16A394] transition-colors disabled:opacity-10"><Plus size={14}/></button>
+                <button aria-label="Increase quantity" onClick={() => updateQuantity(item.id, 1)} disabled={item.quantity >= item.stockQuantity} className="text-slate-400 hover:text-[#16A394] transition-colors disabled:opacity-10"><Plus size={14}/></button>
               </div>
-              <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="ml-3 p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500"><Trash2 size={18} /></button>
+              <button aria-label="Remove item" onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="ml-3 p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500"><Trash2 size={18} /></button>
             </div>
           ))}
         </div>

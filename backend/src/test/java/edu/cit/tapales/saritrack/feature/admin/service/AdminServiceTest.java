@@ -115,4 +115,23 @@ public class AdminServiceTest {
         VendorAnalyticsDTO dto2 = analyticsList.stream().filter(a -> a.getId() == 2L).findFirst().get();
         assertEquals("New Member", dto2.getStatus()); // 0 sales
     }
+
+    @Test
+    void testGetAllVendorAnalytics_ActiveStatus() {
+        // Arrange
+        User vendor = new User();
+        vendor.setId(3L);
+        vendor.setName("Active Vendor");
+        vendor.setRole("VENDOR");
+
+        when(userRepository.findAll()).thenReturn(List.of(vendor));
+        when(orderRepository.sumTotalAmountByVendorId(3L)).thenReturn(2500.0);
+        when(orderRepository.countByVendorId(3L)).thenReturn(10L);
+
+        // Act
+        List<VendorAnalyticsDTO> analyticsList = adminService.getAllVendorAnalytics();
+
+        // Assert
+        assertEquals("Active", analyticsList.get(0).getStatus()); // 0 < 2500 < 5000
+    }
 }

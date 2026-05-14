@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC">
+    android:background="?attr/colorSurface">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sale Successful!"
-                android:textColor="#1E293B"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="24sp"
                 android:fontFamily="sans-serif-black"
                 android:layout_marginTop="16dp" />
@@ -41,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="CASH PAYMENT"
-                android:textColor="#64748B"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-medium"
                 android:layout_marginTop="4dp" />
@@ -53,8 +53,9 @@
                 android:layout_marginTop="32dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -67,13 +68,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Oct 12, 2023 - 03:45 PM"
-                        android:textColor="#94A3B8"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="12sp" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#F1F5F9"
+                        android:background="?attr/colorOutlineVariant"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp" />
 
@@ -82,14 +83,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="3x Item Name\n1x Another Item"
-                        android:textColor="#1E293B"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:lineSpacingExtra="4dp" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#F1F5F9"
+                        android:background="?attr/colorOutlineVariant"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp" />
 
@@ -103,7 +104,7 @@
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
                             android:text="TOTAL AMOUNT"
-                            android:textColor="#64748B"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
