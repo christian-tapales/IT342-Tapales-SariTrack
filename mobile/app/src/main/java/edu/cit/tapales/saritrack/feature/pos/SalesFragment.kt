@@ -42,8 +42,8 @@ class SalesFragment : Fragment() {
     private lateinit var btnDigitalPay: MaterialButton
 
     private var allProducts = listOf<Product>()
-    private val cartManager = CartManager()
     private val productHelper = ProductHelper()
+    private lateinit var viewModel: SalesViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -88,9 +88,15 @@ class SalesFragment : Fragment() {
             }
         }
 
+        viewModel = androidx.lifecycle.ViewModelProvider(this)[SalesViewModel::class.java]
+
+        setupObservers()
+        fetchProducts()
+
         view.findViewById<View>(R.id.cartSummaryCard).setOnClickListener {
             try {
-                if (!cartManager.isEmpty()) {
+                val cartManager = viewModel.cartManager.value
+                if (cartManager != null && !cartManager.isEmpty()) {
                     val cartSheet = CartBottomSheet(cartManager.getItems() as MutableMap<Product, Int>) {
                         updateCartUI()
                     }
@@ -135,21 +141,28 @@ class SalesFragment : Fragment() {
         popup.show()
     }
 
+    private fun setupObservers() {
+        viewModel.products.observe(viewLifecycleOwner) { products ->
+            allProducts = products
+            adapter.updateProducts(products)
+        }
+
+        viewModel.cartManager.observe(viewLifecycleOwner) {
+            updateCartUI()
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { msg ->
+            if (msg != null) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                viewModel.clearError()
+            }
+        }
+    }
+
     private fun fetchProducts() {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
-        RetrofitClient.getProductService(context).getVendorProducts(vendorId)
-            .enqueue(object : Callback<List<Product>> {
-                override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
-                    if (response.isSuccessful) {
-                        allProducts = response.body() ?: emptyList()
-                        adapter.updateProducts(allProducts)
-                    }
-                }
-                override fun onFailure(call: Call<List<Product>>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
+        viewModel.fetchProducts(vendorId, context)
     }
 
     private fun filterProducts(query: String) {
@@ -189,18 +202,11 @@ class SalesFragment : Fragment() {
     }
 
     private fun addToCart(product: Product) {
-        try {
-            if (cartManager.addItem(product)) {
-                updateCartUI()
-            } else {
-                Toast.makeText(context, "Stock Limit Reached!", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-        }
+        viewModel.addToCart(product)
     }
 
     private fun updateCartUI() {
+        val cartManager = viewModel.cartManager.value ?: return
         try {
             val totalItems = cartManager.getTotalItems()
             val totalPrice = cartManager.getTotalPrice()
@@ -218,6 +224,7 @@ class SalesFragment : Fragment() {
     private fun startDigitalPayment() {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
+        val cartManager = viewModel.cartManager.value ?: return
         val totalAmount = cartManager.getTotalPrice()
 
         if (cartManager.isEmpty()) {
@@ -299,8 +306,7 @@ class SalesFragment : Fragment() {
                 // Success screen for Digital is slightly different as cart is already cleared in some logic
                 // For now, let's just clear and show success toast or simple screen
                 Toast.makeText(context, "Digital Payment Success!", Toast.LENGTH_LONG).show()
-                cartManager.clear()
-                updateCartUI()
+                viewModel.clearCart()
                 fetchProducts()
             } else {
                 Toast.makeText(context, "Payment was not completed", Toast.LENGTH_SHORT).show()
@@ -311,6 +317,8 @@ class SalesFragment : Fragment() {
     private fun performCheckout(status: String, customerId: Long? = null) {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
+        
+        val cartManager = viewModel.cartManager.value ?: return
         
         try {
             val orderItems = cartManager.getItems().map { (product, qty) ->
@@ -338,14 +346,13 @@ class SalesFragment : Fragment() {
                     override fun onResponse(call: Call<Order>, response: Response<Order>) {
                         if (response.isSuccessful && response.body() != null) {
                             showSuccessScreen(response.body()!!, status)
-                            cartManager.clear()
-                            updateCartUI()
+                            viewModel.clearCart()
                             fetchProducts()
                         } else {
                             Toast.makeText(context, "Error: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
                         }
-                        btnCheckout.isEnabled = !cartManager.isEmpty()
-                        btnChargeDebt.isEnabled = !cartManager.isEmpty()
+                        btnCheckout.isEnabled = !(viewModel.cartManager.value?.isEmpty() ?: true)
+                        btnChargeDebt.isEnabled = !(viewModel.cartManager.value?.isEmpty() ?: true)
                     }
 
                     override fun onFailure(call: Call<Order>, t: Throwable) {
@@ -368,9 +375,9 @@ class SalesFragment : Fragment() {
         intent.putExtra("TOTAL", order.totalAmount)
         intent.putExtra("STATUS", status)
         
-        val itemsSummary = cartManager.getItems().entries.joinToString("\n") { (p, qty) ->
+        val itemsSummary = viewModel.cartManager.value?.getItems()?.entries?.joinToString("\n") { (p, qty) ->
             "$qty x ${p.name} (₱${p.price})"
-        }
+        } ?: ""
         intent.putExtra("ITEMS", itemsSummary)
         startActivity(intent)
     }
