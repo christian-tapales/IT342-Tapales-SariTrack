@@ -28,10 +28,12 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -251,8 +253,8 @@ class AddProductActivity : AppCompatActivity() {
         val bytes = inputStream?.readBytes() ?: return callback(null)
 
         val client = OkHttpClient()
-        val mediaType = MediaType.parse("image/jpeg")
-        val requestBody = RequestBody.create(mediaType, bytes)
+        val mediaType = "image/jpeg".toMediaTypeOrNull()
+        val requestBody = bytes.toRequestBody(mediaType)
         
         val request = Request.Builder()
             .url(supabaseUrl)

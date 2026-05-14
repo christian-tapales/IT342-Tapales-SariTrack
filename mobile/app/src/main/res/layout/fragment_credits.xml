@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC">
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:id="@+id/creditsHeader"
@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Listahan Manager"
-            android:textColor="#1E293B"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="24sp"
             android:fontFamily="sans-serif-black" />
 
@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Track customer credits &amp; payments"
-            android:textColor="#64748B"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp" />
 
         <!-- Total Debt Card -->
@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="#FEE2E2"
+            app:cardBackgroundColor="?attr/colorErrorContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             <LinearLayout
@@ -48,7 +48,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/ic_credits"
-                    app:tint="#EF4444" />
+                    app:tint="?attr/colorOnErrorContainer" />
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -59,14 +59,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total Receivables"
-                        android:textColor="#991B1B"
+                        android:textColor="?attr/colorOnErrorContainer"
                         android:textSize="12sp" />
                     <TextView
                         android:id="@+id/tvTotalDebt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="₱12,450.00"
-                        android:textColor="#991B1B"
+                        android:textColor="?attr/colorOnErrorContainer"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>

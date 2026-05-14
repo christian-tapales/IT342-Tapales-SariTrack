@@ -36,11 +36,13 @@ android {
 }
 
 dependencies {
-    implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
     // Retrofit for network requests
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     // Gson Converter to automatically convert JSON to Kotlin Data Classes
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     
     // Security for EncryptedSharedPreferences
     implementation("com.google.android.gms:play-services-auth:21.1.1")
