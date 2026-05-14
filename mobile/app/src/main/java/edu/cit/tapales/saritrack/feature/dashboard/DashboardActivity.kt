@@ -40,6 +40,12 @@ class DashboardActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         
+        // 👮 Role-Based UI Adjustment (Requirement 7.4)
+        val userRole = sessionManager.getUserRole()
+        if (userRole == "ADMIN") {
+            bottomNav.menu.findItem(R.id.nav_sales)?.isVisible = false
+        }
+
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
