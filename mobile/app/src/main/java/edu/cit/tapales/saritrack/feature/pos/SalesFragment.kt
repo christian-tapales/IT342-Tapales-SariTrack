@@ -67,8 +67,6 @@ class SalesFragment : Fragment() {
         }
         rvProducts.adapter = adapter
 
-        fetchProducts()
-
         etSearch.addTextChangedListener(object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) { filterProducts(s.toString()) }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
