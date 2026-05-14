@@ -316,12 +316,14 @@ const Inventory = ({ user }) => {
              {/* Action Buttons */}
              <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
                 <button 
+                  aria-label="Edit product"
                   onClick={() => openEditModal(product)}
                   className="p-2 bg-white text-teal-600 rounded-xl shadow-lg hover:bg-teal-600 hover:text-white transition-all"
                 >
                   <Pencil size={16} />
                 </button>
                 <button 
+                  aria-label="Delete product"
                   onClick={() => handleDelete(product.id)}
                   className="p-2 bg-white text-rose-500 rounded-xl shadow-lg hover:bg-rose-500 hover:text-white transition-all"
                 >

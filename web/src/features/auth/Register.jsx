@@ -82,8 +82,12 @@ const Register = () => {
           placeholder="Password"
           value={formData.password}
           onChange={(e) => setFormData({...formData, password: e.target.value})}
-          showPasswordButton={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           onTogglePassword={() => setShowPassword(!showPassword)}
+          showPasswordButton={
+            <button type="button" aria-label={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          }
         />
 
         {/* New Confirm Password Field */}
@@ -93,8 +97,12 @@ const Register = () => {
           placeholder="Confirm Password"
           value={formData.confirmPassword}
           onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-          showPasswordButton={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           onTogglePassword={() => setShowPassword(!showPassword)}
+          showPasswordButton={
+            <button type="button" aria-label={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          }
         />
 
         <button 
