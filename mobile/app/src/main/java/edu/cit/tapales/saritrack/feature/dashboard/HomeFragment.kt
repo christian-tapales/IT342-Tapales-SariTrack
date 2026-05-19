@@ -105,22 +105,49 @@ class HomeFragment : Fragment() {
     private fun fetchDashboardData() {
         val context = context ?: return
         val vendorId = SessionManager(context).getUserId()
+        val sharedPrefs = context.getSharedPreferences("saritrack_dashboard_cache", android.content.Context.MODE_PRIVATE)
 
         RetrofitClient.getDashboardService(context).getVendorStats(vendorId)
             .enqueue(object : Callback<DashboardStats> {
                 override fun onResponse(call: Call<DashboardStats>, response: Response<DashboardStats>) {
+                    if (!isAdded || activity == null) return
                     if (response.isSuccessful) {
                         val stats = response.body() ?: return
                         updateUI(stats)
+                        
+                        // 💾 Cache stats locally for offline use
+                        try {
+                            val jsonStats = com.google.gson.Gson().toJson(stats)
+                            sharedPrefs.edit().putString("stats_$vendorId", jsonStats).apply()
+                        } catch (e: Exception) {
+                            android.util.Log.e("HomeFragment", "Caching dashboard failed", e)
+                        }
                     } else {
-                        Toast.makeText(context, "Failed to load dashboard data", Toast.LENGTH_SHORT).show()
+                        loadCachedDashboard(vendorId, sharedPrefs)
                     }
                 }
 
                 override fun onFailure(call: Call<DashboardStats>, t: Throwable) {
-                    Toast.makeText(context, "Dashboard Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    if (!isAdded || activity == null) return
+                    loadCachedDashboard(vendorId, sharedPrefs)
                 }
             })
+    }
+
+    private fun loadCachedDashboard(vendorId: Long, sharedPrefs: android.content.SharedPreferences) {
+        val context = context ?: return
+        try {
+            val cachedJson = sharedPrefs.getString("stats_$vendorId", null)
+            if (cachedJson != null) {
+                val stats = com.google.gson.Gson().fromJson(cachedJson, DashboardStats::class.java)
+                updateUI(stats)
+                Toast.makeText(context, "Viewing offline cached dashboard stats", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Dashboard offline: No cached data available", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Failed to load cached dashboard", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun updateUI(stats: DashboardStats) {

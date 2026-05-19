@@ -44,6 +44,14 @@ class LoginActivity : AppCompatActivity() {
 
         // 🌓 Apply Saved Theme
         val sessionManager = SessionManager(this)
+        
+        // 🚪 Auto-Login Bypass
+        if (sessionManager.isLoggedIn()) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
+
         val targetMode = if (sessionManager.isDarkMode()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {
