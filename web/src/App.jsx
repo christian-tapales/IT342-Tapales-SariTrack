@@ -14,6 +14,7 @@ import Settings from './features/admin/Settings';
 import PaymentSuccess from './features/payment/PaymentSuccess';
 import PaymentCancel from './features/payment/PaymentCancel';
 import Transactions from './features/transactions/Transactions';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   // Load user from localStorage on startup
@@ -90,6 +91,7 @@ function App() {
         {/* Default redirect to login */}
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
+      <Toaster position="top-right" reverseOrder={false} />
     </Router>
   );
 }

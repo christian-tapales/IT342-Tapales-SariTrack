@@ -36,6 +36,7 @@ import com.google.android.gms.tasks.Task
 import androidx.activity.result.contract.ActivityResultContracts
 
 class LoginActivity : AppCompatActivity() {
+    private lateinit var viewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +44,14 @@ class LoginActivity : AppCompatActivity() {
 
         // 🌓 Apply Saved Theme
         val sessionManager = SessionManager(this)
+        
+        // 🚪 Auto-Login Bypass
+        if (sessionManager.isLoggedIn()) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
+
         val targetMode = if (sessionManager.isDarkMode()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {
@@ -68,60 +77,24 @@ class LoginActivity : AppCompatActivity() {
         val btnGoogle = findViewById<android.view.View>(R.id.btnGoogle)
         val tvToRegister = findViewById<TextView>(R.id.tvToRegister)
 
+        viewModel = androidx.lifecycle.ViewModelProvider(this)[AuthViewModel::class.java]
+        setupObservers()
+
         // 1. Handle Login Logic
         btnLogin.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                val loginRequest = LoginRequest(email, password)
-
-                val sessionManager = SessionManager(this@LoginActivity)
-                
-                RetrofitClient.authInstance.loginUser(loginRequest).enqueue(object : retrofit2.Callback<LoginResponse> {
-                    override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                        if (response.isSuccessful) {
-                            val loginResponse = response.body()
-                            if (loginResponse != null) {
-                                sessionManager.saveAuthToken(loginResponse.token)
-                                sessionManager.saveUserDetail(
-                                    loginResponse.id,
-                                    loginResponse.email,
-                                    loginResponse.role,
-                                    loginResponse.name
-                                )
-                                Toast.makeText(this@LoginActivity, "Welcome, ${loginResponse.name}!", Toast.LENGTH_SHORT).show()
-                                startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
-                                finish()
-                            }
-                        } else {
-                            // Try to parse the error JSON {"error": "..."}
-                            val errorMsg = try {
-                                val errorBody = response.errorBody()?.string()
-                                val json = com.google.gson.JsonParser.parseString(errorBody).asJsonObject
-                                json.get("error").asString
-                            } catch (e: Exception) {
-                                "Invalid email or password"
-                            }
-                            Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_LONG).show()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                        // If it's a JSON error, it's usually because the server sent an error string instead of a user object
-                        if (t is com.google.gson.JsonSyntaxException || t.message?.contains("JsonReader") == true) {
-                            Toast.makeText(this@LoginActivity, "Invalid email or password", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this@LoginActivity, "Connection Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                })
+                viewModel.login(email, password)
+            } else {
+                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
             }
         }
 
         // 2. Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("959587445952-3v8re13apvpqdqrh4p6g58nplhh6n8tf.apps.googleusercontent.com")
+            .requestIdToken(getString(R.string.google_client_id))
             .requestEmail()
             .build()
 
@@ -146,48 +119,38 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupObservers() {
+        val sessionManager = SessionManager(this)
+        
+        viewModel.loginResponse.observe(this) { response ->
+            if (response != null) {
+                sessionManager.saveAuthToken(response.token)
+                sessionManager.saveUserDetail(response.id, response.email, response.role, response.name)
+                Toast.makeText(this, "Welcome, ${response.name}!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+            }
+        }
+
+        viewModel.error.observe(this) { msg ->
+            if (msg != null) {
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                viewModel.clearError()
+            }
+        }
+
+        viewModel.isLoading.observe(this) { loading ->
+            findViewById<Button>(R.id.btnLogIn).isEnabled = !loading
+        }
+    }
+
     private fun handleGoogleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
             val idToken = account.idToken
-            
-            if (idToken != null) {
-                loginWithGoogleToken(idToken)
-            } else {
-                Toast.makeText(this, "Google Sign-In failed: No ID Token", Toast.LENGTH_SHORT).show()
-            }
+            if (idToken != null) viewModel.loginWithGoogle(idToken)
         } catch (e: ApiException) {
             Toast.makeText(this, "Google error: ${e.statusCode}", Toast.LENGTH_SHORT).show()
         }
     }
-
-    private fun loginWithGoogleToken(idToken: String) {
-        val sessionManager = SessionManager(this)
-        val request = mapOf("idToken" to idToken)
-
-        RetrofitClient.authInstance.googleMobileLogin(request).enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                if (response.isSuccessful) {
-                    val loginResponse = response.body()
-                    if (loginResponse != null) {
-                        sessionManager.saveAuthToken(loginResponse.token)
-                        sessionManager.saveUserDetail(
-                            loginResponse.id,
-                            loginResponse.email,
-                            loginResponse.role,
-                            loginResponse.name
-                        )
-                        startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
-                        finish()
-                    }
-                } else {
-                    Toast.makeText(this@LoginActivity, "Google Auth Failed on Server", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                Toast.makeText(this@LoginActivity, "Network Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-}
+}

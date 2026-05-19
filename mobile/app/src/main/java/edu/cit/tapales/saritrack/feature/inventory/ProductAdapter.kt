@@ -46,6 +46,7 @@ class ProductAdapter(
 
         Glide.with(holder.itemView.context)
             .load(product.imageUrl)
+            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
             .placeholder(R.drawable.logo)
             .error(R.drawable.logo)
             .into(holder.ivProduct)

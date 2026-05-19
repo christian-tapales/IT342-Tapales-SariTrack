@@ -1,53 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../core/api/api';
+import { usePOS } from './usePOS';
 import { Search, ShoppingCart, Plus, Minus, Trash2, CheckCircle, Package, BookOpen, X, UserPlus } from 'lucide-react';
 import Skeleton from '../../core/components/Skeleton';
 
 const PointOfSale = ({ user }) => {
-  const [products, setProducts] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const {
+    products, customers, cart, loading, 
+    rates, selectedCurrency, setSelectedCurrency,
+    addToCart, updateQuantity, handleQuantityInput, removeFromCart,
+    resetSale, total, fetchData
+  } = usePOS(user);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showUtangModal, setShowUtangModal] = useState(false);
   const [showCashModal, setShowCashModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
-  
-  // Currency State
-  const [rates, setRates] = useState({ PHP: 1.0, USD: 0.018, EUR: 0.016, JPY: 2.65 });
-  const [selectedCurrency, setSelectedCurrency] = useState('PHP');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
-  // 1. Fetch real products and customers from the backend
-  const fetchData = async () => {
-    if (!user?.id) return;
-    try {
-      const [prodRes, custRes, rateRes] = await Promise.all([
-        api.get(`/products?vendorId=${user.id}`),
-        api.get(`/customers?vendorId=${user.id}`),
-        api.get(`/currency/rates`)
-      ]);
-      setProducts(prodRes.data);
-      setCustomers(custRes.data);
-      if (rateRes.data) setRates(rateRes.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.id) fetchData();
-  }, [user]);
-
-  // 2. Complete Sale (CASH)
+  // 1. Complete Sale (CASH)
   const handleCompleteSale = async () => {
     if (cart.length === 0) return;
     const orderData = {
       vendorId: user?.id,
-      customerId: selectedCustomerId || null, // Optional for cash
+      customerId: selectedCustomerId || null,
       totalAmount: total,
       status: 'PAID',
       items: cart.map(item => ({
@@ -59,19 +37,20 @@ const PointOfSale = ({ user }) => {
     try {
       const response = await api.post('/orders', orderData);
       if (response.data.id) {
-        alert(selectedCustomerId ? "Sale Complete & Receipt Sent!" : "Sale Completed Successfully!");
+        toast.success(selectedCustomerId ? "Sale Complete & Receipt Sent!" : "Sale Completed Successfully!");
         setShowCashModal(false);
         resetSale();
+        setSelectedCustomerId('');
       }
     } catch (error) {
-      alert(error.response?.data || "Error completing sale.");
+      toast.error(error.response?.data || "Error completing sale.");
     }
   };
 
-  // 3. Record as UTANG
+  // 2. Record as UTANG
   const handleUtangSale = async () => {
     if (!selectedCustomerId) {
-      alert("Please select a customer first.");
+      toast.error("Please select a customer first.");
       return;
     }
     const orderData = {
@@ -88,16 +67,17 @@ const PointOfSale = ({ user }) => {
     try {
       const response = await api.post('/orders', orderData);
       if (response.data.id) {
-        alert("Utang Recorded Successfully!");
+        toast.success("Utang Recorded Successfully!");
         setShowUtangModal(false);
         resetSale();
+        setSelectedCustomerId('');
       }
     } catch (error) {
-      alert(error.response?.data || "Error recording debt.");
+      toast.error(error.response?.data || "Error recording debt.");
     }
   };
 
-  // 4. PayMongo Digital Payment
+  // 3. PayMongo Digital Payment
   const handleDigitalPayment = async () => {
     if (cart.length === 0) return;
     const orderData = {
@@ -122,65 +102,10 @@ const PointOfSale = ({ user }) => {
         window.location.href = paymentResponse.data.checkout_url;
       }
     } catch (error) {
-      alert(error.response?.data || "Error initiating payment.");
+      toast.error(error.response?.data || "Error initiating payment.");
     }
   };
 
-  const resetSale = () => {
-    setCart([]);
-    setSelectedCustomerId('');
-    setCustomerSearch('');
-    setShowUtangModal(false);
-    setShowCashModal(false);
-    fetchData();
-  };
-
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem) {
-      if (existingItem.quantity < product.stockQuantity) {
-        setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
-      } else {
-        alert(`Only ${product.stockQuantity} units available.`);
-      }
-    } else if (product.stockQuantity > 0) {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    } else {
-      alert("Out of stock!");
-    }
-  };
-
-  const updateQuantity = (id, delta) => {
-    setCart(cart.map(item => {
-      if (item.id === id) {
-        const newQty = item.quantity + delta;
-        return (newQty > 0 && newQty <= item.stockQuantity) ? { ...item, quantity: newQty } : item;
-      }
-      return item;
-    }));
-  };
-
-  const handleQuantityInput = (id, value) => {
-    if (value === "") {
-      setCart(cart.map(item => item.id === id ? { ...item, quantity: "" } : item));
-      return;
-    }
-    const val = parseInt(value);
-    if (isNaN(val) || val < 0) return;
-    
-    setCart(cart.map(item => {
-      if (item.id === id) {
-        if (val > item.stockQuantity) {
-          alert(`Only ${item.stockQuantity} units available.`);
-          return { ...item, quantity: item.stockQuantity };
-        }
-        return { ...item, quantity: val };
-      }
-      return item;
-    }));
-  };
-
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const convertedTotal = total * (rates[selectedCurrency] || 1);
   const currencySymbols = { PHP: '₱', USD: '$', EUR: '€', JPY: '¥' };
   
@@ -290,7 +215,7 @@ const PointOfSale = ({ user }) => {
                 />
                 <button aria-label="Increase quantity" onClick={() => updateQuantity(item.id, 1)} disabled={item.quantity >= item.stockQuantity} className="text-slate-400 hover:text-[#16A394] transition-colors disabled:opacity-10"><Plus size={14}/></button>
               </div>
-              <button aria-label="Remove item" onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="ml-3 p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500"><Trash2 size={18} /></button>
+              <button aria-label="Remove item" onClick={() => removeFromCart(item.id)} className="ml-3 p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500"><Trash2 size={18} /></button>
             </div>
           ))}
         </div>

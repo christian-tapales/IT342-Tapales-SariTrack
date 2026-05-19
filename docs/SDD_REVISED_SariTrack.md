@@ -56,6 +56,44 @@ SariTrack is a multi-tenant SaaS platform designed to modernize the traditional 
 * **Mobile:** Kotlin, XML Layouts (Classic View System), Retrofit 2, Room DB.
 * **External Services:** Supabase Storage, PayMongo API, ExchangeRate API.
 
+### 4.2 Architectural Pattern
+SariTrack follows a **Layered Architecture (Three-Tier)** coupled with a **Vertical Slice** organization for modularity. This ensures that changes to the UI do not disrupt the underlying business logic or database schema.
+
+```mermaid
+graph TD
+    subgraph "Client Tier"
+        Web["React Web Dashboard"]
+        Mobile["Android Kotlin App"]
+    end
+
+    subgraph "Server Tier (Spring Boot)"
+        Controller["Controller Layer (REST Endpoints)"]
+        Service["Service Layer (Business Logic)"]
+        Repo["Repository Layer (Spring Data JPA)"]
+        Security["Security Layer (JWT/OAuth2)"]
+        Exceptions["Global Exception Handling"]
+    end
+
+    subgraph "Data Tier"
+        DB[("PostgreSQL (Supabase)")]
+        Storage["Supabase Storage (Images)"]
+    end
+
+    Web --> Security
+    Mobile --> Security
+    Security --> Controller
+    Controller --> Service
+    Service --> Repo
+    Repo --> DB
+    Service --> Storage
+```
+
+**Key Architectural Decisions:**
+*   **Separation of Concerns:** Business logic is isolated in the `Service` layer, while data access is handled by `Repositories`.
+*   **Centralized Security:** JWT validation and Role-Based Access Control (RBAC) are handled by a dedicated security filter chain before reaching the API.
+*   **Resiliency:** A Global Exception Handler is implemented to catch and format all server errors into consistent JSON responses for client stability.
+*   **Mobile MVVM:** The Android application utilizes the **ViewModel** pattern to ensure UI state persistence across lifecycle changes.
+
 ---
 
 ## 5.0 API CONTRACT & COMMUNICATION
