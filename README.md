@@ -33,13 +33,36 @@ graph TD
         Storage["Supabase Storage Bucket (CDN)"]
     end
 
+    subgraph "External Integration Services"
+        PayMongo["PayMongo Sandbox (Payments & Webhooks)"]
+        SMTP["Gmail SMTP Gateway (Transaction Alerts)"]
+        ExchangeRate["ExchangeRate API (Live Conversions)"]
+        GoogleOAuth["Google OAuth 2.0 (Identity Check)"]
+        MLKit["Google ML Kit (Local POS Scanner)"]
+        BarcodeAPI["Open Barcode API (Product Cataloging)"]
+    end
+
+    %% Client Operations
     Web -->|HTTPS / JSON + JWT| Security
     Mobile -->|HTTPS / JSON + JWT| Security
+    Mobile -->|Local Library| MLKit
+    Mobile -->|Fetch Info| BarcodeAPI
+
+    %% Web Payment WebView
+    Web <-->|Process E-Wallet/Card| PayMongo
+
+    %% Internal Server Operations
     Security --> Controller
     Controller --> Service
     Service --> Repo
     Repo --> DB
     Service --> Storage
+
+    %% Integration Flows from Backend Service
+    Service <-->|Validate Tokens| GoogleOAuth
+    Service <-->|Process Payments & Webhooks| PayMongo
+    Service -->|Send SMTP Email| SMTP
+    Service <-->|Fetch Rates| ExchangeRate
 ```
 
 1.  **`backend/`**: A high-availability Java Spring Boot 3 API managing RBAC security, atomic transactions, multi-tenant database isolation, and 3rd-party integrations.
@@ -91,8 +114,8 @@ spring.datasource.username=[YOUR_DB_USERNAME]
 spring.datasource.password=[YOUR_DB_PASSWORD]
 
 # PayMongo Sandbox Credentials
-paymongo.secret.key=${PAYMONGO_SECRET_KEY:sk_test_EuFD81y43jw329hK4HiwjWqD}
-paymongo.webhook.secret=${PAYMONGO_WEBHOOK_SECRET:whsk_cNLUCkP9Qo5gHLVXemkZRCgE}
+paymongo.secret.key=${PAYMONGO_SECRET_KEY:[YOUR_PAYMONGO_TEST_SECRET_KEY]}
+paymongo.webhook.secret=${PAYMONGO_WEBHOOK_SECRET:[YOUR_PAYMONGO_TEST_WEBHOOK_SECRET]}
 
 # Google OAuth2 Credentials
 spring.security.oauth2.client.registration.google.client-id=[YOUR_GOOGLE_CLIENT_ID]
