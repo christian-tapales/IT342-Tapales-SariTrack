@@ -91,8 +91,8 @@ spring.datasource.username=[YOUR_DB_USERNAME]
 spring.datasource.password=[YOUR_DB_PASSWORD]
 
 # PayMongo Sandbox Credentials
-paymongo.secret.key=${PAYMONGO_SECRET_KEY:sk_test_EuFD81y43jw329hK4HiwjWqD}
-paymongo.webhook.secret=${PAYMONGO_WEBHOOK_SECRET:whsk_cNLUCkP9Qo5gHLVXemkZRCgE}
+paymongo.secret.key=${PAYMONGO_SECRET_KEY:[YOUR_PAYMONGO_TEST_SECRET_KEY]}
+paymongo.webhook.secret=${PAYMONGO_WEBHOOK_SECRET:[YOUR_PAYMONGO_TEST_WEBHOOK_SECRET]}
 
 # Google OAuth2 Credentials
 spring.security.oauth2.client.registration.google.client-id=[YOUR_GOOGLE_CLIENT_ID]
