@@ -79,3 +79,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+
+tasks.withType<Test> {
+    testLogging {
+        events("passed", "skipped", "failed")
+        showExceptions = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showStackTraces = true
+    }
+}
