@@ -33,13 +33,36 @@ graph TD
         Storage["Supabase Storage Bucket (CDN)"]
     end
 
+    subgraph "External Integration Services"
+        PayMongo["PayMongo Sandbox (Payments & Webhooks)"]
+        SMTP["Gmail SMTP Gateway (Transaction Alerts)"]
+        ExchangeRate["ExchangeRate API (Live Conversions)"]
+        GoogleOAuth["Google OAuth 2.0 (Identity Check)"]
+        MLKit["Google ML Kit (Local POS Scanner)"]
+        BarcodeAPI["Open Barcode API (Product Cataloging)"]
+    end
+
+    %% Client Operations
     Web -->|HTTPS / JSON + JWT| Security
     Mobile -->|HTTPS / JSON + JWT| Security
+    Mobile -->|Local Library| MLKit
+    Mobile -->|Fetch Info| BarcodeAPI
+
+    %% Web Payment WebView
+    Web <-->|Process E-Wallet/Card| PayMongo
+
+    %% Internal Server Operations
     Security --> Controller
     Controller --> Service
     Service --> Repo
     Repo --> DB
     Service --> Storage
+
+    %% Integration Flows from Backend Service
+    Service <-->|Validate Tokens| GoogleOAuth
+    Service <-->|Process Payments & Webhooks| PayMongo
+    Service -->|Send SMTP Email| SMTP
+    Service <-->|Fetch Rates| ExchangeRate
 ```
 
 1.  **`backend/`**: A high-availability Java Spring Boot 3 API managing RBAC security, atomic transactions, multi-tenant database isolation, and 3rd-party integrations.
