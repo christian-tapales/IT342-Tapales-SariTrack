@@ -79,27 +79,53 @@ class ProductsFragment : Fragment() {
         
         if (vendorId == -1L) return
 
+        val sharedPrefs = context.getSharedPreferences("saritrack_product_cache", android.content.Context.MODE_PRIVATE)
+
         RetrofitClient.getProductService(context).getVendorProducts(vendorId)
             .enqueue(object : Callback<List<Product>> {
                 override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
-                    // 🛡️ Safety Check: Make sure the fragment is still attached to the UI
                     if (!isAdded || activity == null) return
 
                     if (response.isSuccessful) {
                         val products = response.body() ?: emptyList()
                         adapter?.updateProducts(products)
                         tvProductCount?.text = "${products.size} Products"
+
+                        // 💾 Cache products list locally for offline use
+                        try {
+                            val jsonProducts = com.google.gson.Gson().toJson(products)
+                            sharedPrefs.edit().putString("products_$vendorId", jsonProducts).apply()
+                        } catch (e: Exception) {
+                            android.util.Log.e("ProductsFragment", "Caching products failed", e)
+                        }
                     } else {
-                        Toast.makeText(context, "Failed to load products", Toast.LENGTH_SHORT).show()
+                        loadCachedProducts(vendorId, sharedPrefs)
                     }
                 }
 
                 override fun onFailure(call: Call<List<Product>>, t: Throwable) {
-                    // 🛡️ Safety Check: Make sure the fragment is still attached to the UI
                     if (!isAdded || activity == null) return
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    loadCachedProducts(vendorId, sharedPrefs)
                 }
             })
+    }
+
+    private fun loadCachedProducts(vendorId: Long, sharedPrefs: android.content.SharedPreferences) {
+        val context = context ?: return
+        try {
+            val cachedJson = sharedPrefs.getString("products_$vendorId", null)
+            if (cachedJson != null) {
+                val type = object : com.google.gson.reflect.TypeToken<List<Product>>() {}.type
+                val products: List<Product> = com.google.gson.Gson().fromJson(cachedJson, type)
+                adapter?.updateProducts(products)
+                tvProductCount?.text = "${products.size} Products"
+                Toast.makeText(context, "Viewing offline cached products", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Products offline: No cached data available", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Failed to load cached products", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {
