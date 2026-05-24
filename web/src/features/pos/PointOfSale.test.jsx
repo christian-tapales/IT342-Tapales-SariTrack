@@ -2,12 +2,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PointOfSale from './PointOfSale';
 import api from '../../core/api/api';
+import toast from 'react-hot-toast';
 
 // Mock the API module
 vi.mock('../../core/api/api', () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
+  }
+}));
+
+// Mock react-hot-toast
+vi.mock('react-hot-toast', () => ({
+  default: {
+    success: vi.fn(),
+    error: vi.fn(),
   }
 }));
 
@@ -109,7 +118,7 @@ describe('PointOfSale Component', () => {
         status: 'PAID',
         totalAmount: 20.0
       }));
-      expect(global.alert).toHaveBeenCalledWith('Sale Completed Successfully!');
+      expect(toast.success).toHaveBeenCalledWith('Sale Completed Successfully!');
     });
   });
 

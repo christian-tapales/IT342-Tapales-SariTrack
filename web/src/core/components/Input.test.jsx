@@ -4,6 +4,12 @@ import Input from './Input';
 import { Mail } from 'lucide-react';
 
 describe('Input Component', () => {
+  it('renders with correct default class structure', () => {
+    const { container } = render(<Input value="" onChange={() => {}} />);
+    const wrapper = container.firstChild;
+    expect(wrapper).toHaveClass('relative');
+  });
+
   it('renders with placeholder and value', () => {
     render(
       <Input 
@@ -40,7 +46,6 @@ describe('Input Component', () => {
         onChange={() => {}} 
       />
     );
-    // Lucide icons render as svg
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
@@ -62,5 +67,34 @@ describe('Input Component', () => {
     
     fireEvent.click(toggleButton);
     expect(handleToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies the required attribute to input by default', () => {
+    render(<Input placeholder="Required field" value="" onChange={() => {}} />);
+    const input = screen.getByPlaceholderText('Required field');
+    expect(input).toHaveAttribute('required');
+  });
+
+  it('applies custom type attributes like number', () => {
+    render(<Input type="number" placeholder="Quantity" value="" onChange={() => {}} />);
+    const input = screen.getByPlaceholderText('Quantity');
+    expect(input).toHaveAttribute('type', 'number');
+  });
+
+  it('sets input value to empty string when passed empty value', () => {
+    render(<Input placeholder="Empty input" value="" onChange={() => {}} />);
+    const input = screen.getByPlaceholderText('Empty input');
+    expect(input.value).toBe('');
+  });
+
+  it('does not render icon when icon prop is omitted', () => {
+    const { container } = render(<Input placeholder="No icon" value="" onChange={() => {}} />);
+    expect(container.querySelector('svg')).not.toBeInTheDocument();
+  });
+
+  it('does not render password toggle button when showPasswordButton is omitted', () => {
+    render(<Input type="password" placeholder="No toggle" value="" onChange={() => {}} />);
+    const toggleButton = screen.queryByRole('button');
+    expect(toggleButton).not.toBeInTheDocument();
   });
 });
