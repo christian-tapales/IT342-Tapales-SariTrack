@@ -106,8 +106,13 @@ const PointOfSale = ({ user }) => {
     }
   };
 
-  const convertedTotal = total * (rates[selectedCurrency] || 1);
   const currencySymbols = { PHP: '₱', USD: '$', EUR: '€', JPY: '¥' };
+  const formatPrice = (priceInPhp) => {
+    const rate = rates[selectedCurrency] || 1;
+    const converted = (priceInPhp || 0) * rate;
+    const symbol = currencySymbols[selectedCurrency] || '₱';
+    return `${symbol}${converted.toFixed(2)}`;
+  };
   
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredCustomers = customers.filter(c => c.fullName.toLowerCase().includes(customerSearch.toLowerCase()));
@@ -152,7 +157,7 @@ const PointOfSale = ({ user }) => {
               </div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">{product.name}</h3>
               <div className="flex justify-between items-center mt-2">
-                <p className="text-teal-600 dark:text-teal-400 font-black text-sm">₱{(product.price || 0).toFixed(2)}</p>
+                <p className="text-teal-600 dark:text-teal-400 font-black text-sm">{formatPrice(product.price)}</p>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stockQuantity < 5 ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-500' : 'bg-slate-50 dark:bg-slate-950 text-slate-400 dark:text-slate-500'}`}>qty: {product.stockQuantity}</span>
               </div>
             </div>
@@ -203,7 +208,7 @@ const PointOfSale = ({ user }) => {
             <div key={item.id} className="flex items-center justify-between group animate-in slide-in-from-right-4">
               <div className="flex-1">
                 <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">{item.name}</p>
-                <p className="text-xs text-[#16A394] font-bold">₱{(item.price * item.quantity).toFixed(2)}</p>
+                <p className="text-xs text-[#16A394] font-bold">{formatPrice(item.price * item.quantity)}</p>
               </div>
               <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700 group-focus-within:border-teal-500 transition-all">
                 <button aria-label="Decrease quantity" onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-[#16A394] transition-colors"><Minus size={14}/></button>
@@ -224,7 +229,7 @@ const PointOfSale = ({ user }) => {
           <div className="flex flex-col mb-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-slate-400">Total Bill</span>
-              <span className="text-3xl font-black text-[#16A394]">₱{total.toFixed(2)}</span>
+              <span className="text-3xl font-black text-[#16A394]">{formatPrice(total)}</span>
             </div>
           </div>
           
@@ -249,7 +254,7 @@ const PointOfSale = ({ user }) => {
             <div className="p-8 bg-[#16A394] text-white flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-black italic">Checkout</h2>
-                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Total Amount: ₱{total.toFixed(2)}</p>
+                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Total Amount: {formatPrice(total)}</p>
               </div>
               <button onClick={() => { setShowCashModal(false); setSelectedCustomerId(''); }} className="p-2 bg-white/20 rounded-xl hover:bg-white/30"><X size={20} /></button>
             </div>
@@ -301,7 +306,7 @@ const PointOfSale = ({ user }) => {
             <div className="p-8 bg-amber-400 text-white flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-black italic">Listahan Selection</h2>
-                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Select borrower for ₱{total.toFixed(2)}</p>
+                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Select borrower for {formatPrice(total)}</p>
               </div>
               <button onClick={() => { setShowUtangModal(false); setSelectedCustomerId(''); }} className="p-2 bg-white/20 rounded-xl hover:bg-white/30"><X size={20} /></button>
             </div>
