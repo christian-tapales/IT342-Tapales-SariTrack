@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api, { API_BASE_URL } from '../../core/api/api';
 import { Mail, Lock, ShoppingCart, Eye, EyeOff } from 'lucide-react';
 import Input from '../../core/components/Input';
 import { useState, useEffect } from 'react';
@@ -7,6 +7,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 const Login = ({ onLoginSuccess }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,8 +28,9 @@ const Login = ({ onLoginSuccess }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', credentials);
+      const response = await api.post('/auth/login', credentials);
       
       // Now handling JSON object instead of String
       if (response.data && typeof response.data === 'object') {
@@ -38,14 +40,16 @@ const Login = ({ onLoginSuccess }) => {
         alert(response.data || "Invalid response from server");
       }
     } catch (error) {
-      alert("Login failed. Make sure your Spring Boot backend is running.");
+      alert("Login failed. Please verify your credentials or server connection.");
+    } finally {
+      setLoading(false);
     }
   };
 
   // --- ADDED GOOGLE OAUTH LOGIC ---
   const handleGoogleLogin = () => {
-    // This directs the browser to the Spring Boot OAuth entry point we configured
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    // Directs the browser to the Spring Boot OAuth entry point
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
   };
 
   return (

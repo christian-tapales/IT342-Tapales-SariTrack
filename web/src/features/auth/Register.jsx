@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../../core/api/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, User, Lock, Eye, EyeOff, ShoppingCart } from 'lucide-react'; 
 import Input from '../../core/components/Input'; 
@@ -12,22 +12,22 @@ const Register = () => {
      confirmPassword: ''
     });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    
     e.preventDefault();
-
 
     if(formData.password !== formData.confirmPassword){
       alert("Passwords do not match!");
       return;
     }
 
+    setLoading(true);
     try {
       // Destructure to avoid sending confirmPassword to the backend
       const { confirmPassword, ...registerData } = formData;
-      const response = await axios.post('http://localhost:8080/api/auth/register', registerData);
+      const response = await api.post('/auth/register', registerData);
       
       if (response.data === "User registered successfully!") {
         alert("Registration Successful!");
@@ -37,6 +37,8 @@ const Register = () => {
       }
     } catch (error) {
       alert("Registration failed. Check backend connection.");
+    } finally {
+      setLoading(false);
     }
   };
 
