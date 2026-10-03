@@ -1,0 +1,13 @@
+# SariTrack Cursor AI Rules
+# Follow the master standards in AGENTS.md
+
+- Always read AGENTS.md and docs/PROJECT_CONTEXT.md before modifying code.
+- Never commit directly to main; use feature branches (feat/*, fix/*, chore/*, test/*).
+- Maintain Vertical Slice Architecture (backend, web, mobile under feature/<name>).
+- Respect multi-tenancy: always filter queries by vendor_id.
+- Never commit hardcoded secrets; use environment variables or application-local.properties.
+- Before committing, verify tests:
+  - Backend: cd backend && ./mvnw test
+  - Web: cd web && npx vitest run
+  - Mobile: cd mobile && .\gradlew.bat testDebugUnitTest
+- Follow Conventional Commits: <type>(<scope>): <subject>
