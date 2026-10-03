@@ -1,0 +1,20 @@
+# Local Secrets & Overrides Template
+# Copy this file to application-local.properties in the same directory.
+# NEVER commit application-local.properties to Git (it is already in .gitignore).
+
+# Database Connection (Supabase Transaction Mode pooler)
+# spring.datasource.url=jdbc:postgresql://your-pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
+# spring.datasource.username=postgres.your-project-id
+# spring.datasource.password=your_database_password
+
+# PayMongo Sandbox Credentials
+# paymongo.secret.key=sk_test_your_secret_key
+# paymongo.webhook.secret=whsk_your_webhook_secret
+
+# Google OAuth2 Credentials
+# spring.security.oauth2.client.registration.google.client-id=your-google-client-id
+# spring.security.oauth2.client.registration.google.client-secret=your-google-client-secret
+
+# SMTP Email Configuration (Gmail App Password)
+# spring.mail.username=your_gmail_address@gmail.com
+# spring.mail.password=your_16_digit_app_password
