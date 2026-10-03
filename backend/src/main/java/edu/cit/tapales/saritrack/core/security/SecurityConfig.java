@@ -46,8 +46,12 @@ public class SecurityConfig {
                     org.springframework.web.cors.CorsConfiguration corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
                     // Explicitly list allowed origins to support setAllowCredentials(true)
                     corsConfiguration.setAllowedOriginPatterns(List.of(
-                        "http://localhost:5173", 
-                        "http://localhost:5174", 
+                        "http://localhost:*", 
+                        "http://127.0.0.1:*",
+                        "https://*.vercel.app",
+                        "https://*.onrender.com",
+                        "https://*.netlify.app",
+                        "https://*.koyeb.app",
                         "https://*.ngrok-free.app",
                         "https://*.ngrok-free.dev"
                     ));
@@ -63,7 +67,7 @@ public class SecurityConfig {
                 // 3. Define URLs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
-                        .requestMatchers("/", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**", "/error").permitAll()
+                        .requestMatchers("/", "/api/health", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**", "/error").permitAll()
                         .anyRequest().authenticated())
 
                 // 4. ADD JWT FILTER
