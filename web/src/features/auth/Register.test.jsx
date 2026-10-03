@@ -2,10 +2,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import Register from './Register';
-import axios from 'axios';
+import api from '../../core/api/api';
 
-// Mock axios
-vi.mock('axios');
+// Mock api
+vi.mock('../../core/api/api', () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -56,7 +60,7 @@ describe('Register Component', () => {
   });
 
   it('successfully registers a user', async () => {
-    axios.post.mockResolvedValue({ data: 'User registered successfully!' });
+    api.post.mockResolvedValue({ data: 'User registered successfully!' });
 
     render(
       <MemoryRouter>
@@ -72,7 +76,7 @@ describe('Register Component', () => {
     fireEvent.click(screen.getByRole('button', { name: /Create Account/i }));
 
     await waitFor(() => {
-      expect(axios.post).toHaveBeenCalledWith('http://localhost:8080/api/auth/register', {
+      expect(api.post).toHaveBeenCalledWith('/auth/register', {
         name: 'Juan Dela Cruz',
         email: 'juan@example.com',
         password: 'password123'
@@ -83,7 +87,7 @@ describe('Register Component', () => {
   });
 
   it('handles registration failure', async () => {
-    axios.post.mockRejectedValue(new Error('API Error'));
+    api.post.mockRejectedValue(new Error('API Error'));
 
     render(
       <MemoryRouter>
