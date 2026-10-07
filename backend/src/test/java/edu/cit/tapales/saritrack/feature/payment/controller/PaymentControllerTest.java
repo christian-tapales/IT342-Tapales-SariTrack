@@ -78,4 +78,26 @@ class PaymentControllerTest {
                 .content(payload))
                 .andExpect(status().isInternalServerError());
     }
+
+    @Test
+    void testCreateSession_WithCustomRedirectUrl_ShouldUseCustomBaseUrl() throws Exception {
+        CheckoutSessionResponse mockResponse = new CheckoutSessionResponse();
+        CheckoutSessionResponse.DataContainer data = new CheckoutSessionResponse.DataContainer();
+        data.setId("cs_custom_456");
+        CheckoutSessionResponse.Attributes attr = new CheckoutSessionResponse.Attributes();
+        attr.setCheckout_url("https://checkout.paymongo.com/cs_custom_456");
+        data.setAttributes(attr);
+        mockResponse.setData(data);
+
+        when(payMongoService.createCheckoutSession(eq("Custom Test"), eq(250.0), eq("https://saritrack.com/payment-success"), eq("https://saritrack.com/payment-cancel")))
+                .thenReturn(mockResponse);
+
+        String payload = "{\"amount\": 250.0, \"orderId\": 501, \"description\": \"Custom Test\", \"redirectUrl\": \"https://saritrack.com\"}";
+
+        mockMvc.perform(post("/api/payments/create-session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.checkout_url").value("https://checkout.paymongo.com/cs_custom_456"));
+    }
 }

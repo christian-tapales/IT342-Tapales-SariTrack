@@ -21,6 +21,9 @@ public class PaymentController {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @PostMapping("/create-session")
     public ResponseEntity<?> createSession(@RequestBody Map<String, Object> payload) {
         try {
@@ -28,8 +31,11 @@ public class PaymentController {
             double amount = Double.parseDouble(payload.get("amount").toString());
             Long orderId = Long.parseLong(payload.get("orderId").toString());
             
-            String successUrl = "http://localhost:5173/payment-success";
-            String cancelUrl = "http://localhost:5173/payment-cancel";
+            String baseUrl = (payload.containsKey("redirectUrl") && payload.get("redirectUrl") != null)
+                    ? payload.get("redirectUrl").toString().replaceAll("/+$", "")
+                    : (frontendUrl != null ? frontendUrl.replaceAll("/+$", "") : "http://localhost:5173");
+            String successUrl = baseUrl + "/payment-success";
+            String cancelUrl = baseUrl + "/payment-cancel";
 
             CheckoutSessionResponse response = payMongoService.createCheckoutSession(description, amount, successUrl, cancelUrl);
             

@@ -21,7 +21,7 @@ Any developer or AI assistant working on this repository should refer to this do
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High | ⏳ Pending |
 | **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High | ✅ Resolved |
-| **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ⏳ Pending |
+| **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ✅ Resolved |
 | **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
 | **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
 | **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ⏳ Pending |
@@ -70,22 +70,19 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ---
 
-### GAP-03: Dynamic Frontend Redirect URLs for PayMongo Checkout
+### GAP-03: Dynamic Frontend Redirect URLs for PayMongo Checkout (✅ Resolved)
 * **Severity:** 🟡 Medium (Operational / Cloud Deployment Issue)
+* **Status:** Resolved in `fix/payment-dynamic-redirect-gap03`.
 * **Affected Files:**
-  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentController.java#L31-L32`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentController.java#L31-L32)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentController.java)
   * [`backend/src/main/resources/application.properties`](file:///backend/src/main/resources/application.properties)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentControllerTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/payment/controller/PaymentControllerTest.java)
 * **Problem Statement:**
-  * `successUrl` and `cancelUrl` are hardcoded strings:
-    ```java
-    String successUrl = "http://localhost:5173/payment-success";
-    String cancelUrl = "http://localhost:5173/payment-cancel";
-    ```
-  * In production (e.g., Vercel deployment) or when interacting via physical Android devices over local Wi-Fi or mobile data, PayMongo redirects the client to `localhost:5173`, causing a broken page error.
-* **Implementation Blueprint:**
-  1. Introduce property `app.frontend.url=${FRONTEND_URL:http://localhost:5173}` in `application.properties`.
-  2. Inject via `@Value("${app.frontend.url}") private String frontendUrl;` in `PaymentController`.
-  3. Optionally allow the client to pass custom return paths or dynamic callback origins in the request payload.
+  * `successUrl` and `cancelUrl` were hardcoded to `http://localhost:5173`. In production or mobile testing, PayMongo redirected to an unreachable page.
+* **Resolution Details:**
+  1. Configured `app.frontend.url=${FRONTEND_URL:http://localhost:5173}` in `application.properties`.
+  2. Injected `frontendUrl` into `PaymentController` and added support for dynamic `redirectUrl` overrides in checkout payloads.
+  3. Added unit tests verifying dynamic URL formatting for both default property fallback and custom redirect URLs.
 
 ---
 
