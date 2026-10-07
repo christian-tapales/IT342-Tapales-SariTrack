@@ -13,6 +13,7 @@ Welcome to the **SariTrack** repository (IT342 - System Integration and Architec
   - **Mobile:** Android Kotlin (API 34+), Retrofit 2, ML Kit (Barcode Scanner), Glide, EncryptedSharedPreferences.
 - **Architecture:** Vertical Slice Architecture (VSA) organized into features across all tiers.
 - **Detailed Technical Context:** Read [`docs/PROJECT_CONTEXT.md`](file:///docs/PROJECT_CONTEXT.md) for complete architecture, slice mapping, credentials structure, and workflow gotchas.
+- **Pending Roadmap & Gaps:** Review [`docs/PENDING_DEVELOPMENT_BACKLOG.md`](file:///docs/PENDING_DEVELOPMENT_BACKLOG.md) for known vulnerabilities, missing workflows, and feature parity tasks.
 
 ---
 
@@ -21,7 +22,7 @@ Welcome to the **SariTrack** repository (IT342 - System Integration and Architec
 Every AI agent or automated developer modifying this repository **MUST** adhere to this 6-step lifecycle:
 
 ### Step 1: Context Gathering (Read First, Code Second)
-- Always inspect [`AGENTS.md`](file:///AGENTS.md) and [`docs/PROJECT_CONTEXT.md`](file:///docs/PROJECT_CONTEXT.md) before writing or refactoring code.
+- Always inspect [`AGENTS.md`](file:///AGENTS.md), [`docs/PROJECT_CONTEXT.md`](file:///docs/PROJECT_CONTEXT.md), and [`docs/PENDING_DEVELOPMENT_BACKLOG.md`](file:///docs/PENDING_DEVELOPMENT_BACKLOG.md) before writing or refactoring code.
 - Locate the target Vertical Slice (`feature/<slice_name>`) and review existing patterns and dependencies before proposing changes.
 
 ### Step 2: Safe Branching Protocol

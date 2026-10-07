@@ -40,3 +40,16 @@ Thumbs.db
 # Local Secrets & Tools
 **/application-local.properties
 ngrok.exe
+
+# Logs & Test Reports
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+automated_test_results.log
+test-results/
+
+# Archives & Evidence Binaries
+*.zip
+*.tar.gz
+Automated_Evidence_Tapales.zip
