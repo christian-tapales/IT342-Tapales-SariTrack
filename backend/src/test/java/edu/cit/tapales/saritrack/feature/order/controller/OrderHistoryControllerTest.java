@@ -64,14 +64,22 @@ class OrderHistoryControllerTest {
     }
 
     @Test
-    void testGetOrderHistory_WithCustomer_ShouldFilterByCustomer() throws Exception {
+    void testGetOrderHistory_WithCustomer_ShouldFilterByCustomerAndVendor() throws Exception {
         order1.setCustomerId(50L);
-        order2.setCustomerId(51L);
-        when(orderRepository.findAll()).thenReturn(List.of(order1, order2));
+        when(orderRepository.findByCustomerIdAndVendorId(50L, 100L)).thenReturn(List.of(order1));
 
         mockMvc.perform(get("/api/orders/history?vendorId=100&customerId=50"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1L));
+    }
+
+    @Test
+    void testGetOrderHistory_CrossTenantCustomer_ShouldReturnEmptyList() throws Exception {
+        when(orderRepository.findByCustomerIdAndVendorId(999L, 100L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/orders/history?vendorId=100&customerId=999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

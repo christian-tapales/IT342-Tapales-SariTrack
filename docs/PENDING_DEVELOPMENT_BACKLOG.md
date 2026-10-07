@@ -17,16 +17,16 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ## 🚦 Priority Matrix
 
-| ID | Category | Gap / Feature Description | Affected Tier | Severity |
-| :--- | :--- | :--- | :--- | :--- |
-| **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High |
-| **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High |
-| **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium |
-| **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium |
-| **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium |
-| **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low |
-| **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium |
-| **GAP-08** | Feature Parity | Mobile PDF Receipt & Ledger Statement Export | Mobile (Android) | 🟢 Low |
+| ID | Category | Gap / Feature Description | Affected Tier | Severity | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High | ⏳ Pending |
+| **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High | ✅ Resolved |
+| **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ⏳ Pending |
+| **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
+| **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
+| **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ⏳ Pending |
+| **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium | ⏳ Pending |
+| **GAP-08** | Feature Parity | Mobile PDF Receipt & Ledger Statement Export | Mobile (Android) | 🟢 Low | ⏳ Pending |
 
 ---
 
@@ -53,23 +53,20 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ---
 
-### GAP-02: Scope Customer Debt History Query by Vendor ID
+### GAP-02: Scope Customer Debt History Query by Vendor ID (✅ Resolved)
 * **Severity:** 🔴 High (Multi-Tenant Data Leak)
+* **Status:** Resolved in `fix/order-tenant-scoping-gap02`.
 * **Affected Files:**
-  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryController.java#L24-L28`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryController.java#L24-L28)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryController.java)
   * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/order/repository/OrderRepository.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/order/repository/OrderRepository.java)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryControllerTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/order/controller/OrderHistoryControllerTest.java)
 * **Problem Statement:**
-  * When `customerId` is passed to `/api/orders/history?vendorId=...&customerId=...`, the controller runs:
-    ```java
-    orders = orderRepository.findAll().stream()
-            .filter(o -> customerId.equals(o.getCustomerId()))
-            .collect(Collectors.toList());
-    ```
-  * This executes a full table scan and discards the `vendorId` filter. A vendor querying debt history for a customer ID could theoretically see orders from another store if customer IDs overlap or are forged.
-* **Implementation Blueprint:**
-  1. Add repository method `List<Order> findByCustomerIdAndVendorId(Long customerId, Long vendorId)`.
-  2. Update `OrderHistoryController` to query database directly with both parameters.
-  3. Add a test asserting cross-tenant orders are filtered out.
+  * When `customerId` is passed to `/api/orders/history?vendorId=...&customerId=...`, the controller runs `orderRepository.findAll().stream().filter(...)`.
+  * This executed a full table scan and discarded the `vendorId` filter, leaking cross-vendor customer orders.
+* **Resolution Details:**
+  1. Added repository method `List<Order> findByCustomerIdAndVendorId(Long customerId, Long vendorId)`.
+  2. Updated `OrderHistoryController` to query database directly scoped to both parameters.
+  3. Added unit tests verifying tenant-isolated filtering and zero results for cross-tenant IDs.
 
 ---
 

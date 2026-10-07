@@ -22,10 +22,8 @@ public class OrderHistoryController {
         
         List<Order> orders;
         if (customerId != null) {
-            System.out.println("--- FETCHING DEBT HISTORY FOR CUSTOMER: " + customerId + " ---");
-            orders = orderRepository.findAll().stream()
-                    .filter(o -> customerId.equals(o.getCustomerId()))
-                    .collect(Collectors.toList());
+            System.out.println("--- FETCHING DEBT HISTORY FOR CUSTOMER: " + customerId + " VENDOR: " + vendorId + " ---");
+            orders = orderRepository.findByCustomerIdAndVendorId(customerId, vendorId);
         } else {
             orders = orderRepository.findByVendorId(vendorId);
         }
