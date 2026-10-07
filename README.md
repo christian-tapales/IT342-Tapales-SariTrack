@@ -194,14 +194,18 @@ SariTrack is equipped with a premium, resilient offline-first UX layer on Androi
 
 ```text
 IT342-Tapales-SariTrack/
-├── backend/            # Spring Boot REST API
-├── web/                # ReactJS Web Portal
-├── mobile/             # Kotlin / XML Android App
-├── docs/               # System architecture and regression reports
-│   ├── SDD_REVISED_SariTrack.md
-│   ├── REGRESSION_TEST_REPORT.md
-│   ├── MOBILE_DEV_PLAN.md
-│   └── WEB_DEV_PLAN.md
+├── backend/            # Spring Boot 3 REST API (Java 17, Spring Data JPA, JWT)
+├── web/                # React 18 Web Portal (Vite, Tailwind CSS, Vitest)
+├── mobile/             # Android Kotlin Mobile App (MVVM, Retrofit 2, ML Kit)
+├── docs/               # System architecture and documentation
+│   ├── assets/         # Screenshots, architectural diagrams, PDF specs
+│   ├── planning/       # Development plans, regression test reports, revised SDD
+│   ├── DEPLOYMENT_GUIDE.md
+│   ├── PAYMENT_TEST_GUIDE.md
+│   ├── PENDING_DEVELOPMENT_BACKLOG.md
+│   └── PROJECT_CONTEXT.md
+├── AGENTS.md           # AI assistant and automated developer guidelines
+├── .env.example        # Unified environment variable template
 └── README.md           # Getting started and setup specs (this file)
 ```
 

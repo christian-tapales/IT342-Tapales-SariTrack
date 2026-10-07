@@ -22,10 +22,13 @@ IT342-Tapales-SariTrack/
 ├── web/                      # React 18 + Vite + Tailwind CSS + Vitest
 │   ├── src/core/             # Shared API client (dynamic baseURL), Layouts, Reusable UI inputs
 │   └── src/features/         # Vertical Slices: auth, dashboard, inventory, pos, listahan, transactions, admin, payment
-└── mobile/                   # Android Kotlin (API 34+) + MVVM + Retrofit 2 + ML Kit
-    └── app/src/main/java/edu/cit/tapales/saritrack/
-        ├── core/             # API client, Session Manager (EncryptedSharedPreferences), Utilities
-        └── feature/          # Feature packages: auth, pos, inventory, customer, payment, transaction, dashboard
+├── mobile/                   # Android Kotlin (API 34+) + MVVM + Retrofit 2 + ML Kit
+│   └── app/src/main/java/edu/cit/tapales/saritrack/
+│       ├── core/             # API client, Session Manager (EncryptedSharedPreferences), Utilities
+│       └── feature/          # Feature packages: auth, pos, inventory, customer, payment, transaction, dashboard
+└── docs/                     # Documentation, planning specs, deployment and test guides
+    ├── assets/               # Screenshots, architecture diagrams, PDF specifications
+    └── planning/             # Development plans, regression test reports, revised SDD
 ```
 
 ---
