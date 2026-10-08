@@ -28,6 +28,9 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -115,7 +118,18 @@ public class SecurityConfig {
                             String token = jwtUtils.generateToken(email, role);
 
                             String origin = request.getHeader("Origin");
-                            String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174" : "http://localhost:5173";
+                            String baseUrl;
+                            if (frontendUrl != null && !frontendUrl.trim().isEmpty() && !frontendUrl.contains("localhost")) {
+                                baseUrl = frontendUrl.replaceAll("/+$", "");
+                            } else if (origin != null && !origin.trim().isEmpty() && !origin.contains("localhost")) {
+                                baseUrl = origin.replaceAll("/+$", "");
+                            } else if (request.getServerName() != null && request.getServerName().contains("onrender.com")) {
+                                baseUrl = "https://sari-track.vercel.app";
+                            } else if (origin != null && origin.contains("5174")) {
+                                baseUrl = "http://localhost:5174";
+                            } else {
+                                baseUrl = (frontendUrl != null && !frontendUrl.trim().isEmpty()) ? frontendUrl.replaceAll("/+$", "") : "http://localhost:5173";
+                            }
 
                             String redirectUrl = baseUrl + "/dashboard?loginSuccess=true"
                                     + "&id=" + userId

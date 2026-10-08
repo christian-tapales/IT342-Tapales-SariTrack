@@ -58,7 +58,8 @@ const Login = ({ onLoginSuccess }) => {
         alert(response.data || "Invalid response from server");
       }
     } catch (error) {
-      alert("Login failed. Please verify your credentials or server connection.");
+      const errorMsg = error.response?.data?.error || "Login failed. Please verify your credentials or server connection.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
