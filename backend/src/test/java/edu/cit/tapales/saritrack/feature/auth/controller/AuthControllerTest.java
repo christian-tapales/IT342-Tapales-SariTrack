@@ -65,7 +65,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testUser)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("User registered successfully!"));
+                .andExpect(jsonPath("$.message").value("User registered successfully!"));
 
         verify(userRepository, times(1)).save(any(User.class));
         verify(emailService, times(1)).sendWelcomeEmail(eq("test@example.com"), eq("Test User"));
@@ -78,8 +78,8 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testUser)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Error: Email already exists!"));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Email already exists!"));
 
         verify(userRepository, never()).save(any(User.class));
     }

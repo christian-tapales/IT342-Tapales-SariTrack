@@ -35,9 +35,10 @@ public class AuthController {
     private edu.cit.tapales.saritrack.feature.notification.service.EmailService emailService;
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody User user) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return "Error: Email already exists!";
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(java.util.Collections.singletonMap("error", "Email already exists!"));
         }
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Hash it!
         userRepository.save(user);
@@ -45,7 +46,7 @@ public class AuthController {
         // Trigger Welcome Email (Premium HTML version)
         emailService.sendWelcomeEmail(user.getEmail(), user.getName());
         
-        return "User registered successfully!";
+        return ResponseEntity.ok(java.util.Collections.singletonMap("message", "User registered successfully!"));
     }
 
     @PostMapping("/login")

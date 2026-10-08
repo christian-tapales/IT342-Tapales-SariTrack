@@ -133,17 +133,18 @@ Any developer or AI assistant working on this repository should refer to this do
 ---
 
 ### GAP-06: Standardized HTTP Error Responses on User Registration
-* **Severity:** 🟢 Low (API Quality & Clean Architecture)
+* **Severity:** 🟢 Low (API Quality & Clean Architecture) - ✅ **Resolved**
 * **Affected Files:**
-  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java#L38-L49`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java#L38-L49)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthControllerTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthControllerTest.java)
   * [`web/src/features/auth/Register.jsx`](file:///web/src/features/auth/Register.jsx)
 * **Problem Statement:**
-  * `AuthController.register(...)` returns a plain string: `"Error: Email already exists!"` with HTTP `200 OK`.
-  * Standard REST convention requires HTTP `400 Bad Request` or `409 Conflict` with a structured JSON body `{"error": "Email already exists"}`.
-* **Implementation Blueprint:**
-  1. Update `register` return type to `ResponseEntity<?>`.
-  2. Return `ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already exists"))`.
-  3. Update Web `Register.jsx` error handler to catch Axios error response body rather than parsing plain 200 text.
+  * `AuthController.register(...)` returned a plain string: `"Error: Email already exists!"` with HTTP `200 OK`.
+  * Standard REST convention requires HTTP `409 Conflict` with a structured JSON body `{"error": "Email already exists!"}` and `200 OK` with `{"message": "User registered successfully!"}`.
+* **Resolution:**
+  1. Updated `register` return type to `ResponseEntity<?>` returning HTTP `409 Conflict` with `{"error": "Email already exists!"}` and HTTP `200 OK` with structured JSON on success.
+  2. Updated Web `Register.jsx` catch block to extract error messages from Axios responses.
+  3. Verified unit tests in `AuthControllerTest` and `Register.test.jsx`.
 
 ---
 

@@ -27,16 +27,13 @@ const Register = () => {
     try {
       // Destructure to avoid sending confirmPassword to the backend
       const { confirmPassword, ...registerData } = formData;
-      const response = await api.post('/auth/register', registerData);
+      await api.post('/auth/register', registerData);
       
-      if (response.data === "User registered successfully!") {
-        alert("Registration Successful!");
-        navigate('/login');
-      } else {
-        alert(response.data);
-      }
+      alert("Registration Successful!");
+      navigate('/login');
     } catch (error) {
-      alert("Registration failed. Check backend connection.");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Registration failed. Check backend connection.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
