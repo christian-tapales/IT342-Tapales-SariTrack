@@ -116,19 +116,26 @@ Any developer or AI assistant working on this repository should refer to this do
 ---
 
 ### GAP-05: Password Recovery / Forgot Password Email Flow
-* **Severity:** 🟡 Medium (User Management)
+* **Severity:** 🟡 Medium (User Management) - ✅ **Resolved**
 * **Affected Files:**
   * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/controller/AuthController.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/entity/User.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/entity/User.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/repository/UserRepository.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/auth/repository/UserRepository.java)
   * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/notification/service/EmailService.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/notification/service/EmailService.java)
   * [`web/src/features/auth/Login.jsx`](file:///web/src/features/auth/Login.jsx)
+  * [`web/src/features/auth/Login.test.jsx`](file:///web/src/features/auth/Login.test.jsx)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/LoginActivity.kt`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/LoginActivity.kt)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/AuthApiService.kt`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/AuthApiService.kt)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/AuthModels.kt`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/auth/AuthModels.kt)
 * **Problem Statement:**
-  * Authentication currently only provides register and login.
-  * If a vendor forgets their password, they cannot regain access without direct database edits.
-* **Implementation Blueprint:**
-  1. Add `resetToken` and `resetTokenExpiry` fields to `User` entity (or create `PasswordResetToken` table).
-  2. Implement `POST /api/auth/forgot-password`: generates a secure random token with 15-minute expiry and sends a branded reset link via `EmailService`.
-  3. Implement `POST /api/auth/reset-password`: validates token, hashes new password with `BCryptPasswordEncoder`, and clears token.
-  4. Add "Forgot Password?" trigger on Web `Login.jsx` and Mobile `LoginActivity.kt`.
+  * Authentication previously only provided register and login.
+  * If a vendor forgot their password, they could not regain access without direct database edits.
+* **Resolution:**
+  1. Added `resetToken` and `resetTokenExpiry` fields to `User` entity and `findByResetToken` query method in `UserRepository`.
+  2. Implemented `POST /api/auth/forgot-password`: generates a secure UUID token with 15-minute expiry and sends a branded HTML email via `EmailService`.
+  3. Implemented `POST /api/auth/reset-password`: validates token existence and expiry, hashes new password with `BCryptPasswordEncoder`, and clears token.
+  4. Added "Forgot password?" modal on Web `Login.jsx` (with request token and reset password steps, plus URL query param detection) and interactive dialog on Mobile `LoginActivity.kt`.
+  5. Verified 100% test pass rate across backend (165 tests), web (105 tests), and mobile (114 tests).
 
 ---
 

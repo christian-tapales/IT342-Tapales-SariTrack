@@ -65,4 +65,38 @@ public class EmailService {
 
         sendEmail(to, subject, html.toString());
     }
+
+    public void sendPasswordResetEmail(String to, String name, String resetToken) {
+        String subject = "SariTrack - Password Reset Request";
+        
+        StringBuilder html = new StringBuilder();
+        html.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 20px; overflow: hidden;'>");
+        
+        // Header
+        html.append("<div style='background-color: #16A394; color: white; padding: 40px; text-align: center;'>");
+        html.append("<h1 style='margin: 0;'>SariTrack</h1>");
+        html.append("<p style='opacity: 0.8;'>Password Reset Request</p>");
+        html.append("</div>");
+        
+        // Body
+        html.append("<div style='padding: 40px; line-height: 1.6; color: #333;'>");
+        html.append("<h2>Hello, ").append(name != null ? name : "Vendor").append("!</h2>");
+        html.append("<p>We received a request to reset your password for your SariTrack account.</p>");
+        html.append("<p>Use the following reset token to set your new password:</p>");
+        
+        html.append("<div style='background-color: #f3f4f6; padding: 18px; border-radius: 12px; margin: 25px 0; text-align: center;'>");
+        html.append("<span style='font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #16A394;'>").append(resetToken).append("</span>");
+        html.append("</div>");
+        
+        html.append("<p style='color: #6b7280; font-size: 14px;'>This reset token will expire in <b>15 minutes</b>. If you did not request a password reset, you can safely ignore this email.</p>");
+        html.append("<p>Best regards,<br><b>The SariTrack Team</b></p>");
+        html.append("</div>");
+        
+        html.append("<div style='background-color: #f1f1f1; padding: 20px; text-align: center; font-size: 12px; color: #999;'>");
+        html.append("© 2026 SariTrack Platform. All rights reserved.");
+        html.append("</div>");
+        html.append("</div>");
+
+        sendEmail(to, subject, html.toString());
+    }
 }

@@ -21,6 +21,12 @@ public class User {
 
     private String role = "VENDOR"; // Default role
 
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private java.time.LocalDateTime resetTokenExpiry;
+
     private java.time.LocalDateTime createdAt;
 
     @PrePersist

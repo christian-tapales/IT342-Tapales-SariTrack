@@ -117,6 +117,112 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
+
+        // 4. Forgot Password Flow
+        val tvForgotPassword = findViewById<TextView>(R.id.tvForgotPassword)
+        tvForgotPassword?.setOnClickListener {
+            showForgotPasswordDialog()
+        }
+    }
+
+    private fun showForgotPasswordDialog() {
+        val input = EditText(this).apply {
+            hint = "name@company.com"
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            setPadding(40, 30, 40, 30)
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Forgot Password")
+            .setMessage("Enter your registered email address to receive a 15-minute reset token.")
+            .setView(input)
+            .setPositiveButton("Send Token") { _, _ ->
+                val email = input.text.toString().trim()
+                if (email.isNotEmpty()) {
+                    RetrofitClient.authInstance.forgotPassword(ForgotPasswordRequest(email))
+                        .enqueue(object : Callback<Map<String, String>> {
+                            override fun onResponse(
+                                call: Call<Map<String, String>>,
+                                response: Response<Map<String, String>>
+                            ) {
+                                if (response.isSuccessful) {
+                                    Toast.makeText(
+                                        this@LoginActivity,
+                                        response.body()?.get("message") ?: "Reset instructions sent to your email.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    showResetPasswordDialog(email)
+                                } else {
+                                    val err = response.errorBody()?.string() ?: "Failed to send reset email."
+                                    Toast.makeText(this@LoginActivity, err, Toast.LENGTH_LONG).show()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
+                                Toast.makeText(this@LoginActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                } else {
+                    Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showResetPasswordDialog(email: String) {
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(40, 20, 40, 20)
+        }
+        val etToken = EditText(this).apply {
+            hint = "Reset Token"
+            setPadding(20, 25, 20, 25)
+        }
+        val etNewPass = EditText(this).apply {
+            hint = "New Password"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setPadding(20, 25, 20, 25)
+        }
+        layout.addView(etToken)
+        layout.addView(etNewPass)
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Reset Password")
+            .setMessage("Enter the reset token sent to $email and your new password.")
+            .setView(layout)
+            .setPositiveButton("Reset Password") { _, _ ->
+                val token = etToken.text.toString().trim()
+                val newPass = etNewPass.text.toString().trim()
+                if (token.isNotEmpty() && newPass.isNotEmpty()) {
+                    RetrofitClient.authInstance.resetPassword(ResetPasswordRequest(token, newPass))
+                        .enqueue(object : Callback<Map<String, String>> {
+                            override fun onResponse(
+                                call: Call<Map<String, String>>,
+                                response: Response<Map<String, String>>
+                            ) {
+                                if (response.isSuccessful) {
+                                    Toast.makeText(
+                                        this@LoginActivity,
+                                        response.body()?.get("message") ?: "Password reset successfully!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    val err = response.errorBody()?.string() ?: "Failed to reset password."
+                                    Toast.makeText(this@LoginActivity, err, Toast.LENGTH_LONG).show()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
+                                Toast.makeText(this@LoginActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                } else {
+                    Toast.makeText(this, "Please enter both token and new password", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupObservers() {

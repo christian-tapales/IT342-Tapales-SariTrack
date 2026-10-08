@@ -111,4 +111,94 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid email or password"));
     }
+
+    @Test
+    void testForgotPassword_Success() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\": \"test@example.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password reset instructions have been sent to your email."));
+
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(emailService, times(1)).sendPasswordResetEmail(eq("test@example.com"), eq("Test User"), anyString());
+    }
+
+    @Test
+    void testForgotPassword_UserNotFound() throws Exception {
+        when(userRepository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\": \"notfound@example.com\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("User with this email does not exist."));
+
+        verify(emailService, never()).sendPasswordResetEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testForgotPassword_MissingEmail() throws Exception {
+        mockMvc.perform(post("/api/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\": \"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Email is required."));
+    }
+
+    @Test
+    void testResetPassword_Success() throws Exception {
+        testUser.setResetToken("valid-token-123");
+        testUser.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(10));
+        when(userRepository.findByResetToken("valid-token-123")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.encode("newSecret456")).thenReturn("hashedNewSecret");
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\": \"valid-token-123\", \"newPassword\": \"newSecret456\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password has been reset successfully. You can now log in."));
+
+        verify(passwordEncoder, times(1)).encode("newSecret456");
+        verify(userRepository, times(1)).save(testUser);
+    }
+
+    @Test
+    void testResetPassword_InvalidToken() throws Exception {
+        when(userRepository.findByResetToken("unknown-token")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\": \"unknown-token\", \"newPassword\": \"newSecret456\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid reset token."));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testResetPassword_ExpiredToken() throws Exception {
+        testUser.setResetToken("expired-token-123");
+        testUser.setResetTokenExpiry(java.time.LocalDateTime.now().minusMinutes(5));
+        when(userRepository.findByResetToken("expired-token-123")).thenReturn(Optional.of(testUser));
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\": \"expired-token-123\", \"newPassword\": \"newSecret456\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Reset token has expired."));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testResetPassword_MissingFields() throws Exception {
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\": \"\", \"newPassword\": \"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Token and new password are required."));
+    }
 }

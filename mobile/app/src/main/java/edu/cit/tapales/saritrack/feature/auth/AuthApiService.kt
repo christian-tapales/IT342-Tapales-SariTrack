@@ -26,4 +26,10 @@ interface AuthApiService {
 
     @POST("/api/auth/google-mobile")
     fun googleMobileLogin(@Body request: Map<String, String>): Call<LoginResponse>
+
+    @POST("/api/auth/forgot-password")
+    fun forgotPassword(@Body request: ForgotPasswordRequest): Call<Map<String, String>>
+
+    @POST("/api/auth/reset-password")
+    fun resetPassword(@Body request: ResetPasswordRequest): Call<Map<String, String>>
 }

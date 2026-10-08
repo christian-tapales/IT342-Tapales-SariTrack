@@ -9,5 +9,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Spring Boot will automatically generate the SQL to find users by email
     java.util.Optional<User> findByEmail(String email);
     
+    java.util.Optional<User> findByResetToken(String resetToken);
+    
     boolean existsByEmail(String email);
 }

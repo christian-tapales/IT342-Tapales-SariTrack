@@ -101,4 +101,17 @@ class AuthModelsTest {
         assert(str.contains("jwt-token-xyz").not())
         assert(str.contains("VENDOR"))
     }
+
+    @Test
+    fun testForgotPasswordRequestProperties() {
+        val request = ForgotPasswordRequest("juan@gmail.com")
+        assertEquals("juan@gmail.com", request.email)
+    }
+
+    @Test
+    fun testResetPasswordRequestProperties() {
+        val request = ResetPasswordRequest("token-123", "newpass123")
+        assertEquals("token-123", request.token)
+        assertEquals("newpass123", request.newPassword)
+    }
 }

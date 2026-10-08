@@ -67,6 +67,57 @@ public class AuthController {
                         .body(Collections.singletonMap("error", "Invalid email or password")));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Email is required."));
+        }
+        
+        java.util.Optional<User> userOpt = userRepository.findByEmail(email.trim());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "User with this email does not exist."));
+        }
+        
+        User user = userOpt.get();
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+        
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), token);
+        
+        return ResponseEntity.ok(Collections.singletonMap("message", "Password reset instructions have been sent to your email."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        
+        if (token == null || token.trim().isEmpty() || newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Token and new password are required."));
+        }
+        
+        java.util.Optional<User> userOpt = userRepository.findByResetToken(token.trim());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid reset token."));
+        }
+        
+        User user = userOpt.get();
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Reset token has expired."));
+        }
+        
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+        
+        return ResponseEntity.ok(Collections.singletonMap("message", "Password has been reset successfully. You can now log in."));
+    }
+
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
