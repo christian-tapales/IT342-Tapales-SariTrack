@@ -23,8 +23,8 @@ Any developer or AI assistant working on this repository should refer to this do
 | **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High | ✅ Resolved |
 | **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ✅ Resolved |
 | **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ✅ Resolved |
-| **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
-| **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ⏳ Pending |
+| **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ✅ Resolved |
+| **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ✅ Resolved |
 | **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium | ⏳ Pending |
 | **GAP-08** | Feature Parity | Mobile PDF Receipt & Ledger Statement Export | Mobile (Android) | 🟢 Low | ⏳ Pending |
 
