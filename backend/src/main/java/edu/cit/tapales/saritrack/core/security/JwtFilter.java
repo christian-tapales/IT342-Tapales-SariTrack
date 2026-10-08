@@ -14,11 +14,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import edu.cit.tapales.saritrack.feature.auth.entity.User;
+import edu.cit.tapales.saritrack.feature.auth.repository.UserRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.List;
+
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired(required = false)
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -44,8 +53,21 @@ public class JwtFilter extends OncePerRequestFilter {
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Validate token
             if (jwtUtils.validateToken(jwt, email)) {
+                String role = jwtUtils.extractRole(jwt);
+                if ((role == null || role.isBlank()) && userRepository != null) {
+                    role = userRepository.findByEmail(email).map(User::getRole).orElse(null);
+                }
+
+                List<GrantedAuthority> authorities = new ArrayList<>();
+                if (role != null && !role.isBlank()) {
+                    String authority = role.toUpperCase().startsWith("ROLE_")
+                            ? role.toUpperCase()
+                            : "ROLE_" + role.toUpperCase();
+                    authorities.add(new SimpleGrantedAuthority(authority));
+                }
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        email, null, new ArrayList<>());
+                        email, null, authorities);
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

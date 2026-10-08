@@ -26,8 +26,8 @@ Every AI agent or automated developer modifying this repository **MUST** adhere 
 - Locate the target Vertical Slice (`feature/<slice_name>`) and review existing patterns and dependencies before proposing changes.
 
 ### Step 2: Safe Branching Protocol
-- **Rule:** **NEVER commit or push directly to `main`.**
-- Always create a dedicated branch from the latest `main`:
+- **Rule:** **NEVER write code or make direct edits on `main`.**
+- Always create and switch to a dedicated sub-branch from the latest local `main`:
   - `feat/<slice>-<description>` (new capabilities)
   - `fix/<slice>-<description>` (bug fixes)
   - `test/<slice>-<description>` (automated test suites)
@@ -40,11 +40,14 @@ Every AI agent or automated developer modifying this repository **MUST** adhere 
 3. **Zero Hardcoded Secrets:** Never commit real secrets. Use environment variables or `application-local.properties` (ignored by Git).
 
 ### Step 4: Mandatory Test Verification Gate (Never Skip)
-Before creating any commit, execute the automated test suites for the affected tiers:
-- **Backend (143 tests):** Run `cd backend && ./mvnw test` (Uses in-memory H2 DB in `src/test/resources/application.properties`).
-- **Web (102 tests):** Run `cd web && npx vitest run` (Must use `run` mode to prevent hanging interactive watch mode). When mocking API calls, mock `../../core/api/api` rather than `axios` directly.
-- **Mobile (112 tests):** Run `cd mobile && .\gradlew.bat testDebugUnitTest`.
-- **Gate Rule:** 100% of tests must pass with zero failures or errors before proceeding to commit.
+Before creating any commit or merging back into `main`:
+- Solve, inspect, and analyze all modifications within the sub-branch.
+- Ensure with 100% certainty that changes are stable, regression-free, and not unpredictable.
+- Execute the automated test suites for the affected tiers:
+  - **Backend (143 tests):** Run `cd backend && ./mvnw test` (Uses in-memory H2 DB in `src/test/resources/application.properties`).
+  - **Web (102 tests):** Run `cd web && npx vitest run` (Must use `run` mode to prevent hanging interactive watch mode). When mocking API calls, mock `../../core/api/api` rather than `axios` directly.
+  - **Mobile (112 tests):** Run `cd mobile && .\gradlew.bat testDebugUnitTest`.
+- **Gate Rule:** 100% of tests must pass with zero failures or errors before proceeding to commit or merge.
 
 ### Step 5: Conventional Commits Standard
 Commit messages must strictly follow the Conventional Commits specification:
@@ -57,9 +60,20 @@ $$\text{<type>}(\text{<scope>}): \text{<imperative subject>}$$
   - `test(backend): add boundary verification test for negative stock`
   - `chore(ci): configure github actions test workflow`
 
-### Step 6: Push & Pull Request Protocol
-- Push solely to your feature branch: `git push origin <branch-name>`.
-- Open a Pull Request targeting `main`.
+### Step 6: Local Integration, Verification & Remote Push Protocol
+- **6.1 Sub-Branch Isolation & Analysis:** All feature implementations and bug fixes must be thoroughly solved, analyzed, and verified inside their dedicated sub-branch.
+- **6.2 Gate Pass -> Local Merge:** Only after verifying that the changes are 100% stable, predictable, and passing all automated test suites, merge the sub-branch into the local `main` branch:
+  ```bash
+  git checkout main
+  git merge <sub-branch-name>
+  ```
+- **6.3 Sole Remote Push from Local `main`:** The local `main` branch is the **only** branch that is pushed from the local repository to the remote repository:
+  ```bash
+  git push origin main
+  ```
 - **Prohibitions:**
+  - ❌ Never commit or code directly on `main` without an isolated sub-branch.
+  - ❌ Never merge a sub-branch into `main` without 100% test pass verification.
+  - ❌ Never push unverified sub-branches directly to `origin`.
   - ❌ Never use `git push --force` on `main`.
   - ❌ Never use `git commit -a` blindly without checking `git status` and `git diff`.

@@ -53,7 +53,7 @@ public class AuthController {
         return userRepository.findByEmail(loginRequest.getEmail())
                 .filter(user -> passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
                 .map(user -> {
-                    String token = jwtUtils.generateToken(user.getEmail());
+                    String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
                     Map<String, Object> response = new HashMap<>();
                     response.put("id", user.getId());
                     response.put("name", user.getName());
@@ -94,7 +94,7 @@ public class AuthController {
                     return userRepository.save(newUser);
                 });
 
-                String token = jwtUtils.generateToken(user.getEmail());
+                String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
                 Map<String, Object> response = new HashMap<>();
                 response.put("id", user.getId());
                 response.put("name", user.getName());

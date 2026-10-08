@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 @RestController
@@ -17,11 +18,13 @@ public class AdminController {
     private AdminService adminService;
 
     @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
     public PlatformStatsDTO getPlatformStats() {
         return adminService.getPlatformStats();
     }
 
     @GetMapping("/vendors/analytics")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<VendorAnalyticsDTO> getVendorAnalytics() {
         return adminService.getAllVendorAnalytics();
     }

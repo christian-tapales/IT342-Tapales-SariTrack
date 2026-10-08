@@ -20,6 +20,9 @@ class JwtFilterTest {
     private JwtUtils jwtUtils;
 
     @Mock
+    private edu.cit.tapales.saritrack.feature.auth.repository.UserRepository userRepository;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -90,6 +93,45 @@ class JwtFilterTest {
 
         // Assert
         assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void testDoFilterInternal_ValidTokenWithRole_ShouldSetRoleAuthority() throws Exception {
+        String token = "valid-admin-token";
+        String email = "admin@saritrack.com";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtUtils.extractEmail(token)).thenReturn(email);
+        when(jwtUtils.validateToken(token, email)).thenReturn(true);
+        when(jwtUtils.extractRole(token)).thenReturn("ADMIN");
+
+        jwtFilter.doFilterInternal(request, response, filterChain);
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        assertEquals(email, SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void testDoFilterInternal_ValidTokenFallbackToDatabase_ShouldSetRoleAuthority() throws Exception {
+        String token = "valid-fallback-token";
+        String email = "vendor@saritrack.com";
+        edu.cit.tapales.saritrack.feature.auth.entity.User dbUser = new edu.cit.tapales.saritrack.feature.auth.entity.User();
+        dbUser.setRole("VENDOR");
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtUtils.extractEmail(token)).thenReturn(email);
+        when(jwtUtils.validateToken(token, email)).thenReturn(true);
+        when(jwtUtils.extractRole(token)).thenReturn(null);
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.of(dbUser));
+
+        jwtFilter.doFilterInternal(request, response, filterChain);
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_VENDOR")));
         verify(filterChain).doFilter(request, response);
     }
 }

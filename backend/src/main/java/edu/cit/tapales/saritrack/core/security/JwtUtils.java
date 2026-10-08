@@ -22,8 +22,19 @@ public class JwtUtils {
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     public String generateToken(String email) {
+        return generateToken(email, null);
+    }
+
+    public String generateToken(String email, String role) {
         Map<String, Object> claims = new HashMap<>();
+        if (role != null) {
+            claims.put("role", role);
+        }
         return createToken(claims, email);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> (String) claims.get("role"));
     }
 
     private String createToken(Map<String, Object> claims, String subject) {

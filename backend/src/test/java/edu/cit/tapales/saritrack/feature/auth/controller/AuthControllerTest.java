@@ -89,6 +89,7 @@ class AuthControllerTest {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtUtils.generateToken(anyString())).thenReturn("mocked-jwt-token");
+        when(jwtUtils.generateToken(anyString(), any())).thenReturn("mocked-jwt-token");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

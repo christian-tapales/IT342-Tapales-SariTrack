@@ -48,4 +48,11 @@ class JwtUtilsTest {
         // but we can verify it's NOT expired right after creation.
         assertFalse(jwtUtils.extractExpiration(token).before(new java.util.Date()));
     }
+
+    @Test
+    void testGenerateTokenWithRole_ShouldExtractRole() {
+        String token = jwtUtils.generateToken(testEmail, "ADMIN");
+        assertEquals("ADMIN", jwtUtils.extractRole(token));
+        assertEquals(testEmail, jwtUtils.extractEmail(token));
+    }
 }

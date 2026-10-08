@@ -19,7 +19,7 @@ Any developer or AI assistant working on this repository should refer to this do
 
 | ID | Category | Gap / Feature Description | Affected Tier | Severity | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High | ⏳ Pending |
+| **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High | ✅ Resolved |
 | **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High | ✅ Resolved |
 | **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ✅ Resolved |
 | **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
@@ -34,22 +34,27 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ---
 
-### GAP-01: RBAC Role Enforcement on Platform Admin Endpoints
+### GAP-01: RBAC Role Enforcement on Platform Admin Endpoints (✅ Resolved)
 * **Severity:** 🔴 High (Security Vulnerability)
+* **Status:** Resolved in `feat/admin-rbac-gap01`.
 * **Affected Files:**
   * [`backend/src/main/java/edu/cit/tapales/saritrack/core/security/JwtFilter.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/core/security/JwtFilter.java)
-  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminController.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/core/security/JwtUtils.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/core/security/JwtUtils.java)
   * [`backend/src/main/java/edu/cit/tapales/saritrack/core/security/SecurityConfig.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/core/security/SecurityConfig.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminController.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/core/exception/GlobalExceptionHandler.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/core/exception/GlobalExceptionHandler.java)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminControllerSecurityTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/admin/controller/AdminControllerSecurityTest.java)
 * **Problem Statement:**
   * Endpoints `/api/admin/stats` and `/api/admin/vendors/analytics` expose platform-wide sales volume, revenue, and store analytics.
-  * In `JwtFilter.java`, `UsernamePasswordAuthenticationToken` is instantiated with `new ArrayList<>()` for authorities. Consequently, no roles (`ROLE_ADMIN`, `ROLE_VENDOR`) exist in Spring Security's `SecurityContext`.
-  * `AdminController.java` lacks `@PreAuthorize("hasRole('ADMIN')")` or role verification. Any authenticated user holding a vendor JWT can query all other vendors' financial data.
-* **Implementation Blueprint:**
-  1. In `JwtFilter.java`, fetch the user's role from the database or embed `role` as a claim in `JwtUtils.generateToken(...)`.
-  2. Map the role to `SimpleGrantedAuthority("ROLE_" + role.toUpperCase())` and pass it to `UsernamePasswordAuthenticationToken`.
-  3. Enable `@EnableMethodSecurity` in `SecurityConfig.java`.
-  4. Annotate `AdminController` methods with `@PreAuthorize("hasRole('ADMIN')")`.
-  5. Add unit test verifying that a `ROLE_VENDOR` request to `/api/admin/stats` returns `403 Forbidden`.
+  * In `JwtFilter.java`, `UsernamePasswordAuthenticationToken` was instantiated with `new ArrayList<>()` for authorities. Consequently, no roles (`ROLE_ADMIN`, `ROLE_VENDOR`) existed in Spring Security's `SecurityContext`.
+  * `AdminController.java` lacked `@PreAuthorize("hasRole('ADMIN')")` or role verification. Any authenticated user holding a vendor JWT could query all other vendors' financial data.
+* **Resolution Details:**
+  1. Updated `JwtUtils.java` to embed `role` claim in JWT tokens and expose `extractRole(token)`.
+  2. Updated `JwtFilter.java` to map extracted or database role to `SimpleGrantedAuthority("ROLE_" + role.toUpperCase())` and register with `SecurityContextHolder`.
+  3. Enabled `@EnableMethodSecurity` in `SecurityConfig.java` and restricted `/api/admin/**` to `hasRole('ADMIN')`.
+  4. Annotated `AdminController.java` endpoints with `@PreAuthorize("hasRole('ADMIN')")`.
+  5. Corrected `GlobalExceptionHandler.java` to handle Spring Security's `AccessDeniedException` and return structured HTTP 403 Forbidden.
+  6. Added `AdminControllerSecurityTest.java` verifying 200 OK for ADMIN, 403 Forbidden for VENDOR, and 401 Unauthorized for unauthenticated requests, with comprehensive unit test coverage in `JwtFilterTest`, `JwtUtilsTest`, and `AuthControllerTest`.
 
 ---
 
@@ -169,10 +174,11 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ## 🛡️ Development & Testing Rules (Mandatory Gate)
 
-Before committing any fix for the items in this backlog:
-1. **Never commit directly to `main`:** Use `feat/<slice>-...` or `fix/<slice>-...`.
-2. **Execute all regression suites:**
+Before integrating or pushing any fix for items in this backlog:
+1. **Isolated Sub-Branching:** Never write code or commit directly on `main`. Always create a dedicated sub-branch: `feat/<slice>-...` or `fix/<slice>-...`.
+2. **Mandatory Test Verification Gate (100% Pass Required):**
    * Backend: `cd backend && .\mvnw.cmd test` (143/143 must pass)
    * Web: `cd web && npx vitest run` (102/102 must pass)
    * Mobile: `cd mobile && .\gradlew.bat testDebugUnitTest` (112/112 must pass)
-3. Maintain multi-tenancy invariants: every query affecting products, sales, customers, or stock **must filter by `vendor_id`**.
+3. **Local Merge & Remote Push Protocol:** Only after 100% verification that changes are stable and predictable in the sub-branch, merge into local `main`. Local `main` is the only branch pushed to remote repository (`origin`).
+4. **Maintain Invariants:** Every query affecting products, sales, customers, or stock **must filter by `vendor_id`**. Zero hardcoded credentials.

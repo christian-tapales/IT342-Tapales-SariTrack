@@ -13,6 +13,7 @@ import edu.cit.tapales.saritrack.feature.auth.service.CustomOAuth2UserService;
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -68,6 +69,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
                         .requestMatchers("/", "/api/health", "/api/auth/**", "/api/webhooks/**", "/api/payments/**", "/login/**", "/oauth2/**", "/oauth2/authorization/**", "/error").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
 
                 // 4. ADD JWT FILTER
@@ -110,7 +112,7 @@ public class SecurityConfig {
                             }
 
                             // ISSUE JWT PASSPORT
-                            String token = jwtUtils.generateToken(email);
+                            String token = jwtUtils.generateToken(email, role);
 
                             String origin = request.getHeader("Origin");
                             String baseUrl = (origin != null && origin.contains("5174")) ? "http://localhost:5174" : "http://localhost:5173";
