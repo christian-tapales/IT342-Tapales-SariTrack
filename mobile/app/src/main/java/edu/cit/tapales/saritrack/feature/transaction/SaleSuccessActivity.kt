@@ -51,8 +51,37 @@ class SaleSuccessActivity : AppCompatActivity() {
             finish()
         }
 
+        findViewById<View>(R.id.btnExportPdfReceipt).setOnClickListener {
+            exportPdfReceipt(orderId, totalAmount, status, itemsSummary)
+        }
+
         findViewById<View>(R.id.btnShareReceipt).setOnClickListener {
             shareReceipt(orderId, totalAmount, status, itemsSummary)
+        }
+    }
+
+    private fun exportPdfReceipt(orderId: Long, total: Double, status: String, itemsSummary: String) {
+        try {
+            val sessionManager = SessionManager(this)
+            val storeName = sessionManager.getUserName() ?: "SariTrack Store"
+            val sdf = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
+            val dateStr = sdf.format(Date())
+
+            val items = PdfReportHelper.parseItemsSummary(itemsSummary)
+            val reportData = ReceiptReportData(
+                orderId = orderId,
+                storeName = storeName,
+                totalAmount = total,
+                paymentStatus = PdfReportHelper.formatPaymentStatus(status),
+                dateString = dateStr,
+                items = items
+            )
+
+            val pdfFile = PdfDocumentGenerator.generateReceiptPdf(this, reportData)
+            PdfDocumentGenerator.sharePdfFile(this, pdfFile, "Share Receipt PDF via")
+        } catch (e: Exception) {
+            android.util.Log.e("SaleSuccessActivity", "Failed to generate receipt PDF", e)
+            android.widget.Toast.makeText(this, "Could not generate PDF receipt", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 

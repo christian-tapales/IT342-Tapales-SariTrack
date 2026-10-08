@@ -31,6 +31,9 @@ class CustomerHistoryActivity : AppCompatActivity() {
     private lateinit var adapter: HistoryAdapter
     private lateinit var tvEmptyState: TextView
     private var customerId: Long = -1
+    private var customerName: String = "Customer"
+    private var currentDebt: Double = 0.0
+    private var btnExportStatement: View? = null
 
     private val historyItems = mutableListOf<HistoryItem>()
 
@@ -39,12 +42,15 @@ class CustomerHistoryActivity : AppCompatActivity() {
         setContentView(R.layout.activity_customer_history)
 
         customerId = intent.getLongExtra("CUSTOMER_ID", -1)
-        val customerName = intent.getStringExtra("CUSTOMER_NAME") ?: "History"
-        val currentDebt = intent.getDoubleExtra("CURRENT_DEBT", 0.0)
+        customerName = intent.getStringExtra("CUSTOMER_NAME") ?: "Customer"
+        currentDebt = intent.getDoubleExtra("CURRENT_DEBT", 0.0)
 
         findViewById<TextView>(R.id.tvCustomerName).text = customerName
         findViewById<TextView>(R.id.tvTotalDebt).text = "Total Debt: ₱${String.format("%.2f", currentDebt)}"
         findViewById<View>(R.id.btnBack).setOnClickListener { finish() }
+
+        btnExportStatement = findViewById(R.id.btnExportStatement)
+        btnExportStatement?.setOnClickListener { exportPdfStatement() }
 
         rvHistory = findViewById(R.id.rvHistory)
         tvEmptyState = findViewById(R.id.tvEmptyState)
@@ -58,8 +64,6 @@ class CustomerHistoryActivity : AppCompatActivity() {
 
     private fun fetchHistory() {
         if (customerId == -1L) return
-
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
 
         // Fetch Orders
         RetrofitClient.getTransactionService(this).getCustomerOrderHistory(customerId)
@@ -114,6 +118,35 @@ class CustomerHistoryActivity : AppCompatActivity() {
             tvEmptyState.visibility = View.GONE
             rvHistory.visibility = View.VISIBLE
             adapter.updateItems(historyItems)
+        }
+    }
+
+    private fun exportPdfStatement() {
+        if (historyItems.isEmpty()) {
+            Toast.makeText(this, "No transaction history to export", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            val sessionManager = SessionManager(this)
+            val storeName = sessionManager.getUserName() ?: "SariTrack Store"
+            val sdf = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
+            val dateStr = sdf.format(Date())
+
+            val entries = PdfReportHelper.buildStatementEntries(historyItems)
+            val statementData = StatementReportData(
+                customerName = customerName,
+                storeName = storeName,
+                dateString = dateStr,
+                currentDebt = currentDebt,
+                entries = entries
+            )
+
+            val pdfFile = PdfDocumentGenerator.generateStatementPdf(this, statementData)
+            PdfDocumentGenerator.sharePdfFile(this, pdfFile, "Share Customer Statement PDF via")
+        } catch (e: Exception) {
+            android.util.Log.e("CustomerHistoryActivity", "Failed to generate statement PDF", e)
+            Toast.makeText(this, "Could not generate statement PDF", Toast.LENGTH_SHORT).show()
         }
     }
 }
