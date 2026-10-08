@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package, FileText } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Download, Clock, CheckCircle2, XCircle, X, Package, FileText, Ban, AlertTriangle } from 'lucide-react';
 import api from '../../core/api/api';
 import Skeleton from '../../core/components/Skeleton';
 import jsPDF from 'jspdf';
@@ -12,6 +12,9 @@ const Transactions = ({ user }) => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [voidModalOrder, setVoidModalOrder] = useState(null);
+  const [voidReason, setVoidReason] = useState('');
+  const [isVoiding, setIsVoiding] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -26,6 +29,27 @@ const Transactions = ({ user }) => {
     };
     if (user?.id) fetchOrders();
   }, [user]);
+
+  const handleConfirmVoid = async () => {
+    if (!voidModalOrder) return;
+    setIsVoiding(true);
+    try {
+      await api.post(`/orders/${voidModalOrder.id}/cancel?vendorId=${user.id}`, {
+        reason: voidReason || 'Cashier voided sale'
+      });
+      setOrders(prev => prev.map(o => o.id === voidModalOrder.id ? { ...o, status: 'CANCELLED' } : o));
+      if (selectedOrder?.id === voidModalOrder.id) {
+        setSelectedOrder(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
+      }
+      setVoidModalOrder(null);
+      setVoidReason('');
+    } catch (err) {
+      console.error("Error cancelling order", err);
+      alert(err.response?.data?.message || err.response?.data?.error || "Failed to void order.");
+    } finally {
+      setIsVoiding(false);
+    }
+  };
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toString().includes(searchTerm);
@@ -248,12 +272,26 @@ const Transactions = ({ user }) => {
                     </div>
                   </td>
                   <td className="p-6 text-right">
-                    <button 
-                      onClick={() => setSelectedOrder(order)}
-                      className="text-slate-400 dark:text-slate-500 hover:text-[#16A394] dark:hover:text-teal-400 font-bold text-sm transition-colors"
-                    >
-                      Details
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => setSelectedOrder(order)}
+                        className="text-slate-400 dark:text-slate-500 hover:text-[#16A394] dark:hover:text-teal-400 font-bold text-sm transition-colors"
+                      >
+                        Details
+                      </button>
+                      {order.status !== 'CANCELLED' && (
+                        <button
+                          onClick={() => {
+                            setVoidModalOrder(order);
+                            setVoidReason('');
+                          }}
+                          className="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 font-bold text-sm transition-colors"
+                          title="Void Order"
+                        >
+                          Void
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )
@@ -283,7 +321,7 @@ const Transactions = ({ user }) => {
               <button onClick={() => setSelectedOrder(null)} className="p-3 bg-white dark:bg-slate-800/50 rounded-2xl text-slate-400 hover:text-rose-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-all"><X size={20} /></button>
             </div>
             
-            <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+            <div className="p-8 space-y-6 max-h-[50vh] overflow-y-auto">
               {selectedOrder.items?.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-4 group">
                   <div className="h-12 w-12 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-center text-slate-300 dark:text-slate-700 border border-slate-100 dark:border-slate-800">
@@ -303,10 +341,70 @@ const Transactions = ({ user }) => {
             </div>
 
             <div className="p-8 bg-slate-900 dark:bg-black text-white">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-4">
                 <span className="font-bold text-white/60 dark:text-slate-500">Grand Total</span>
                 <span className="text-3xl font-black text-teal-400">₱{(selectedOrder.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
+              {selectedOrder.status !== 'CANCELLED' && (
+                <button
+                  onClick={() => {
+                    setVoidModalOrder(selectedOrder);
+                    setVoidReason('');
+                  }}
+                  className="w-full py-3 px-4 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-sm flex items-center justify-center gap-2 border border-rose-500/30 transition-all"
+                >
+                  <Ban size={16} /> Void This Order (Restock & Revert)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Void Confirmation Modal */}
+      {voidModalOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8 border border-transparent dark:border-slate-800 transition-colors animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white">Void Order #{voidModalOrder.id}?</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">This will replenish item stock and revert customer debt balance.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                  Cancellation Reason (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Wrong item scanned, Customer changed mind"
+                  value={voidReason}
+                  onChange={(e) => setVoidReason(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-sm outline-none focus:ring-2 focus:ring-rose-500 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setVoidModalOrder(null)}
+                disabled={isVoiding}
+                className="flex-1 py-3 px-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmVoid}
+                disabled={isVoiding}
+                className="flex-1 py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-600/30 transition-all disabled:opacity-50"
+              >
+                {isVoiding ? 'Voiding...' : 'Confirm Void'}
+              </button>
             </div>
           </div>
         </div>

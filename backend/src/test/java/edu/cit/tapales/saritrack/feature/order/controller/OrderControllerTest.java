@@ -84,4 +84,26 @@ class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L));
     }
+
+    @Test
+    void testCancelOrder_Success_ShouldReturnCancelledOrder() throws Exception {
+        testOrder.setStatus("CANCELLED");
+        when(orderService.cancelOrder(1L, 1L, "Accidental scan")).thenReturn(testOrder);
+
+        mockMvc.perform(post("/api/orders/1/cancel?vendorId=1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Accidental scan\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void testCancelOrder_MissingVendorId_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/api/orders/1/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("vendorId is required"));
+    }
 }

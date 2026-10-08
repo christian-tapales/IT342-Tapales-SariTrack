@@ -7,6 +7,7 @@ import api from '../../core/api/api';
 vi.mock('../../core/api/api', () => ({
   default: {
     get: vi.fn(),
+    post: vi.fn(),
   }
 }));
 
@@ -88,5 +89,31 @@ describe('Transactions Component', () => {
     expect(screen.getByText('Order #101')).toBeInTheDocument();
     expect(screen.getByText('2 x ₱75.00')).toBeInTheDocument();
     expect(screen.getByText('Grand Total')).toBeInTheDocument();
+  });
+
+  it('opens void modal and cancels an order successfully', async () => {
+    api.post.mockResolvedValue({ data: { ...mockOrders[0], status: 'CANCELLED' } });
+    render(<Transactions user={mockUser} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('#101')).toBeInTheDocument();
+    });
+
+    const voidButton = screen.getByTitle('Void Order');
+    fireEvent.click(voidButton);
+
+    expect(screen.getByText('Void Order #101?')).toBeInTheDocument();
+
+    const reasonInput = screen.getByPlaceholderText(/Wrong item scanned/i);
+    fireEvent.change(reasonInput, { target: { value: 'Cashier typo' } });
+
+    fireEvent.click(screen.getByText('Confirm Void'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/orders/101/cancel?vendorId=1',
+        { reason: 'Cashier typo' }
+      );
+    });
   });
 });

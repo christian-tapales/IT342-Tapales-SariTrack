@@ -202,4 +202,63 @@ public class OrderService {
     public java.util.List<Order> getOrdersByCustomer(Long customerId) {
         return orderRepository.findByCustomerId(customerId);
     }
+
+    @Transactional
+    public Order cancelOrder(Long orderId, Long vendorId, String reason) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Order not found: " + orderId));
+
+        if (order.getVendorId() == null || !order.getVendorId().equals(vendorId)) {
+            throw new org.springframework.security.access.AccessDeniedException("Unauthorized to modify order for another vendor");
+        }
+
+        if ("CANCELLED".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalStateException("Order #" + orderId + " is already cancelled.");
+        }
+
+        String previousStatus = order.getStatus();
+
+        // 1. Restock products if order was previously completed (PAID or DEBT)
+        if (("PAID".equalsIgnoreCase(previousStatus) || "DEBT".equalsIgnoreCase(previousStatus)) && order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getProductId() != null && item.getQuantity() != null) {
+                    productRepository.findById(item.getProductId()).ifPresent(product -> {
+                        int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
+                        product.setStockQuantity(currentStock + item.getQuantity());
+                        productRepository.save(product);
+                    });
+                }
+            }
+        }
+
+        // 2. Revert customer debt if order was a debt sale
+        if ("DEBT".equalsIgnoreCase(previousStatus) && order.getCustomerId() != null) {
+            customerRepository.findById(order.getCustomerId()).ifPresent(customer -> {
+                double currentDebt = customer.getCurrentDebt() != null ? customer.getCurrentDebt() : 0.0;
+                double orderTotal = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+                double newDebt = Math.max(0.0, currentDebt - orderTotal);
+                customer.setCurrentDebt(newDebt);
+                if (newDebt == 0.0) {
+                    customer.setStatus("Paid");
+                }
+                customer.setLastUpdate(LocalDateTime.now());
+                customerRepository.save(customer);
+            });
+        }
+
+        // 3. Update status
+        order.setStatus("CANCELLED");
+        Order savedOrder = orderRepository.save(order);
+
+        // 4. Create audit notification
+        String auditReason = (reason != null && !reason.trim().isEmpty()) ? reason.trim() : "Cashier voided sale";
+        notificationService.createNotification(
+            vendorId,
+            "Order #" + order.getId() + " Voided",
+            "Order of ₱" + String.format("%.2f", (order.getTotalAmount() != null ? order.getTotalAmount() : 0.0)) + " was voided. Reason: " + auditReason + ". Stock replenished.",
+            "WARNING"
+        );
+
+        return savedOrder;
+    }
 }

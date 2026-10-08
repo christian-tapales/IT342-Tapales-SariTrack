@@ -29,4 +29,26 @@ public class OrderController {
         java.util.List<Order> orders = orderService.getOrdersByCustomer(customerId);
         return ResponseEntity.ok(orders);
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long vendorId,
+            @RequestBody(required = false) java.util.Map<String, Object> payload) {
+        Long targetVendorId = vendorId;
+        String reason = null;
+        if (payload != null) {
+            if (targetVendorId == null && payload.get("vendorId") != null) {
+                targetVendorId = Long.valueOf(payload.get("vendorId").toString());
+            }
+            if (payload.get("reason") != null) {
+                reason = payload.get("reason").toString();
+            }
+        }
+        if (targetVendorId == null) {
+            return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", "vendorId is required"));
+        }
+        Order cancelledOrder = orderService.cancelOrder(id, targetVendorId, reason);
+        return ResponseEntity.ok(cancelledOrder);
+    }
 }

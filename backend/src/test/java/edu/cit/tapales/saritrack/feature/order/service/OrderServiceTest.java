@@ -178,4 +178,71 @@ public class OrderServiceTest {
 
         assertThrows(RuntimeException.class, () -> orderService.completeSale(testOrder));
     }
+
+    @Test
+    void testCancelOrder_PaidOrder_RestocksProductAndMarksCancelled() {
+        testOrder.setId(10L);
+        testOrder.setStatus("PAID");
+        testProduct.setStockQuantity(8);
+
+        when(orderRepository.findById(10L)).thenReturn(Optional.of(testOrder));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Order result = orderService.cancelOrder(10L, 1L, "Customer changed mind");
+
+        assertNotNull(result);
+        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(10, testProduct.getStockQuantity());
+        verify(productRepository).save(testProduct);
+        verify(notificationService).createNotification(eq(1L), contains("Voided"), anyString(), eq("WARNING"));
+    }
+
+    @Test
+    void testCancelOrder_DebtOrder_RevertsCustomerDebtAndRestocks() {
+        testOrder.setId(11L);
+        testOrder.setStatus("DEBT");
+        testOrder.setCustomerId(99L);
+        testOrder.setTotalAmount(50.0);
+        testProduct.setStockQuantity(5);
+
+        Customer customer = new Customer();
+        customer.setId(99L);
+        customer.setCurrentDebt(150.0);
+
+        when(orderRepository.findById(11L)).thenReturn(Optional.of(testOrder));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(customerRepository.findById(99L)).thenReturn(Optional.of(customer));
+        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Order result = orderService.cancelOrder(11L, 1L, "Voided utang");
+
+        assertNotNull(result);
+        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(7, testProduct.getStockQuantity());
+        assertEquals(100.0, customer.getCurrentDebt());
+        verify(customerRepository).save(customer);
+        verify(productRepository).save(testProduct);
+    }
+
+    @Test
+    void testCancelOrder_AlreadyCancelled_ThrowsIllegalStateException() {
+        testOrder.setId(12L);
+        testOrder.setStatus("CANCELLED");
+
+        when(orderRepository.findById(12L)).thenReturn(Optional.of(testOrder));
+
+        assertThrows(IllegalStateException.class, () -> orderService.cancelOrder(12L, 1L, "duplicate void"));
+    }
+
+    @Test
+    void testCancelOrder_DifferentVendor_ThrowsAccessDeniedException() {
+        testOrder.setId(13L);
+        testOrder.setVendorId(1L);
+
+        when(orderRepository.findById(13L)).thenReturn(Optional.of(testOrder));
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> orderService.cancelOrder(13L, 999L, "cross tenant void"));
+    }
 }

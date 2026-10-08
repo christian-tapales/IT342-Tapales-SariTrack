@@ -22,7 +22,7 @@ Any developer or AI assistant working on this repository should refer to this do
 | **GAP-01** | Security / Auth | RBAC Role Enforcement on Platform Admin Endpoints | Backend | 🔴 High | ✅ Resolved |
 | **GAP-02** | Multi-Tenancy | Scope Customer Debt History Query by Vendor ID | Backend | 🔴 High | ✅ Resolved |
 | **GAP-03** | Payments | Dynamic Frontend Redirect URLs for PayMongo Checkout | Backend | 🟡 Medium | ✅ Resolved |
-| **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
+| **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ✅ Resolved |
 | **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ⏳ Pending |
 | **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ⏳ Pending |
 | **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium | ⏳ Pending |
@@ -91,24 +91,27 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ---
 
-### GAP-04: Order Cancellation & Voiding Mechanism (POS Mistake Handling)
+### GAP-04: Order Cancellation & Voiding Mechanism (POS Mistake Handling) (✅ Resolved)
 * **Severity:** 🟡 Medium (Core Business Workflow)
+* **Status:** Resolved in `feat/order-cancellation-gap04`.
 * **Affected Files:**
   * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/order/service/OrderService.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/order/service/OrderService.java)
   * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderController.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/order/controller/OrderController.java)
+  * [`backend/src/main/java/edu/cit/tapales/saritrack/core/exception/GlobalExceptionHandler.java`](file:///backend/src/main/java/edu/cit/tapales/saritrack/core/exception/GlobalExceptionHandler.java)
   * [`web/src/features/transactions/Transactions.jsx`](file:///web/src/features/transactions/Transactions.jsx)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/order/service/OrderServiceTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/order/service/OrderServiceTest.java)
+  * [`backend/src/test/java/edu/cit/tapales/saritrack/feature/order/controller/OrderControllerTest.java`](file:///backend/src/test/java/edu/cit/tapales/saritrack/feature/order/controller/OrderControllerTest.java)
+  * [`web/src/features/transactions/Transactions.test.jsx`](file:///web/src/features/transactions/Transactions.test.jsx)
 * **Problem Statement:**
-  * Orders have status `CANCELLED` defined in the domain, but there is no API endpoint or UI action to void an order.
-  * When a sale is completed, stock is decremented immediately and credit sales increment customer `currentDebt`.
-  * If a cashier enters an incorrect transaction or a customer cancels an item, the store owner cannot reverse it without manual DB intervention.
-* **Implementation Blueprint:**
-  1. Add `@Transactional public Order cancelOrder(Long orderId, Long vendorId, String reason)` in `OrderService`.
-  2. Verify order belongs to `vendorId` and is not already `CANCELLED`.
-  3. Restock inventory by iterating `order.getItems()` and adding quantities back to `Product`.
-  4. If order status was `DEBT`, decrement customer `currentDebt` by `order.getTotalAmount()`.
-  5. Set order status to `CANCELLED` and create an audit notification.
-  6. Expose `POST /api/orders/{id}/cancel` in `OrderController`.
-  7. Add "Void Order" button with confirmation modal in `Transactions.jsx` (Web).
+  * Orders had status `CANCELLED` defined in the domain, but there was no API endpoint or UI action to void an order.
+  * When a sale was completed, stock was decremented immediately and credit sales incremented customer `currentDebt`.
+  * If a cashier entered an incorrect transaction or a customer canceled an item, the store owner could not reverse it without manual DB intervention.
+* **Resolution Details:**
+  1. Implemented `@Transactional Order cancelOrder(Long orderId, Long vendorId, String reason)` in `OrderService.java` that enforces vendor ownership, verifies non-cancelled status, automatically replenishes product stock, reverts customer debts if a debt order was voided, updates status to `CANCELLED`, and dispatches an audit notification.
+  2. Exposed `POST /api/orders/{id}/cancel` in `OrderController.java` supporting vendor ID via request parameter or request payload with optional audit reason.
+  3. Added `IllegalStateException` handling to `GlobalExceptionHandler.java` mapping to HTTP 400 Bad Request.
+  4. Added inline table and modal "Void Order" triggers with reason confirmation in `Transactions.jsx`.
+  5. Added comprehensive automated tests in `OrderServiceTest`, `OrderControllerTest`, and `Transactions.test.jsx` verifying 100% pass rate.
 
 ---
 
