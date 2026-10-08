@@ -13,26 +13,32 @@ const Register = () => {
     });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if(formData.password !== formData.confirmPassword){
+      setFeedback({ type: 'error', message: 'Passwords do not match!' });
       alert("Passwords do not match!");
       return;
     }
 
     setLoading(true);
+    setFeedback({ type: '', message: '' });
     try {
       // Destructure to avoid sending confirmPassword to the backend
       const { confirmPassword, ...registerData } = formData;
       await api.post('/auth/register', registerData);
       
+      sessionStorage.setItem('registered_success', 'true');
+      setFeedback({ type: 'success', message: 'Registration Successful! Redirecting to login...' });
       alert("Registration Successful!");
       navigate('/login');
     } catch (error) {
       const errorMsg = error.response?.data?.error || error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Registration failed. Check backend connection.";
+      setFeedback({ type: 'error', message: errorMsg });
       alert(errorMsg);
     } finally {
       setLoading(false);
@@ -56,6 +62,17 @@ const Register = () => {
         <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">Create Account</h2>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Join SariTrack to manage your store today.</p>
       </div>
+
+      {/* Feedback Banner */}
+      {feedback.message && (
+        <div className={`p-4 mb-4 rounded-xl text-sm font-semibold flex items-center gap-2 animate-in fade-in duration-300 ${
+          feedback.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+            : 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+        }`}>
+          <span>{feedback.message}</span>
+        </div>
+      )}
 
       {/* Registration Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,9 +115,10 @@ const Register = () => {
 
         <button 
           type="submit" 
-          className="w-full bg-[#16A394] hover:bg-[#0D7A6F] text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition-all active:scale-95 mt-4"
+          disabled={loading}
+          className="w-full bg-[#16A394] hover:bg-[#0D7A6F] disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-600/20 transition-all active:scale-95 mt-4"
         >
-          Create Account
+          {loading ? 'Creating Account...' : 'Create Account'}
         </button>
       </form>
 

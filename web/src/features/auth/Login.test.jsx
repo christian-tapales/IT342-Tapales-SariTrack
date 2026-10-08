@@ -115,5 +115,18 @@ describe('Login Component', () => {
       expect(screen.getByText(/Password reset successfully!/i)).toBeInTheDocument();
     });
   });
+
+  it('displays success banner when redirected after registration', () => {
+    sessionStorage.setItem('registered_success', 'true');
+
+    render(
+      <MemoryRouter>
+        <Login onLoginSuccess={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/Account created successfully! Please sign in with your email and password./i)).toBeInTheDocument();
+    expect(sessionStorage.getItem('registered_success')).toBeNull();
+  });
 });
 

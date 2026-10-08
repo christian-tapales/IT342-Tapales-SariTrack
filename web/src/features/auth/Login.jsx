@@ -21,6 +21,7 @@ const Login = ({ onLoginSuccess }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalFeedback, setModalFeedback] = useState({ type: '', message: '' });
+  const [successBanner, setSuccessBanner] = useState('');
 
   // --- CATCH GOOGLE REDIRECT OR RESET TOKEN QUERY PARAM ---
   useEffect(() => {
@@ -34,6 +35,12 @@ const Login = ({ onLoginSuccess }) => {
       
       onLoginSuccess(userData);
       navigate('/dashboard');
+    }
+
+    const justRegistered = sessionStorage.getItem('registered_success');
+    if (justRegistered || params.get('registered') === 'true' || location.state?.registered) {
+      setSuccessBanner('Account created successfully! Please sign in with your email and password.');
+      sessionStorage.removeItem('registered_success');
     }
 
     const tokenParam = params.get('token') || params.get('resetToken');
@@ -145,6 +152,21 @@ const Login = ({ onLoginSuccess }) => {
         </div>
         <p className="text-slate-500 dark:text-slate-400 text-sm">Sign in to manage your store</p>
       </div>
+
+      {/* Registration Success Banner */}
+      {successBanner && (
+        <div className="p-4 mb-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm font-medium flex items-center justify-between gap-3 animate-in fade-in duration-300 shadow-sm">
+          <span>{successBanner}</span>
+          <button 
+            type="button" 
+            onClick={() => setSuccessBanner('')}
+            className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200 transition-colors p-1"
+            title="Dismiss"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleLogin} className="space-y-5">
         <Input 
