@@ -10,6 +10,7 @@ import edu.cit.tapales.saritrack.feature.dashboard.*
 import edu.cit.tapales.saritrack.feature.payment.*
 import edu.cit.tapales.saritrack.core.ui.*
 import edu.cit.tapales.saritrack.feature.inventory.*
+import edu.cit.tapales.saritrack.feature.notification.*
 import edu.cit.tapales.saritrack.core.api.*
 
 import android.content.Intent
@@ -40,6 +41,7 @@ class HomeFragment : Fragment() {
     private var rvRecentTransactions: RecyclerView? = null
     private var chartContainer: FrameLayout? = null
     private var tvEmptyRecentSales: TextView? = null
+    private var tvNotificationBadge: TextView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,9 +57,11 @@ class HomeFragment : Fragment() {
         rvRecentTransactions = view.findViewById(R.id.rvRecentTransactions)
         chartContainer = view.findViewById(R.id.chartContainer)
         tvEmptyRecentSales = view.findViewById(R.id.tvEmptyRecentSales)
+        tvNotificationBadge = view.findViewById(R.id.tvNotificationBadge)
         
         val btnLogout: View? = view.findViewById(R.id.btnLogout)
         val btnThemeToggle: View? = view.findViewById(R.id.btnThemeToggle)
+        val btnNotificationBell: View? = view.findViewById(R.id.btnNotificationBell)
         val tvRefresh: View? = view.findViewById(R.id.tvViewAllSales)
 
         // KPI Cards for navigation
@@ -98,6 +102,13 @@ class HomeFragment : Fragment() {
             sessionManager.saveTheme(newMode)
             AppCompatDelegate.setDefaultNightMode(if (newMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
         }
+
+        btnNotificationBell?.setOnClickListener {
+            val sheet = NotificationBottomSheet.newInstance { unreadCount ->
+                updateNotificationBadge(unreadCount)
+            }
+            sheet.show(parentFragmentManager, NotificationBottomSheet.TAG)
+        }
         
         return view
     }
@@ -132,6 +143,8 @@ class HomeFragment : Fragment() {
                     loadCachedDashboard(vendorId, sharedPrefs)
                 }
             })
+
+        fetchNotificationCount()
     }
 
     private fun loadCachedDashboard(vendorId: Long, sharedPrefs: android.content.SharedPreferences) {
@@ -304,6 +317,47 @@ class HomeFragment : Fragment() {
         container.addView(labelLayout)
     }
 
+    override fun onResume() {
+        super.onResume()
+        fetchNotificationCount()
+    }
+
+    private fun fetchNotificationCount() {
+        val context = context ?: return
+        val vendorId = SessionManager(context).getUserId()
+        if (vendorId <= 0) return
+
+        RetrofitClient.getNotificationService(context).getNotifications(vendorId)
+            .enqueue(object : Callback<List<NotificationItem>> {
+                override fun onResponse(
+                    call: Call<List<NotificationItem>>,
+                    response: Response<List<NotificationItem>>
+                ) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val unread = response.body()!!.count { !it.isRead }
+                        updateNotificationBadge(unread)
+                    }
+                }
+
+                override fun onFailure(
+                    call: Call<List<NotificationItem>>,
+                    t: Throwable
+                ) {
+                    // Silently ignore network failures on background badge check
+                }
+            })
+    }
+
+    private fun updateNotificationBadge(unreadCount: Int) {
+        if (!isAdded || activity == null) return
+        if (unreadCount > 0) {
+            tvNotificationBadge?.visibility = View.VISIBLE
+            tvNotificationBadge?.text = if (unreadCount > 99) "99+" else unreadCount.toString()
+        } else {
+            tvNotificationBadge?.visibility = View.GONE
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         tvGreeting = null
@@ -314,5 +368,6 @@ class HomeFragment : Fragment() {
         rvRecentTransactions = null
         chartContainer = null
         tvEmptyRecentSales = null
+        tvNotificationBadge = null
     }
 }

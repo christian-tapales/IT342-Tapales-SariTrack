@@ -10,6 +10,7 @@ import edu.cit.tapales.saritrack.feature.dashboard.*
 import edu.cit.tapales.saritrack.feature.payment.*
 import edu.cit.tapales.saritrack.core.ui.*
 import edu.cit.tapales.saritrack.feature.inventory.*
+import edu.cit.tapales.saritrack.feature.notification.*
 import edu.cit.tapales.saritrack.core.api.*
 
 import android.content.Context
@@ -93,5 +94,9 @@ object RetrofitClient {
 
     fun getPaymentService(context: Context): PaymentApiService {
         return getInstance(context).create(PaymentApiService::class.java)
+    }
+
+    fun getNotificationService(context: Context): NotificationApiService {
+        return getInstance(context).create(NotificationApiService::class.java)
     }
 }

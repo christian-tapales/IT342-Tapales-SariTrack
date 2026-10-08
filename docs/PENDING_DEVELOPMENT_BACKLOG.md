@@ -25,7 +25,7 @@ Any developer or AI assistant working on this repository should refer to this do
 | **GAP-04** | POS / Inventory | Order Cancellation & Voiding (Stock & Debt Reversal) | Backend & Web/Mobile | 🟡 Medium | ✅ Resolved |
 | **GAP-05** | Authentication | Password Recovery / Forgot Password Email Flow | Backend & Web/Mobile | 🟡 Medium | ✅ Resolved |
 | **GAP-06** | API Design | Standardized HTTP Error Responses on User Registration | Backend & Web | 🟢 Low | ✅ Resolved |
-| **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium | ⏳ Pending |
+| **GAP-07** | Feature Parity | Mobile Notification Center UI & Synchronization | Mobile (Android) | 🟡 Medium | ✅ Resolved |
 | **GAP-08** | Feature Parity | Mobile PDF Receipt & Ledger Statement Export | Mobile (Android) | 🟢 Low | ⏳ Pending |
 
 ---
@@ -155,18 +155,26 @@ Any developer or AI assistant working on this repository should refer to this do
 
 ---
 
-### GAP-07: Mobile In-App Notification Center
+### GAP-07: Mobile In-App Notification Center (✅ Resolved)
 * **Severity:** 🟡 Medium (Feature Parity)
+* **Status:** Resolved in `feat/notification-mobile-center-gap07`.
 * **Affected Files:**
-  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/)
-  * [`backend/src/main/java/edu/cit/tapales/saritrack/feature/notification/`](file:///backend/src/main/java/edu/cit/tapales/saritrack/feature/notification/)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/notification/`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/notification/)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/core/api/RetrofitClient.kt`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/core/api/RetrofitClient.kt)
+  * [`mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/dashboard/HomeFragment.kt`](file:///mobile/app/src/main/java/edu/cit/tapales/saritrack/feature/dashboard/HomeFragment.kt)
+  * [`mobile/app/src/main/res/layout/fragment_home.xml`](file:///mobile/app/src/main/res/layout/fragment_home.xml)
+  * [`mobile/app/src/main/res/layout/bottom_sheet_notifications.xml`](file:///mobile/app/src/main/res/layout/bottom_sheet_notifications.xml)
+  * [`mobile/app/src/main/res/layout/item_notification.xml`](file:///mobile/app/src/main/res/layout/item_notification.xml)
+  * [`mobile/app/src/test/java/edu/cit/tapales/saritrack/feature/notification/NotificationModelsTest.kt`](file:///mobile/app/src/test/java/edu/cit/tapales/saritrack/feature/notification/NotificationModelsTest.kt)
 * **Problem Statement:**
   * The React web client has a live notification bell dropdown displaying low-stock alerts, utang additions, and digital payment confirmations.
-  * The Android mobile app has no notification interface, leaving mobile-only cashiers uninformed about backend alerts.
-* **Implementation Blueprint:**
-  1. Add `NotificationApiService` in mobile `core/api/` mapping `/api/notifications?vendorId=...`.
-  2. Create `NotificationBottomSheet.kt` or `NotificationActivity.kt` with a RecyclerView.
-  3. Add notification bell icon in `MainActivity` toolbar with an unread badge counter.
+  * The Android mobile app had no notification interface, leaving mobile-only cashiers uninformed about backend alerts.
+* **Resolution Details:**
+  1. Implemented `NotificationModels.kt` and `NotificationApiService.kt` mapping `/api/notifications?vendorId=...`, `/api/notifications/sync?vendorId=...`, `/api/notifications/{id}/read`, and `/api/notifications/read-all?vendorId=...`.
+  2. Created `NotificationBottomSheet.kt` with a RecyclerView, pull-to-refresh (`SwipeRefreshLayout`), mark individual read on click, and "Mark all as read" batch action.
+  3. Added bell icon button and live unread badge counter in `HomeFragment.kt` header adjacent to logout, automatically refreshing on screen load and on dismiss.
+  4. Created unit tests in `NotificationModelsTest.kt` verifying model construction, timestamp parsing, and default flags.
+  5. Verified 100% test pass rate across backend (165 tests), web (105 tests), and mobile (120 tests).
 
 ---
 

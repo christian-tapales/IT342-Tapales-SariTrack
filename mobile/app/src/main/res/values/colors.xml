@@ -15,4 +15,5 @@
     <color name="primary_blue">#3B82F6</color>
     <color name="primary_orange">#F59E0B</color>
     <color name="primary_purple">#8B5CF6</color>
+    <color name="badge_red">#EF4444</color>
 </resources>
